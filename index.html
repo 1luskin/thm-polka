@@ -4,8 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>THM Полка</title>
-
-
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="theme-color" content="#16212e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="THM Полка">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Unbounded:wght@500;700&display=swap">
 <style>
@@ -86,6 +89,16 @@ textarea{min-height:64px;resize:vertical}
 .add form{display:flex;flex-direction:column;gap:10px;padding:0 14px 14px}
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);font-family:var(--f-mono)}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.resume{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.resume .rl{min-width:0;display:flex;flex-direction:column;gap:2px}
+.resume .rl small{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.resume .rl b{font-weight:600}
+.resume .rl span{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+a.btn{text-decoration:none;display:inline-block}
+.prog{display:flex;align-items:center;gap:8px;font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.prog .pb{flex:0 0 90px;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
+.prog .pb i{display:block;height:100%;background:var(--st-reading)}
+.streak b{color:var(--accent)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 <style>body{margin:0}[hidden]{display:none!important}</style>
@@ -96,8 +109,9 @@ textarea{min-height:64px;resize:vertical}
   <header>
     <div class="eyebrow">TryHackMe · SOC Analyst L1</div>
     <h1>THM Полка</h1>
-    <p class="sub">Все учебники в одном месте. Отмечай статус, пиши заметки — всё сохраняется и видно с любого устройства. Прогресс хранится в этом браузере — кнопкой «Экспорт» можно перенести его на другое устройство.</p>
+    <p class="sub">Все учебники в одном месте. Отмечай статус и пиши заметки. Прогресс, закладки и выделения хранятся в этом браузере. На другое устройство их можно перенести внизу через «Экспорт».</p>
     <div class="stats" id="stats"></div>
+    <div id="resume"></div>
     <div class="bar" id="bar" aria-hidden="true"></div>
     <div class="legend">
       <span><i style="background:var(--st-todo)"></i>не начат</span>
@@ -161,7 +175,7 @@ function card(b){
   const dis=canWrite?"":"disabled";
   return `<article class="book" data-st="${st}">
     <div class="row">
-      <div class="title"><strong>${esc(b.title)}</strong>${meta?`<span class="meta">${meta}</span>`:""}</div>
+      <div class="title"><strong>${esc(b.title)}</strong>${meta?`<span class="meta">${meta}</span>`:""}${progLine(b)}</div>
       <div class="actions"><span class="chip">${ST[st]}</span>${b.url?`<a class="open" href="${esc(b.url)}">Читать →</a>`:""}</div>
     </div>
     <details class="more" data-id="${esc(b.id)}" ${openId===b.id?"open":""}>
@@ -180,17 +194,45 @@ function card(b){
     </details>
   </article>`;
 }
+function R(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}}
+function progLine(b){
+  const r=R("thm-reader:summary",{})[b.id]; if(!r||!r.chapters)return "";
+  const pct=Math.round(r.seen/r.chapters*100);
+  const q=r.quizTotal?` · квизы ${r.quizOk}/${r.quizTotal}`:"";
+  const min=r.readSecs?` · ${Math.round(r.readSecs/60)} мин`:"";
+  return `<span class="prog"><span class="pb"><i style="width:${pct}%"></i></span>${pct}% прочитано${q}${min}</span>`;
+}
+function dayKey(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function streak(){
+  const days=R("thm-reader:days",{}); let n=0; const d=new Date();
+  if(!(days[dayKey(d)]>=60)) d.setDate(d.getDate()-1);
+  while(days[dayKey(d)]>=60){n++;d.setDate(d.getDate()-1)}
+  return {n,today:Math.round((days[dayKey(new Date())]||0)/60)};
+}
+function renderResume(){
+  const sum=R("thm-reader:summary",{}); let best=null;
+  books.forEach(b=>{const r=sum[b.id];if(r&&r.lastOpen&&(!best||r.lastOpen>best.r.lastOpen))best={b,r}});
+  $("#resume").innerHTML=best?`<div class="resume"><div class="rl"><small>Продолжить</small><b>${esc(best.b.title)}</b>${best.r.lastCh?`<span>${esc(best.r.lastCh)}</span>`:""}</div><a class="btn" href="${esc(best.b.url)}">Открыть →</a></div>`:"";
+}
 function renderStats(){
   const n=books.length,c=s=>books.filter(b=>b.status===s).length;
   const done=c("done")+c("passed");
-  $("#stats").innerHTML=`<span><b>${n}</b> учебников</span><span><b>${done}</b> прочитано</span><span><b>${c("passed")}</b> разборов сдано</span><span><b>${c("reading")}</b> в процессе</span>`;
+  const sk=streak();
+  $("#stats").innerHTML=`<span class="streak">серия <b>${sk.n}</b> дн.</span><span>сегодня <b>${sk.today}</b> мин</span><span><b>${n}</b> учебников</span><span><b>${done}</b> прочитано</span><span><b>${c("passed")}</b> разборов сдано</span><span><b>${c("reading")}</b> в процессе</span>`;
   $("#bar").innerHTML=n?["passed","done","reading"].map(s=>`<span style="width:${c(s)/n*100}%;background:var(--st-${s})"></span>`).join(""):"";
+  renderResume();
 }
 const KEY="thm-polka-v1";
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||{state:{},added:[],removed:[]}}catch(e){return {state:{},added:[],removed:[]}}}
 function persist(){try{localStorage.setItem(KEY,JSON.stringify(store));return true}catch(e){return false}}
 let store=load();
-function rebuild(){books=[...BOOKS,...store.added].filter(b=>!store.removed.includes(b.id)).map(b=>({...b,...(store.state[b.id]||{})}))}
+function rebuild(){
+  const sum=R("thm-reader:summary",{});
+  books=[...BOOKS,...store.added].filter(b=>!store.removed.includes(b.id)).map(b=>{
+    const x={...b,...(store.state[b.id]||{})};
+    if((!x.status||x.status==="none"||x.status==="todo")&&sum[b.id]&&sum[b.id].seen>1)x.status="reading";
+    return x});
+}
 async function write(id,data){store.state[id]={...(store.state[id]||{}),...data,updatedAt:new Date().toISOString()};const ok=persist();rebuild();return ok}
 window.setStatus=async(id,s)=>{const b=books.find(x=>x.id===id);if(!b||b.status===s)return;b.status=s;render();await write(id,{status:s})};
 window.saveFields=async(id,btn)=>{
@@ -213,12 +255,18 @@ $("#addForm").addEventListener("submit",async e=>{
   data.id="u"+Date.now();store.added.push(data);persist();rebuild();render();e.target.reset();$("#addMsg").textContent="Добавлено";
 });
 
-window.exportData=()=>{const t=JSON.stringify(store);navigator.clipboard?.writeText(t).then(()=>msg("Скопировано — вставь на другом устройстве в «Импорт»"),()=>{$("#io").value=t;msg("Скопируй текст из поля")})};
-window.importData=()=>{try{const v=JSON.parse($("#io").value);if(!v.state)throw 0;store=v;persist();rebuild();render();msg("Прогресс загружен")}catch(e){msg("Не похоже на экспорт полки — проверь текст")}};
+function dump(){const o={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("thm-"))o[k]=localStorage.getItem(k)}}catch(e){}return {thm:1,keys:o}}
+window.exportData=()=>{const t=JSON.stringify(dump());navigator.clipboard?.writeText(t).then(()=>msg("Скопировано — вставь на другом устройстве в «Импорт»"),()=>{$("#io").value=t;msg("Скопируй текст из поля")})};
+window.importData=()=>{try{const v=JSON.parse($("#io").value);
+  if(v.thm&&v.keys){Object.keys(v.keys).forEach(k=>{if(k.startsWith("thm-"))localStorage.setItem(k,v.keys[k])});store=load()}
+  else if(v.state){store=v;persist()} else throw 0;
+  rebuild();render();msg("Прогресс загружен: статусы, закладки, выделения, квизы")}catch(e){msg("Не похоже на экспорт полки — проверь текст")}};
 function msg(t){$("#ioMsg").textContent=t}
 $("#addBox").hidden=false;
 fetch("books.json",{cache:"no-store"}).then(r=>r.json()).then(list=>{BOOKS=list;rebuild();render()})
  .catch(()=>{$("#shelf").innerHTML='<div class="notice">Не загрузился список учебников (books.json). Обнови страницу.</div>'});
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+addEventListener("pageshow",e=>{if(e.persisted){rebuild();render()}});
 </script>
 </body>
 </html>
