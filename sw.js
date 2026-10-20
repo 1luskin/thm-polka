@@ -1,6 +1,6 @@
 /* Офлайн-режим полки. Онлайн: страница полки и список учебников берутся свежими из сети,
    остальное отдаётся из кэша и тихо обновляется. Офлайн: всё из кэша. */
-const CACHE = "thm-polka-v1";
+const CACHE = "thm-polka-v2";
 const CORE = ["./", "index.html", "books.json", "assets/reader.js", "manifest.webmanifest", "assets/icon-192.png", "assets/icon-512.png"];
 
 self.addEventListener("install", (e) => {

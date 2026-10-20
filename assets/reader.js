@@ -310,10 +310,25 @@
 
   // ---------- озвучка ----------
   var tts = { on: false, queue: [], i: 0, cur: null };
-  function ruVoice() {
-    var vs = window.speechSynthesis ? speechSynthesis.getVoices() : [];
-    return vs.filter(function (v) { return /^ru/i.test(v.lang) && /Milena|Yuri|Google/i.test(v.name); })[0] || vs.filter(function (v) { return /^ru/i.test(v.lang); })[0] || null;
+  // лучшие голоса выше: нейроголоса Edge (Natural), затем улучшенные голоса macOS/iOS, затем Google
+  function voiceScore(v) {
+    var n = v.name;
+    if (/Natural|Neural/i.test(n)) return 100 + (/Svetlana/i.test(n) ? 2 : /Dariya|Dmitry/i.test(n) ? 1 : 0);
+    if (/Premium/i.test(n)) return 80;
+    if (/Enhanced|улучш/i.test(n)) return 70;
+    if (/Google/i.test(n)) return 50;
+    if (/Milena|Yuri/i.test(n)) return 40;
+    return 10;
   }
+  function ruVoices() {
+    var vs = window.speechSynthesis ? speechSynthesis.getVoices() : [];
+    return vs.filter(function (v) { return /^ru/i.test(v.lang); }).sort(function (a, b) { return voiceScore(b) - voiceScore(a); });
+  }
+  function ruVoice() {
+    var vs = ruVoices();
+    return vs.filter(function (v) { return v.name === prefs.voice; })[0] || vs[0] || null;
+  }
+  if (window.speechSynthesis) speechSynthesis.addEventListener("voiceschanged", function () { renderPanel(); });
   function speakBlocks() {
     var start = currentChapter() || chapters[0];
     var blocks = Array.prototype.filter.call(root.querySelectorAll("h2, h3, p, li, blockquote"), function (b) {
@@ -402,6 +417,13 @@
         h.push('<div class="t-row">' + (tts.on
           ? '<button class="t-b" data-a="tts-pause">' + (speechSynthesis.paused ? "▶ Дальше" : "❚❚ Пауза") + '</button><button class="t-b" data-a="tts-stop">■ Стоп</button>'
           : '<button class="t-b acc" data-a="tts-start">▶ Читать с этой главы</button>') + "</div>");
+        var vs = ruVoices(), cv = ruVoice();
+        if (vs.length) {
+          h.push('<label class="t-mut" for="thmr-voice" style="display:flex;flex-direction:column;gap:4px">Голос<select id="thmr-voice" style="font-size:13px;padding:6px;border-radius:8px;border:1px solid var(--r-line);background:transparent;color:var(--r-fg)">' + vs.map(function (v) {
+            return '<option value="' + esc(v.name) + '"' + (cv && cv.name === v.name ? " selected" : "") + ">" + esc(v.name.replace(/^Microsoft /, "").replace(/ - Russian \(Russia\)/, "")) + "</option>";
+          }).join("") + "</select></label>");
+          if (cv && voiceScore(cv) < 70) h.push('<div class="t-mut">Голос простой. Живые нейроголоса есть в браузере Microsoft Edge, на маке также можно скачать «Milena (улучшенный)» в настройках «Устная речь».</div>');
+        } else h.push('<div class="t-mut">Русских голосов в этом браузере не нашлось.</div>');
         h.push('<div class="t-row"><span class="t-mut">Скорость</span>' + [0.8, 1, 1.2, 1.5].map(function (r) {
           return '<button class="t-b" data-a="rate" data-v="' + r + '" aria-pressed="' + (prefs.rate === r) + '">' + r + "×</button>";
         }).join("") + "</div>");
@@ -413,6 +435,11 @@
     panel.innerHTML = h.join("");
   }
 
+  ui.addEventListener("change", function (e) {
+    if (e.target.id !== "thmr-voice") return;
+    prefs.voice = e.target.value; put("thm-reader:prefs", prefs);
+    if (tts.on) { tts.i = Math.max(0, tts.i - 1); speechSynthesis.cancel(); }
+  });
   ui.addEventListener("click", function (e) {
     var b = e.target.closest("[data-a]");
     if (!b || !ui.contains(b)) return;
