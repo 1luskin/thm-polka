@@ -99,6 +99,9 @@ a.btn{text-decoration:none;display:inline-block}
 .prog .pb{flex:0 0 90px;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
 .prog .pb i{display:block;height:100%;background:var(--st-reading)}
 .streak b{color:var(--accent)}
+.quick{display:flex;flex-wrap:wrap;gap:6px}
+.quick a{font-family:var(--f-mono);font-size:13px;color:var(--ink);text-decoration:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px}
+.quick a:hover{border-color:var(--accent);color:var(--accent)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 <style>body{margin:0}[hidden]{display:none!important}</style>
@@ -108,6 +111,7 @@ a.btn{text-decoration:none;display:inline-block}
 <div class="wrap">
   <header>
     <div class="eyebrow">TryHackMe · SOC Analyst L1</div>
+    <nav class="quick" aria-label="Справочники"><a href="search.html">Поиск</a><a href="glossary.html">Глоссарий</a><a href="mitre.html">MITRE ATT&amp;CK</a><a href="ports.html">Порты</a><a href="tools.html">Инструменты</a></nav>
     <h1>THM Полка</h1>
     <p class="sub">Все учебники в одном месте. Отмечай статус и пиши заметки. Прогресс, закладки и выделения хранятся в этом браузере. На другое устройство их можно перенести внизу через «Экспорт».</p>
     <div class="stats" id="stats"></div>

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Поиск · THM Полка</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="theme-color" content="#16212e">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Unbounded:wght@500;700&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+.results{display:flex;flex-direction:column;gap:8px}
+.hit{display:block;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px;text-decoration:none;color:var(--ink)}
+.hit:hover{border-color:var(--accent)}
+.hit .where{font-family:var(--f-mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.hit .t{font-weight:600;margin:2px 0}
+.hit .snip{font-size:14px;color:var(--muted);overflow-wrap:anywhere}
+.hit .snip + .snip{margin-top:4px}
+.hit .read{color:var(--st-done);font-family:var(--f-mono);font-size:11px;margin-left:6px}
+.examples{display:flex;flex-wrap:wrap;gap:6px}
+.examples button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:4px 12px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="site" aria-label="Разделы сайта"></nav>
+  <h1>Поиск по учебникам</h1>
+  <p class="sub">Ищет по всем учебникам сразу: Event ID, команды, термины, порты. Несколько слов ищутся вместе.</p>
+  <div class="tools-row">
+    <input type="search" id="q" placeholder="например: 4625, SYN, kerberoasting" autocomplete="off" aria-label="Что найти">
+    <span class="count" id="count"></span>
+  </div>
+  <div class="examples" id="examples"></div>
+  <div class="results" id="results"><div class="notice">Загружаю учебники…</div></div>
+</div>
+<script src="assets/site.js"></script>
+<script>
+(function(){
+  var S=Site, idx=[], $=function(s){return document.querySelector(s)};
+  var EX=["4625","SYN","Kerberos","base64","auth.log","T1110","DNS","SMB"];
+  $("#examples").innerHTML=EX.map(function(e){return '<button type="button">'+S.esc(e)+'</button>'}).join("");
+  $("#examples").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;$("#q").value=b.textContent;run()});
+  function snippets(text,terms){
+    var low=S.norm(text), out=[], used=[];
+    terms.forEach(function(t){
+      var p=low.indexOf(t); if(p<0||out.length>=2)return;
+      if(used.some(function(u){return Math.abs(u-p)<120}))return;
+      used.push(p);
+      var a=Math.max(0,p-90), b=Math.min(text.length,p+t.length+110);
+      var piece=(a>0?"…":"")+text.slice(a,b)+(b<text.length?"…":"");
+      out.push(piece);
+    });
+    return out.map(function(s){
+      var h=S.esc(s);
+      terms.forEach(function(t){
+        var rx=new RegExp("("+t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&").replace(/е/g,"[её]")+")","gi");
+        h=h.replace(rx,"<mark>$1</mark>");
+      });
+      return '<div class="snip">'+h+'</div>';
+    }).join("");
+  }
+  var timer=null;
+  function run(){
+    var q=$("#q").value.trim();
+    try{history.replaceState(null,"",q?"?q="+encodeURIComponent(q):location.pathname)}catch(e){}
+    if(!q){$("#results").innerHTML="";$("#count").textContent="";return}
+    var terms=S.norm(q).split(/\s+/).filter(Boolean);
+    var hits=[];
+    idx.forEach(function(r){
+      var low=r.low||(r.low=S.norm(r.t+" "+r.x));
+      if(!terms.every(function(t){return low.indexOf(t)>=0}))return;
+      var score=0; terms.forEach(function(t){var c=low.split(t).length-1;score+=Math.min(c,20);if(S.norm(r.t).indexOf(t)>=0)score+=15});
+      hits.push({r:r,score:score});
+    });
+    hits.sort(function(a,b){return b.score-a.score});
+    $("#count").textContent=hits.length?("разделов: "+hits.length):"";
+    if(!hits.length){$("#results").innerHTML='<div class="notice">Ничего не нашлось. Попробуй короче: часть слова, ID или английский термин.</div>';return}
+    $("#results").innerHTML=hits.slice(0,60).map(function(h){
+      var r=h.r, href="books/"+encodeURIComponent(r.b)+".html"+(r.s?"#"+encodeURIComponent(r.s):"");
+      return '<a class="hit" href="'+href+'"><div class="where">'+S.esc(S.titles[r.b]||r.b)+(S.isRead(r.b,r.s)?'<span class="read">прочитано ✓</span>':'')+'</div><div class="t">'+S.esc(r.t)+'</div>'+snippets(r.x,terms)+'</a>';
+    }).join("")+(hits.length>60?'<div class="notice">Показаны первые 60. Уточни запрос.</div>':"");
+  }
+  $("#q").addEventListener("input",function(){clearTimeout(timer);timer=setTimeout(run,150)});
+  Promise.all([S.books,S.data("search.json")]).then(function(res){
+    idx=res[1];
+    var q=new URLSearchParams(location.search).get("q");
+    if(q)$("#q").value=q;
+    $("#results").innerHTML="";
+    run(); $("#q").focus();
+  }).catch(function(){$("#results").innerHTML='<div class="notice">Не загрузился индекс поиска. Обнови страницу.</div>'});
+})();
+</script>
+</body>
+</html>

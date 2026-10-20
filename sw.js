@@ -1,7 +1,7 @@
 /* Офлайн-режим полки. Онлайн: страница полки и список учебников берутся свежими из сети,
    остальное отдаётся из кэша и тихо обновляется. Офлайн: всё из кэша. */
-const CACHE = "thm-polka-v3";
-const CORE = ["./", "index.html", "books.json", "assets/reader.js", "assets/piper-worker.js", "manifest.webmanifest", "assets/icon-192.png", "assets/icon-512.png"];
+const CACHE = "thm-polka-v4";
+const CORE = ["./", "index.html", "books.json", "search.html", "glossary.html", "mitre.html", "ports.html", "tools.html", "assets/site.css", "assets/site.js", "data/search.json", "data/glossary.json", "data/mitre.json", "data/ports.json", "data/tools.json", "assets/reader.js", "assets/piper-worker.js", "manifest.webmanifest", "assets/icon-192.png", "assets/icon-512.png"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil((async () => {
@@ -26,7 +26,7 @@ self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET" || new URL(req.url).origin !== location.origin) return;
   const path = new URL(req.url).pathname;
-  const fresh = req.mode === "navigate" && !/\/books\//.test(path) || /books\.json$/.test(path);
+  const fresh = req.mode === "navigate" && !/\/books\//.test(path) || /books\.json$|\/data\//.test(path);
   e.respondWith((async () => {
     const c = await caches.open(CACHE);
     if (fresh) {

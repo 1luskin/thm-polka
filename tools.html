@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Инструменты · THM Полка</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="theme-color" content="#16212e">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Unbounded:wght@500;700&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+.cat{display:flex;flex-direction:column;gap:8px}
+.cat h2{font-family:var(--f-mono);font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:8px 0 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px}
+.tool{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.tool .nm{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.tool .nm b{font-size:16px}
+.tool .nm a{font-size:13px;color:var(--accent);text-decoration:none;white-space:nowrap}
+.tool p{margin:0;font-size:14px;color:var(--muted)}
+.tool details summary{cursor:pointer;font-size:13px;color:var(--muted)}
+.tool details .refs{margin-top:6px;flex-direction:column;gap:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="site" aria-label="Разделы сайта"></nav>
+  <h1>Инструменты</h1>
+  <p class="sub">Инструменты, которые встречались в твоих учебниках, с короткой подсказкой, зачем они SOC-аналитику, и ссылками на места в учебниках.</p>
+  <div class="tools-row">
+    <input type="search" id="q" placeholder="CyberChef, Sysmon, Splunk…" autocomplete="off" aria-label="Найти инструмент">
+    <span class="count" id="count"></span>
+  </div>
+  <div id="list"><div class="notice">Загружаю…</div></div>
+</div>
+<script src="assets/site.js"></script>
+<script>
+(function(){
+  var S=Site, all=[], $=function(s){return document.querySelector(s)};
+  var ORDER=["Анализ данных","Репутация","Сеть","Windows","Linux","SIEM","Справочники","Атакующий"];
+  var CAP={"Атакующий":"Инструменты атакующего — их следы ты ищешь в логах"};
+  function render(){
+    var q=S.norm($("#q").value.trim());
+    var list=all.filter(function(t){return !q||S.norm(t.name+" "+t.cat+" "+t.note).indexOf(q)>=0});
+    $("#count").textContent=list.length+" из "+all.length;
+    $("#list").innerHTML=ORDER.map(function(c){
+      var items=list.filter(function(t){return t.cat===c}).sort(function(a,b){return b.refs.length-a.refs.length});
+      if(!items.length)return "";
+      return '<section class="cat"><h2>'+S.esc(CAP[c]||c)+'</h2><div class="grid">'+items.map(function(t){
+        return '<article class="tool"><div class="nm"><b>'+S.esc(t.name)+'</b>'+(t.url?'<a href="'+S.esc(t.url)+'" target="_blank" rel="noopener">открыть ↗</a>':'')+'</div><p>'+S.esc(t.note)+'</p>'+
+          '<details><summary>в учебниках: '+t.refs.length+' '+(t.refs.length%10===1&&t.refs.length%100!==11?"раздел":(t.refs.length%10>=2&&t.refs.length%10<=4&&(t.refs.length%100<10||t.refs.length%100>=20)?"раздела":"разделов"))+'</summary>'+S.refs(t.refs,12)+'</details></article>';
+      }).join("")+'</div></section>';
+    }).join("")||'<div class="notice">Ничего не нашлось.</div>';
+  }
+  $("#q").addEventListener("input",render);
+  Promise.all([S.books,S.data("tools.json")]).then(function(r){all=r[1];render()})
+    .catch(function(){$("#list").innerHTML='<div class="notice">Не загрузился список. Обнови страницу.</div>'});
+})();
+</script>
+</body>
+</html>

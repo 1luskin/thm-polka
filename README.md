@@ -9,6 +9,9 @@
 - `books/<id>.html` — сами учебники, каждый — самостоятельная HTML-страница.
 - `assets/reader.js` — читалка внутри учебников: «продолжить с места», закладки, выделения и заметки, озвучка, шрифт, ночной режим, прогресс разделов и квизов, время чтения. Подключается строкой перед `</body>` (делает `tools/inject.py`).
 - `sw.js` + `manifest.webmanifest` — установка на телефон и чтение без интернета.
+- `search.html`, `glossary.html`, `mitre.html`, `ports.html`, `tools.html` — справочники. Данные для них в `data/`, их собирает `tools/build_index.py` из учебников.
+- `tools/attack/enterprise-compact.json` — выжимка MITRE ATT&CK Enterprise (сейчас v20.0) из github.com/mitre-attack/attack-stix-data. Обновлять при выходе новой версии.
+- `tools/refdata.py` — словари портов и инструментов (описания для SOC).
 
 ## Как добавить новый учебник
 
@@ -30,6 +33,7 @@
 `path` — одно из: `01 Pre Security`, `02 Cyber Security 101`, `03 SOC Level 1`, `04 SOC Level 2`, `05 Defending Azure`, `Вне курса`. `order` — порядок внутри пути.
 
 3. Подключить читалку и офлайн к новому учебнику: `python3 tools/inject.py` (уже подключённые пропускаются).
+   Пересобрать поиск, глоссарий, MITRE, порты и инструменты: `python3 tools/build_index.py` (нужны `beautifulsoup4` и `lxml`).
 4. В `sw.js` поднять версию `CACHE` (`thm-polka-v1` → `v2` …), чтобы телефон подтянул обновление.
 5. Закоммитить и запушить в `main`. GitHub Pages обновит сайт за 1–2 минуты.
 

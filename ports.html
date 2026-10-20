@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Порты · THM Полка</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="theme-color" content="#16212e">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Unbounded:wght@500;700&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+td.port{font-family:var(--f-mono);font-weight:600;font-size:14px;white-space:nowrap}
+td.svc{font-weight:600;white-space:nowrap}
+tr.nobook td.port{color:var(--muted)}
+@media (max-width:640px){
+  table,tbody,tr,td{display:block;width:auto}
+  thead{display:none}
+  tr{border-bottom:1px solid var(--line);padding:10px 12px}
+  td{border:none;padding:2px 0}
+  td.port{display:inline;font-size:16px}
+  td.proto{display:inline;margin-left:8px}
+  td.svc{display:inline;margin-left:8px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="site" aria-label="Разделы сайта"></nav>
+  <h1>Порты для SOC</h1>
+  <p class="sub">Порты, которые спрашивают на собеседовании и которые ты увидишь в алертах. Отметка «в учебниках» значит, что порт уже разбирался в твоих учебниках — по ссылке откроется нужное место.</p>
+  <div class="tools-row">
+    <input type="search" id="q" placeholder="порт или служба: 445, RDP, DNS" autocomplete="off" aria-label="Найти порт">
+    <label class="chk"><input type="checkbox" id="only"> только из учебников</label>
+    <span class="count" id="count"></span>
+  </div>
+  <div class="tablewrap"><table><thead><tr><th>Порт</th><th>Протокол</th><th>Служба</th><th>Что видит SOC</th><th>В учебниках</th></tr></thead><tbody id="rows"><tr><td colspan="5">Загружаю…</td></tr></tbody></table></div>
+</div>
+<script src="assets/site.js"></script>
+<script>
+(function(){
+  var S=Site, all=[], $=function(s){return document.querySelector(s)};
+  function render(){
+    var q=S.norm($("#q").value.trim()), only=$("#only").checked;
+    var list=all.filter(function(p){
+      if(only&&!p.refs.length)return false;
+      return !q||S.norm(p.port+" "+p.proto+" "+p.service+" "+p.note).indexOf(q)>=0;
+    });
+    $("#count").textContent=list.length+" из "+all.length;
+    $("#rows").innerHTML=list.map(function(p){
+      return '<tr class="'+(p.refs.length?"":"nobook")+'"><td class="port">'+S.esc(p.port)+'</td><td class="proto"><span class="pill">'+S.esc(p.proto)+'</span></td><td class="svc">'+S.esc(p.service)+'</td><td>'+S.esc(p.note)+'</td><td>'+(p.refs.length?S.refs(p.refs,3):'<span class="count">пока не было</span>')+'</td></tr>';
+    }).join("")||'<tr><td colspan="5">Ничего не нашлось.</td></tr>';
+  }
+  $("#q").addEventListener("input",render); $("#only").addEventListener("change",render);
+  Promise.all([S.books,S.data("ports.json")]).then(function(r){all=r[1];render()})
+    .catch(function(){$("#rows").innerHTML='<tr><td colspan="5">Не загрузился список портов. Обнови страницу.</td></tr>'});
+})();
+</script>
+</body>
+</html>

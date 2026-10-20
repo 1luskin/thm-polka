@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MITRE ATT&amp;CK · THM Полка</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="theme-color" content="#16212e">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Unbounded:wght@500;700&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted);align-items:center}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:6px;border:1px solid var(--line);background:var(--surface)}
+.legend i.seen{border:2px solid var(--accent)}
+.legend i.read{background:var(--accent-soft);border:2px solid var(--accent)}
+.summary{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.summary b{color:var(--ink)}
+.changed{background:var(--warn-soft);border:1px solid var(--warn);border-radius:8px;padding:12px 14px;font-size:14px}
+.changed h2{font-size:14px;margin:0 0 6px;color:var(--warn)}
+.changed ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.changed code{font-family:var(--f-mono);font-size:13px}
+.matrix-scroll{overflow-x:auto;padding-bottom:8px}
+.matrix{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(168px,1fr);gap:6px;min-width:min-content}
+.col{display:flex;flex-direction:column;gap:4px;min-width:0}
+.col h3{margin:0;padding:8px;background:var(--ink);color:var(--bg);border-radius:6px;font-size:13px;line-height:1.25;min-height:58px}
+.col h3 small{display:block;font-family:var(--f-mono);font-size:10px;opacity:.75;font-weight:400;margin-top:2px}
+.col h3 .ru{display:block;font-weight:400;font-size:11px;opacity:.8}
+.tc{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:5px;padding:6px 7px;font-size:12px;line-height:1.3;cursor:pointer}
+.tc .id{display:block;font-family:var(--f-mono);font-size:10px;color:var(--muted)}
+.tc.seen{border:2px solid var(--accent);padding:5px 6px}
+.tc.read{background:var(--accent-soft)}
+.tc .subs{display:block;font-family:var(--f-mono);font-size:10px;color:var(--accent);margin-top:2px}
+.tc:hover{border-color:var(--accent)}
+.empty{font-size:12px;color:var(--muted);padding:6px}
+dialog{border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);padding:0;max-width:min(560px,calc(100vw - 32px));width:100%}
+dialog::backdrop{background:rgba(10,15,20,.45)}
+.dlg{padding:18px;display:flex;flex-direction:column;gap:12px}
+.dlg h2{margin:0;font-size:18px}
+.dlg .id{font-family:var(--f-mono);color:var(--muted);font-size:13px}
+.dlg .sub-t{border-top:1px solid var(--line);padding-top:10px}
+.dlg .sub-t b{font-family:var(--f-mono);font-size:13px}
+.dlg .refs{flex-direction:column;gap:4px;margin-top:4px}
+.dlg .close{align-self:flex-end;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:8px;padding:6px 12px}
+.dlg a.ext{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap wide">
+  <nav class="site" aria-label="Разделы сайта"></nav>
+  <h1>Карта MITRE ATT&amp;CK</h1>
+  <p class="sub">Матрица Enterprise ATT&amp;CK. Подсвечены техники, которые разбирались в твоих учебниках; залитые — те, чьи разделы ты уже прочитал. Нажми на технику, чтобы открыть, где она встречалась.</p>
+  <div class="summary" id="summary">Загружаю…</div>
+  <div class="tools-row">
+    <label class="chk"><input type="checkbox" id="only" checked> только техники из учебников</label>
+    <div class="legend"><span><i class="read"></i>прочитано</span><span><i class="seen"></i>есть в учебниках</span><span><i></i>не встречалось</span></div>
+  </div>
+  <div id="changed"></div>
+  <div class="matrix-scroll"><div class="matrix" id="matrix"></div></div>
+</div>
+<dialog id="dlg"><div class="dlg" id="dlgBody"></div></dialog>
+<script src="assets/site.js"></script>
+<script>
+(function(){
+  var S=Site, D=null, $=function(s){return document.querySelector(s)};
+  var RU={"reconnaissance":"Разведка","resource-development":"Подготовка ресурсов","initial-access":"Первичный доступ","execution":"Выполнение","persistence":"Закрепление","privilege-escalation":"Повышение привилегий","stealth":"Скрытность","defense-impairment":"Ослабление защиты","credential-access":"Доступ к учётным данным","discovery":"Изучение окружения","lateral-movement":"Боковое перемещение","collection":"Сбор данных","command-and-control":"Управление (C2)","exfiltration":"Эксфильтрация","impact":"Воздействие"};
+  var byId={}, subsOf={};
+  function url(id){return "https://attack.mitre.org/techniques/"+id.replace(".","/")+"/"}
+  function refsOf(id){return (D.seen[id]||[])}
+  function familyRefs(id){var r=refsOf(id).slice();(subsOf[id]||[]).forEach(function(s){r=r.concat(refsOf(s.id))});return r}
+  function state(id){
+    var r=familyRefs(id); if(!r.length)return "";
+    return r.some(function(x){return S.isRead(x.book,x.sec)})?"seen read":"seen";
+  }
+  function render(){
+    var only=$("#only").checked;
+    $("#matrix").innerHTML=D.tactics.map(function(t){
+      var items=D.techniques.filter(function(x){return !x.sub&&!x.status&&x.tactics.indexOf(t.short)>=0});
+      if(only)items=items.filter(function(x){return familyRefs(x.id).length});
+      items.sort(function(a,b){return a.name.localeCompare(b.name)});
+      return '<div class="col"><h3>'+S.esc(t.name)+'<span class="ru">'+S.esc(RU[t.short]||"")+'</span><small>'+t.id+' · '+items.length+'</small></h3>'+
+        (items.length?items.map(function(x){
+          var subs=(subsOf[x.id]||[]).filter(function(s){return refsOf(s.id).length});
+          return '<button type="button" class="tc '+state(x.id)+'" data-id="'+x.id+'"><span class="id">'+x.id+'</span>'+S.esc(x.name)+(subs.length?'<span class="subs">+ подтехник: '+subs.length+'</span>':'')+'</button>';
+        }).join(""):'<div class="empty">'+(only?"пока не встречалось":"—")+'</div>')+'</div>';
+    }).join("");
+  }
+  function open(id){
+    var x=byId[id]; if(!x)return;
+    var h='<div class="id">'+x.id+' · '+x.tactics.map(function(s){return S.esc(RU[s]||s)}).join(", ")+'</div><h2>'+S.esc(x.name)+'</h2>';
+    h+='<a class="ext" href="'+url(x.id)+'" target="_blank" rel="noopener">Открыть на attack.mitre.org ↗</a>';
+    h+=refsOf(id).length?'<div><b>В учебниках</b>'+S.refs(refsOf(id),20)+'</div>':'<div class="count">Сама техника в учебниках прямо не упоминается'+((subsOf[id]||[]).some(function(s){return refsOf(s.id).length})?", но есть её подтехники:":".")+'</div>';
+    (subsOf[id]||[]).filter(function(s){return refsOf(s.id).length}).forEach(function(s){
+      h+='<div class="sub-t"><b>'+s.id+'</b> '+S.esc(s.name)+' · <a class="ext" href="'+url(s.id)+'" target="_blank" rel="noopener">↗</a>'+S.refs(refsOf(s.id),20)+'</div>';
+    });
+    h+='<button type="button" class="close" id="dlgClose">Закрыть</button>';
+    $("#dlgBody").innerHTML=h;
+    var d=$("#dlg"); if(d.showModal)d.showModal(); else d.setAttribute("open","");
+    $("#dlgClose").onclick=function(){d.close?d.close():d.removeAttribute("open")};
+  }
+  $("#dlg").addEventListener("click",function(e){if(e.target===this)this.close()});
+  $("#matrix").addEventListener("click",function(e){var b=e.target.closest(".tc");if(b)open(b.dataset.id)});
+  $("#only").addEventListener("change",render);
+  Promise.all([S.books,S.data("mitre.json")]).then(function(r){
+    D=r[1];
+    D.techniques.forEach(function(t){byId[t.id]=t; if(t.sub&&!t.status){var p=t.id.split(".")[0];(subsOf[p]=subsOf[p]||[]).push(t)}});
+    var parents=D.techniques.filter(function(t){return !t.sub&&!t.status});
+    var inBooks=parents.filter(function(t){return familyRefs(t.id).length});
+    var read=inBooks.filter(function(t){return state(t.id).indexOf("read")>=0});
+    $("#summary").innerHTML='В учебниках: <b>'+inBooks.length+'</b> техник из '+parents.length+' · прочитано: <b>'+read.length+'</b> · ATT&amp;CK v'+S.esc(D.version)+' от '+S.esc(D.modified.split("-").reverse().join("."));
+    var changed=Object.keys(D.seen).filter(function(id){return byId[id]&&byId[id].status});
+    if(changed.length){
+      $("#changed").innerHTML='<div class="changed"><h2>Изменилось с тех пор, как писались учебники</h2><ul>'+changed.map(function(id){
+        var x=byId[id], n=x.by&&byId[x.by];
+        return '<li><code>'+id+'</code> '+S.esc(x.name)+' → '+(x.status==="revoked"&&x.by?'теперь <code>'+x.by+'</code>'+(n?' '+S.esc(n.name):''):'устарела')+' · '+S.refs(D.seen[id],2)+'</li>';
+      }).join("")+'</ul></div>';
+    }
+    render();
+  }).catch(function(){$("#summary").textContent="Не загрузилась карта. Обнови страницу."});
+})();
+</script>
+</body>
+</html>

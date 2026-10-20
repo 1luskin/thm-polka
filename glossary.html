@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Глоссарий · THM Полка</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="theme-color" content="#16212e">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Unbounded:wght@500;700&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+td.en{font-weight:600}
+td.de{color:var(--ink)}
+@media (max-width:640px){
+  table,tbody,tr,td{display:block;width:auto}
+  thead{display:none}
+  tr{border-bottom:1px solid var(--line);padding:10px 12px}
+  td{border:none;padding:2px 0}
+  td.ru::before{content:"RU · ";font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+  td.de::before{content:"DE · ";font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="site" aria-label="Разделы сайта"></nav>
+  <h1>Глоссарий EN · RU · DE</h1>
+  <p class="sub">Все термины из блоков «Термины» твоих учебников. Немецкий нужен для собеседований и отчётов, английский — для логов и документации.</p>
+  <div class="tools-row">
+    <input type="search" id="q" placeholder="термин на любом из трёх языков" autocomplete="off" aria-label="Найти термин">
+    <span class="count" id="count"></span>
+  </div>
+  <div class="tablewrap"><table><thead><tr><th>EN</th><th>RU</th><th>DE</th><th>Где в учебниках</th></tr></thead><tbody id="rows"><tr><td colspan="4">Загружаю…</td></tr></tbody></table></div>
+</div>
+<script src="assets/site.js"></script>
+<script>
+(function(){
+  var S=Site, all=[], $=function(s){return document.querySelector(s)};
+  function render(){
+    var q=S.norm($("#q").value.trim());
+    var list=q?all.filter(function(g){return S.norm(g.en+" "+g.ru+" "+g.de).indexOf(q)>=0}):all;
+    $("#count").textContent=list.length+" из "+all.length;
+    $("#rows").innerHTML=list.length?list.map(function(g){
+      return '<tr><td class="en">'+S.esc(g.en)+'</td><td class="ru">'+S.esc(g.ru)+'</td><td class="de">'+S.esc(g.de)+'</td><td><div class="refs">'+g.refs.map(function(r){return S.link(r,S.titles[r.book]||r.book)}).join("")+'</div></td></tr>';
+    }).join(""):'<tr><td colspan="4">Такого термина в учебниках нет.</td></tr>';
+  }
+  $("#q").addEventListener("input",render);
+  Promise.all([S.books,S.data("glossary.json")]).then(function(r){all=r[1];render()})
+    .catch(function(){$("#rows").innerHTML='<tr><td colspan="4">Не загрузился глоссарий. Обнови страницу.</td></tr>'});
+})();
+</script>
+</body>
+</html>
