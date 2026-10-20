@@ -5,6 +5,7 @@
   "use strict";
   if (window.__thmReader) return;
   window.__thmReader = true;
+  var SCRIPT_SRC = (document.currentScript && document.currentScript.src) || new URL("../assets/reader.js", location.href).href;
 
   // ---------- хранилище ----------
   var BOOK = (location.pathname.split("/").pop() || "").replace(/\.html?$/, "") || "book";
@@ -172,7 +173,7 @@
   });
   function today() { var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
   setInterval(function () {
-    var speaking = window.speechSynthesis && speechSynthesis.speaking;
+    var speaking = tts.on && !tts.paused;
     if (document.hidden || (!speaking && Date.now() - lastAct > 90000)) return;
     var days = get("thm-reader:days", {});
     days[today()] = (days[today()] || 0) + 15;
@@ -309,7 +310,7 @@
   });
 
   // ---------- озвучка ----------
-  var tts = { on: false, queue: [], i: 0, cur: null };
+  var tts = { on: false, paused: false, items: [], i: 0, cur: null };
   // лучшие голоса выше: нейроголоса Edge (Natural), затем улучшенные голоса macOS/iOS, затем Google
   function voiceScore(v) {
     var n = v.name;
@@ -340,38 +341,141 @@
     if (start) blocks = blocks.filter(function (b) { return b === start || (start.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING); });
     return blocks;
   }
-  function ttsNext() {
+  // Нейроголос Piper (Руслан) работает в отдельном потоке assets/piper-worker.js.
+  var PIPER_ID = "ru_RU-ruslan-medium", PIPER = "piper:" + PIPER_ID;
+  var SILENT = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
+  function usePiper() { return (prefs.voice || PIPER) === PIPER && typeof Worker !== "undefined" && !tts.piperBroken; }
+  function chunks(text) {
+    text = text.replace(/[←-⇿☀-➿\uD83C-􏰀-\uDFFF]/g, " ").replace(/\s+/g, " ").trim();
+    if (text.length <= 260) return text ? [text] : [];
+    var out = [], cur = "";
+    text.split(/(?<=[.!?…;:])\s+/).forEach(function (sen) {
+      while (sen.length > 260) { var cut = sen.lastIndexOf(" ", 240); if (cut < 80) cut = 240; out.push((cur + " " + sen.slice(0, cut)).trim()); cur = ""; sen = sen.slice(cut); }
+      if ((cur + " " + sen).length > 260) { if (cur) out.push(cur.trim()); cur = sen; } else cur = (cur + " " + sen).trim();
+    });
+    if (cur.trim()) out.push(cur.trim());
+    return out;
+  }
+  function worker() {
+    if (tts.worker) return tts.worker;
+    var w = new Worker(new URL("piper-worker.js", SCRIPT_SRC), { type: "module" });
+    tts.worker = w; tts.reqs = {}; tts.nextId = 1; tts.modelReady = false; tts.dl = {};
+    tts.status = "Загружаю голос Руслана…";
+    w.onmessage = function (e) {
+      var m = e.data || {};
+      if (m.type === "progress") {
+        if (/\.onnx$/.test(m.url || "") && m.total) tts.status = "Скачиваю голос Руслана: " + Math.round(m.loaded / m.total * 100) + "% (один раз, ~60 МБ)";
+        renderPanel();
+      } else if (m.type === "ready") {
+        tts.modelReady = true; tts.status = ""; renderPanel();
+      } else if (m.type === "audio") {
+        var r = tts.reqs[m.id]; delete tts.reqs[m.id];
+        if (r) r.ok(URL.createObjectURL(new Blob([m.buf], { type: "audio/wav" })));
+      } else if (m.type === "error") {
+        var q = tts.reqs[m.id]; delete tts.reqs[m.id];
+        if (!tts.modelReady) { piperFail(m.message); return; }
+        if (q) q.fail(m.message);
+      }
+    };
+    w.onerror = function (e) { piperFail(e && e.message); };
+    w.postMessage({ type: "init", voiceId: PIPER_ID });
+    return w;
+  }
+  function piperFail(msg) {
+    if (tts.piperBroken) return;
+    tts.piperBroken = true; tts.status = "";
+    try { tts.worker && tts.worker.terminate(); } catch (e) {}
+    tts.worker = null;
+    Object.keys(tts.reqs || {}).forEach(function (k) { tts.reqs[k].fail(msg); });
+    var wasOn = tts.on;
+    ttsStop();
+    toast("Руслан не загрузился (при первом запуске нужен интернет). Читаю голосом браузера.");
+    if (wasOn && window.speechSynthesis) ttsStart();
+  }
+  function synth(i) {
+    var it = tts.items[i];
+    if (!it) return null;
+    if (!it.p) it.p = new Promise(function (ok, fail) {
+      var id = tts.nextId++;
+      tts.reqs[id] = { ok: ok, fail: fail };
+      worker().postMessage({ type: "speak", id: id, text: it.text, voiceId: PIPER_ID });
+    });
+    it.p.catch(function () {});
+    return it.p;
+  }
+  function mark(it) {
+    if (tts.cur && tts.cur !== it.el) tts.cur.classList.remove("thmr-speaking");
+    tts.cur = it.el;
+    it.el.classList.add("thmr-speaking");
+    var r = it.el.getBoundingClientRect();
+    if (r.top < 60 || r.bottom > window.innerHeight - 90) it.el.scrollIntoView({ block: "center" });
+  }
+  function finish() {
     if (tts.cur) tts.cur.classList.remove("thmr-speaking");
-    if (!tts.on || tts.i >= tts.queue.length) { tts.on = false; tts.cur = null; renderPanel(); return; }
-    var b = tts.queue[tts.i++];
-    tts.cur = b;
-    b.classList.add("thmr-speaking");
-    var r = b.getBoundingClientRect();
-    if (r.top < 60 || r.bottom > window.innerHeight - 90) b.scrollIntoView({ block: "center" });
-    var u = new SpeechSynthesisUtterance(b.textContent.replace(/\s+/g, " ").trim());
-    var v = ruVoice();
-    if (v) u.voice = v;
-    u.lang = "ru-RU";
-    u.rate = prefs.rate || 1;
-    u.onend = function () { if (tts.on) ttsNext(); };
-    u.onerror = function () { if (tts.on) ttsNext(); };
-    speechSynthesis.speak(u);
+    tts.on = false; tts.paused = false; tts.cur = null; renderPanel();
   }
-  function ttsStart() {
-    if (!window.speechSynthesis) { toast("Этот браузер не умеет читать вслух"); return; }
-    speechSynthesis.cancel();
-    tts.queue = speakBlocks(); tts.i = 0; tts.on = true;
-    ttsNext(); renderPanel();
+  function playItem(i) {
+    if (!tts.on) return;
+    if (i >= tts.items.length) { finish(); return; }
+    tts.i = i;
+    var it = tts.items[i], run = tts.run;
+    mark(it);
+    if (tts.engine === "piper") {
+      synth(i + 1); synth(i + 2);
+      synth(i).then(function (url) {
+        if (!tts.on || run !== tts.run || tts.i !== i) return;
+        var a = tts.audio;
+        a.src = url; a.playbackRate = prefs.rate || 1;
+        a.onended = function () { URL.revokeObjectURL(url); if (tts.on && run === tts.run) playItem(i + 1); };
+        var pr = a.play(); if (pr && pr.catch) pr.catch(function () { tts.paused = true; renderPanel(); });
+      }, function () { if (tts.on && run === tts.run) playItem(i + 1); });
+    } else {
+      var u = new SpeechSynthesisUtterance(it.text);
+      var v = ruVoice();
+      if (v) u.voice = v;
+      u.lang = "ru-RU"; u.rate = prefs.rate || 1;
+      u.onend = function () { if (tts.on && run === tts.run) playItem(i + 1); };
+      u.onerror = function () { if (tts.on && run === tts.run) playItem(i + 1); };
+      speechSynthesis.speak(u);
+    }
   }
-  function ttsStop() {
-    tts.on = false;
+  function ttsStart(fromIndex) {
+    var piper = usePiper();
+    if (!piper && !window.speechSynthesis) { toast("Этот браузер не умеет читать вслух"); return; }
+    ttsStop(true);
+    tts.engine = piper ? "piper" : "browser";
+    tts.items = [];
+    speakBlocks().forEach(function (b) {
+      var txt = (b.textContent || "").replace(/\s+/g, " ").trim();
+      (piper ? chunks(txt) : [txt]).forEach(function (t) { if (t) tts.items.push({ el: b, text: t }); });
+    });
+    tts.on = true; tts.paused = false; tts.run = (tts.run || 0) + 1;
+    if (piper) {
+      if (!tts.audio) tts.audio = new Audio();
+      tts.audio.src = SILENT;
+      var pr = tts.audio.play(); if (pr && pr.catch) pr.catch(function () {});
+      worker();
+    }
+    playItem(fromIndex || 0);
+    renderPanel();
+  }
+  function ttsStop(quiet) {
+    tts.on = false; tts.paused = false; tts.run = (tts.run || 0) + 1;
+    if (tts.audio) { tts.audio.onended = null; tts.audio.pause(); }
     if (window.speechSynthesis) speechSynthesis.cancel();
+    (tts.items || []).forEach(function (it) { if (it.p) it.p.then(function (u) { URL.revokeObjectURL(u); }, function () {}); });
+    tts.items = [];
     if (tts.cur) tts.cur.classList.remove("thmr-speaking");
-    tts.cur = null; renderPanel();
+    tts.cur = null;
+    if (!quiet) renderPanel();
   }
   function ttsPause() {
-    if (!window.speechSynthesis) return;
-    if (speechSynthesis.paused) speechSynthesis.resume(); else speechSynthesis.pause();
+    if (!tts.on) return;
+    if (tts.engine === "piper") {
+      if (tts.audio.paused) { tts.audio.play(); tts.paused = false; } else { tts.audio.pause(); tts.paused = true; }
+    } else {
+      if (speechSynthesis.paused) { speechSynthesis.resume(); tts.paused = false; } else { speechSynthesis.pause(); tts.paused = true; }
+    }
     renderPanel();
   }
 
@@ -412,18 +516,16 @@
       }).join("") + "</ul>");
       h.push('<div class="t-row" style="justify-content:space-between"><span class="t-h">Выделения и заметки</span><button class="t-b" data-a="marks">Открыть · ' + st.marks.length + "</button></div>");
       h.push('<div class="t-h">Озвучка</div>');
-      if (!window.speechSynthesis) h.push('<div class="t-mut">Этот браузер не умеет читать вслух.</div>');
+      if (!window.speechSynthesis && typeof Worker === "undefined") h.push('<div class="t-mut">Этот браузер не умеет читать вслух.</div>');
       else {
         h.push('<div class="t-row">' + (tts.on
-          ? '<button class="t-b" data-a="tts-pause">' + (speechSynthesis.paused ? "▶ Дальше" : "❚❚ Пауза") + '</button><button class="t-b" data-a="tts-stop">■ Стоп</button>'
+          ? '<button class="t-b" data-a="tts-pause">' + (tts.paused ? "▶ Дальше" : "❚❚ Пауза") + '</button><button class="t-b" data-a="tts-stop">■ Стоп</button>'
           : '<button class="t-b acc" data-a="tts-start">▶ Читать с этой главы</button>') + "</div>");
-        var vs = ruVoices(), cv = ruVoice();
-        if (vs.length) {
-          h.push('<label class="t-mut" for="thmr-voice" style="display:flex;flex-direction:column;gap:4px">Голос<select id="thmr-voice" style="font-size:13px;padding:6px;border-radius:8px;border:1px solid var(--r-line);background:transparent;color:var(--r-fg)">' + vs.map(function (v) {
-            return '<option value="' + esc(v.name) + '"' + (cv && cv.name === v.name ? " selected" : "") + ">" + esc(v.name.replace(/^Microsoft /, "").replace(/ - Russian \(Russia\)/, "")) + "</option>";
-          }).join("") + "</select></label>");
-          if (cv && voiceScore(cv) < 70) h.push('<div class="t-mut">Голос простой. Живые нейроголоса есть в браузере Microsoft Edge, на маке также можно скачать «Milena (улучшенный)» в настройках «Устная речь».</div>');
-        } else h.push('<div class="t-mut">Русских голосов в этом браузере не нашлось.</div>');
+        if (tts.status && tts.engine === "piper" && tts.on) h.push('<div class="t-mut">' + esc(tts.status) + "</div>");
+        var vs = ruVoices(), cur = prefs.voice || PIPER;
+        var opts = (typeof Worker !== "undefined" && !tts.piperBroken ? '<option value="' + PIPER + '"' + (cur === PIPER ? " selected" : "") + ">Руслан · нейроголос</option>" : "") +
+          vs.map(function (v) { return '<option value="' + esc(v.name) + '"' + (cur === v.name ? " selected" : "") + ">" + esc(v.name.replace(/^Microsoft /, "").replace(/ - Russian \(Russia\)/, "")) + " · браузер</option>"; }).join("");
+        if (opts) h.push('<label class="t-mut" for="thmr-voice" style="display:flex;flex-direction:column;gap:4px">Голос<select id="thmr-voice" style="font-size:13px;padding:6px;border-radius:8px;border:1px solid var(--r-line);background:transparent;color:var(--r-fg)">' + opts + "</select></label>");
         h.push('<div class="t-row"><span class="t-mut">Скорость</span>' + [0.8, 1, 1.2, 1.5].map(function (r) {
           return '<button class="t-b" data-a="rate" data-v="' + r + '" aria-pressed="' + (prefs.rate === r) + '">' + r + "×</button>";
         }).join("") + "</div>");
@@ -438,7 +540,7 @@
   ui.addEventListener("change", function (e) {
     if (e.target.id !== "thmr-voice") return;
     prefs.voice = e.target.value; put("thm-reader:prefs", prefs);
-    if (tts.on) { tts.i = Math.max(0, tts.i - 1); speechSynthesis.cancel(); }
+    if (tts.on) { var el0 = tts.items[tts.i] && tts.items[tts.i].el; ttsStart(); }
   });
   ui.addEventListener("click", function (e) {
     var b = e.target.closest("[data-a]");
@@ -485,7 +587,7 @@
     else if (a === "tts-start") ttsStart();
     else if (a === "tts-stop") ttsStop();
     else if (a === "tts-pause") ttsPause();
-    else if (a === "rate") { prefs.rate = +b.dataset.v; put("thm-reader:prefs", prefs); if (tts.on) { tts.i = Math.max(0, tts.i - 1); speechSynthesis.cancel(); } }
+    else if (a === "rate") { prefs.rate = +b.dataset.v; put("thm-reader:prefs", prefs); if (tts.on) { if (tts.engine === "piper") tts.audio.playbackRate = prefs.rate; else { var keep = tts.i; ttsStart(); } } }
     else if (a === "z-") { prefs.zoom = Math.max(0.8, Math.round(((prefs.zoom || 1) - 0.1) * 10) / 10); applyPrefs(); }
     else if (a === "z+") { prefs.zoom = Math.min(1.6, Math.round(((prefs.zoom || 1) + 0.1) * 10) / 10); applyPrefs(); }
     else if (a === "night") { prefs.night = !prefs.night; applyPrefs(); }
