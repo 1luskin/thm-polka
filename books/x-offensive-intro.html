@@ -1,0 +1,702 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Offensive Security Intro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;1,7..72,400&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+:root{
+  --ground:#f5f7fa; --surface:#ffffff; --surface-2:#eef2f7; --line:#dce3ec;
+  --ink:#16202e; --muted:#5a6a7d; --faint:#8695a6;
+  --accent:#2352c9; --accent-soft:#e5ecfb;
+  --attack:#c0392f; --attack-soft:#fbe7e4;
+  --defend:#1f7a5c; --defend-soft:#e0f2ea;
+  --warn:#a86816; --warn-soft:#f8ecd6;
+  --term:#0f1b2a; --term-ink:#d8e2ee; --term-line:#26374b;
+  --shadow:0 1px 2px rgba(16,32,54,.05),0 8px 26px rgba(16,32,54,.07);
+}
+:root:not([data-theme="light"]){ }
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0d1520; --surface:#141f2c; --surface-2:#1b2836; --line:#28394b;
+    --ink:#e7eef6; --muted:#98a8ba; --faint:#6d7f92;
+    --accent:#5f9bff; --accent-soft:#17273f;
+    --attack:#ef6a5e; --attack-soft:#331915;
+    --defend:#4ec49a; --defend-soft:#12291f;
+    --warn:#e0a949; --warn-soft:#2c2210;
+    --term:#0a121c; --term-ink:#cdd9e7; --term-line:#203044;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0d1520; --surface:#141f2c; --surface-2:#1b2836; --line:#28394b;
+  --ink:#e7eef6; --muted:#98a8ba; --faint:#6d7f92;
+  --accent:#5f9bff; --accent-soft:#17273f;
+  --attack:#ef6a5e; --attack-soft:#331915;
+  --defend:#4ec49a; --defend-soft:#12291f;
+  --warn:#e0a949; --warn-soft:#2c2210;
+  --term:#0a121c; --term-ink:#cdd9e7; --term-line:#203044;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{background:var(--ground);color:var(--ink);
+  font-family:"Literata",Georgia,serif;font-size:calc(18px * var(--fs,1));line-height:1.72;
+  -webkit-font-smoothing:antialiased;}
+
+/* reading progress */
+.progress{position:fixed;top:0;left:0;right:0;height:3px;z-index:60;
+  background:transparent;pointer-events:none}
+.progress i{display:block;height:100%;width:0;
+  background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 55%,var(--defend)));
+  transition:width .12s ease-out}
+
+/* mobile top bar */
+.mtop{display:none}
+@media (max-width:900px){
+  .mtop{display:flex;position:sticky;top:0;z-index:50;align-items:center;gap:10px;
+    padding:9px 16px;background:color-mix(in srgb,var(--surface) 88%,transparent);
+    backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line)}
+  .mtop .mt-title{font-family:"Onest",sans-serif;font-weight:700;font-size:14px;
+    flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mtop .icob{font-family:"Onest",sans-serif;font-size:13px;cursor:pointer;
+    border:1px solid var(--line);background:var(--surface);color:var(--muted);
+    border-radius:8px;padding:6px 10px;line-height:1}
+  .mtop .icob:hover{color:var(--ink)}
+}
+
+.wrap{max-width:1180px;margin:0 auto;padding-block:0;padding-inline:20px;
+  display:grid;grid-template-columns:252px minmax(0,1fr);gap:48px;}
+@media (max-width:900px){.wrap{grid-template-columns:1fr;gap:0;padding-inline:16px}}
+
+/* ---------- sidebar ---------- */
+.side{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;
+  padding-block:26px 40px;scrollbar-width:thin}
+.brand{font-family:"JetBrains Mono",monospace;font-size:11.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--faint);margin-bottom:6px}
+.brand b{color:var(--accent)}
+.side h2{font-family:"Onest",system-ui,sans-serif;font-weight:700;font-size:15px;
+  margin:0 0 16px;color:var(--ink);line-height:1.25}
+.toc{list-style:none;margin:0;padding:0;font-family:"Onest",system-ui,sans-serif;
+  font-size:13.5px;line-height:1.35}
+.toc li{margin:1px 0}
+.toc a{display:block;padding:6px 11px;border-radius:8px;color:var(--muted);
+  text-decoration:none;border-left:2px solid transparent;transition:background .12s,color .12s}
+.toc a:hover{background:var(--surface-2);color:var(--ink)}
+.toc a.on{color:var(--accent);border-left-color:var(--accent);background:var(--accent-soft);
+  font-weight:600}
+.side-tools{display:flex;gap:8px;margin-top:22px;flex-wrap:wrap}
+.tbtn{font-family:"Onest",sans-serif;font-size:12.5px;cursor:pointer;
+  border:1px solid var(--line);background:var(--surface);color:var(--muted);
+  border-radius:8px;padding:7px 11px;line-height:1}
+.tbtn:hover{color:var(--ink);border-color:var(--accent)}
+.fsize{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.fsize button{font-family:"Onest",sans-serif;cursor:pointer;background:var(--surface);
+  color:var(--muted);border:0;padding:7px 11px;line-height:1}
+.fsize button:first-child{border-right:1px solid var(--line);font-size:11px}
+.fsize button:last-child{font-size:15px}
+.fsize button:hover{color:var(--accent)}
+
+/* scrim + drawer behaviour on mobile */
+.scrim{display:none}
+@media (max-width:900px){
+  .side{position:fixed;top:0;left:0;bottom:0;width:82%;max-width:320px;z-index:70;
+    height:100%;background:var(--surface);border-right:1px solid var(--line);
+    padding:22px 20px 40px;transform:translateX(-104%);transition:transform .22s ease;
+    box-shadow:0 0 40px rgba(0,0,0,.28)}
+  .side.open{transform:translateX(0)}
+  .scrim{display:block;position:fixed;inset:0;z-index:65;background:rgba(6,12,20,.5);
+    opacity:0;visibility:hidden;transition:opacity .2s}
+  .scrim.show{opacity:1;visibility:visible}
+}
+
+/* back to top */
+.totop{position:fixed;right:18px;bottom:18px;z-index:45;width:44px;height:44px;
+  border-radius:50%;border:1px solid var(--line);background:var(--surface);
+  color:var(--accent);font-size:19px;cursor:pointer;box-shadow:var(--shadow);
+  opacity:0;visibility:hidden;transition:opacity .2s,transform .2s;transform:translateY(8px)}
+.totop.show{opacity:1;visibility:visible;transform:translateY(0)}
+.totop:hover{border-color:var(--accent)}
+
+/* ---------- article ---------- */
+main{padding-block:34px 90px;min-width:0}
+.eyebrow{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--accent);margin:0 0 10px}
+h1{font-family:"Onest",system-ui,sans-serif;font-weight:800;font-size:clamp(30px,5vw,46px);
+  line-height:1.06;letter-spacing:-.02em;margin:0 0 8px;text-wrap:balance}
+.sub{color:var(--muted);font-size:18px;margin:0 0 22px;max-width:60ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.chip{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);
+  background:var(--surface);border:1px solid var(--line);border-radius:999px;
+  padding:5px 12px;display:inline-flex;gap:6px;align-items:center}
+.chip b{color:var(--ink);font-weight:500}
+.chip.link{color:var(--accent);text-decoration:none;border-color:var(--accent-soft)}
+.chip.link:hover{background:var(--accent-soft)}
+.demo-note{font-family:"Onest",sans-serif;font-size:13.5px;background:var(--warn-soft);
+  color:var(--warn);border:1px solid color-mix(in srgb,var(--warn) 30%,transparent);
+  border-radius:10px;padding:11px 15px;margin:16px 0 34px}
+main h2{font-family:"Onest",system-ui,sans-serif;font-weight:700;font-size:26px;
+  letter-spacing:-.01em;margin:52px 0 4px;scroll-margin-top:20px;text-wrap:balance}
+main h2 .n{font-family:"JetBrains Mono",monospace;font-size:15px;color:var(--accent);
+  margin-right:10px;font-weight:500}
+.rule{height:1px;background:var(--line);border:0;margin:14px 0 18px}
+main h3{font-family:"Onest",sans-serif;font-weight:600;font-size:19px;margin:26px 0 2px}
+p{margin:14px 0;max-width:66ch}
+a{color:var(--accent)}
+sup a{text-decoration:none;font-family:"JetBrains Mono",monospace;font-size:11px;
+  padding:0 1px}
+strong{font-weight:600}
+.en{font-family:"JetBrains Mono",monospace;font-size:.9em;color:var(--muted)}
+
+/* ---------- blocks ---------- */
+.box{border-radius:12px;padding:16px 18px;margin:22px 0;border:1px solid var(--line);
+  background:var(--surface);box-shadow:var(--shadow)}
+.box .bt{font-family:"Onest",sans-serif;font-weight:700;font-size:13px;
+  letter-spacing:.02em;text-transform:uppercase;margin-bottom:6px;
+  display:flex;align-items:center;gap:8px}
+.box p:first-of-type{margin-top:2px}.box p:last-child{margin-bottom:0}
+.box.analogy{background:var(--accent-soft);border-color:transparent}
+.box.analogy .bt{color:var(--accent)}
+.box.warn{background:var(--warn-soft);border-color:transparent}
+.box.warn .bt{color:var(--warn)}
+.box.ask{background:var(--surface);border-left:3px solid var(--accent)}
+.box.ask .bt{color:var(--accent)}
+.tag{font-family:"JetBrains Mono",monospace;font-size:10px;font-weight:700;
+  padding:2px 7px;border-radius:5px;letter-spacing:.04em;text-transform:uppercase}
+.tag.atk{background:var(--attack-soft);color:var(--attack)}
+.tag.def{background:var(--defend-soft);color:var(--defend)}
+
+/* ticket */
+.ticket{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:22px 0;
+  box-shadow:var(--shadow);background:var(--surface)}
+.ticket .th{background:var(--surface-2);padding:9px 15px;font-family:"JetBrains Mono",monospace;
+  font-size:12px;color:var(--muted);display:flex;justify-content:space-between;
+  border-bottom:1px solid var(--line);gap:10px;flex-wrap:wrap}
+.ticket .th b{color:var(--attack)}
+.ticket .tb{padding:14px 17px;font-size:16.5px}
+.ticket .tb p{margin:8px 0}
+
+/* terminal / logs */
+.term{background:var(--term);color:var(--term-ink);border-radius:11px;margin:20px 0;
+  overflow:hidden;border:1px solid var(--term-line)}
+.term .bar{display:flex;align-items:center;gap:7px;padding:9px 13px;
+  border-bottom:1px solid var(--term-line)}
+.term .bar i{width:11px;height:11px;border-radius:50%;background:#3a4d63;display:block}
+.term .bar span{font-family:"JetBrains Mono",monospace;font-size:11.5px;color:#7f93a8;
+  margin-left:6px;letter-spacing:.05em}
+.term pre{margin:0;padding:14px 16px;overflow-x:auto;
+  font-family:"JetBrains Mono",monospace;font-size:13px;line-height:1.62;white-space:pre}
+.term .cmd{color:#7fd0b0}.term .cmt{color:#6d7f92}.term .hl{color:#ff9a8b}
+.term .ok{color:#7fd0b0}.term .dim{color:#6d7f92}
+
+.copy{cursor:pointer;font-family:"Onest",sans-serif;font-size:11px;color:#7f93a8;
+  background:transparent;border:1px solid var(--term-line);border-radius:6px;
+  padding:3px 9px;margin-left:auto}
+.copy:hover{color:var(--term-ink)}
+
+/* tables */
+.twrap{overflow-x:auto;margin:20px 0}
+table{border-collapse:collapse;width:100%;font-size:15px;
+  font-family:"Onest",system-ui,sans-serif}
+th,td{text-align:left;padding:10px 13px;border-bottom:1px solid var(--line);
+  vertical-align:top}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);
+  font-weight:700}
+td code,p code,li code{font-family:"JetBrains Mono",monospace;font-size:.86em;
+  background:var(--surface-2);padding:1px 6px;border-radius:5px;color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+td .mono{font-family:"JetBrains Mono",monospace;font-size:13px}
+
+/* details */
+details{border:1px solid var(--line);border-radius:10px;margin:12px 0;
+  background:var(--surface);overflow:hidden}
+details[open]{box-shadow:var(--shadow)}
+summary{cursor:pointer;padding:13px 16px;font-family:"Onest",sans-serif;font-weight:600;
+  font-size:15.5px;list-style:none;display:flex;gap:10px;align-items:baseline}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"›";color:var(--accent);font-weight:700;font-size:20px;
+  transition:transform .15s;line-height:1}
+details[open] summary::before{transform:rotate(90deg)}
+.dgl{font-family:"JetBrains Mono",monospace;font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.05em;color:var(--accent);
+  background:var(--accent-soft);padding:2px 7px;border-radius:5px;margin-left:auto;
+  align-self:center}
+details .inner{padding:2px 16px 15px}
+details .inner p:first-child{margin-top:4px}
+
+/* self-check list */
+ul,ol{padding-left:22px}li{margin:6px 0;max-width:64ch}
+
+figure{margin:26px 0}
+figure svg{width:100%;height:auto;background:var(--surface);border:1px solid var(--line);
+  border-radius:12px;padding:14px}
+figcaption{font-family:"Onest",sans-serif;font-size:13.5px;color:var(--muted);
+  margin-top:9px;text-align:center;max-width:62ch;margin-inline:auto}
+
+.cheat{background:var(--surface);border:2px solid var(--accent);border-radius:14px;
+  padding:20px 22px;margin:24px 0;box-shadow:var(--shadow)}
+.cheat h3{margin-top:0;color:var(--accent)}
+.cheat ul{list-style:none;padding:0}
+.cheat li{padding:7px 0;border-bottom:1px dashed var(--line);display:flex;gap:12px;
+  font-size:15.5px}
+.cheat li:last-child{border-bottom:0}
+.cheat li b{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--accent);
+  flex:0 0 auto;min-width:132px}
+
+.src{font-size:14px;color:var(--muted)}
+.src li{margin:9px 0;max-width:78ch}
+.src a{word-break:break-word}
+
+.fb{background:var(--defend-soft);border:1px solid color-mix(in srgb,var(--defend) 30%,transparent);
+  border-radius:12px;padding:18px 20px;margin:26px 0}
+.fb .bt{color:var(--defend);font-family:"Onest",sans-serif;font-weight:700;
+  text-transform:uppercase;font-size:13px;letter-spacing:.02em;margin-bottom:8px}
+.fb ol{margin:6px 0 0}
+
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:900px){main{padding-block:22px 80px}
+  main h2{scroll-margin-top:66px}main [id]{scroll-margin-top:66px}}
+@media (max-width:520px){main h1{font-size:30px}
+  .cheat li{flex-direction:column;gap:2px}.cheat li b{min-width:0}
+  .term pre{font-size:12px}}
+</style>
+
+<div class="progress"><i id="bar"></i></div>
+
+<header class="mtop">
+  <button class="icob" id="menu" aria-label="Содержание">☰</button>
+  <span class="mt-title">Offensive Security Intro</span>
+  <div class="fsize"><button id="mfsdown" aria-label="Меньше шрифт">A−</button><button id="mfsup" aria-label="Больше шрифт">A+</button></div>
+  <button class="icob" id="mtheme" aria-label="Тема">◐</button>
+</header>
+
+<div class="scrim" id="scrim"></div>
+
+<div class="wrap">
+<aside class="side" id="side">
+  <div class="brand">THM · <b>Pre&nbsp;Security</b> · Модуль&nbsp;1</div>
+  <h2>Offensive Security Intro</h2>
+  <nav>
+  <ul class="toc" id="toc">
+    <li><a href="#reg">Реестр занятия</a></li>
+    <li><a href="#ask">Вопрос перед чтением</a></li>
+    <li><a href="#what">1. Что такое offensive security</a></li>
+    <li><a href="#why">2. Зачем это будущему SOC</a></li>
+    <li><a href="#recon">3. Что делает атакующий</a></li>
+    <li><a href="#logs">4. Как это выглядит в логах</a></li>
+    <li><a href="#flow">5. Схема: путь атакующего</a></li>
+    <li><a href="#law">6. Закон: где граница</a></li>
+    <li><a href="#check">Сверка с предсказанием</a></li>
+    <li><a href="#mistakes">Типичные ошибки</a></li>
+    <li><a href="#terms">Термины EN/RU/DE</a></li>
+    <li><a href="#links">Связи</a></li>
+    <li><a href="#attack">Карта MITRE ATT&amp;CK</a></li>
+    <li><a href="#interview">Вопросы с собеседований</a></li>
+    <li><a href="#self">Проверь себя</a></li>
+    <li><a href="#practice">Практика вне THM</a></li>
+    <li><a href="#cheat">Шпаргалка</a></li>
+    <li><a href="#facts">Реестр фактов</a></li>
+    <li><a href="#fb">Отзыв</a></li>
+  </ul>
+  </nav>
+  <div class="side-tools">
+    <button class="tbtn" id="theme">◐ Тема</button>
+    <div class="fsize"><button id="fsdown" aria-label="Меньше шрифт">A−</button><button id="fsup" aria-label="Больше шрифт">A+</button></div>
+  </div>
+</aside>
+
+<main>
+  <p class="eyebrow">Демо · одна глава</p>
+  <h1>Offensive Security Intro</h1>
+  <p class="sub">Взлом первого сайта глазами защитника: что делает атакующий и какой след он оставляет в логах.</p>
+  <div class="meta">
+    <span class="chip">⏱ чтение <b>~18 мин</b></span>
+    <span class="chip">☕ комната <b>easy · 15 мин</b></span>
+    <span class="chip">🎯 3 задания THM</span>
+    <a class="chip link" href="https://tryhackme.com/room/offensivesecurityintro" target="_blank" rel="noopener">↗ открыть комнату</a>
+  </div>
+
+  <div class="demo-note">Это демо-образец на одну главу, чтобы ты оценил формат. Полный учебник будет длиннее (10–15k слов) и покроет все задания комнаты. Здесь показаны все блоки: реестр, аналогия, тикет со смены, логи, схема, «копнуть глубже», ошибки, термины EN/RU/DE, ATT&amp;CK, вопросы с собеса, самопроверка, практика, шпаргалка, источники.</div>
+
+  <section class="box" id="reg">
+    <div class="bt">📇 Реестр занятия</div>
+    <p><strong>Опирается на:</strong> ничего, это первая комната пути.</p>
+    <p><strong>Впервые здесь:</strong> offensive vs defensive security · этичный хакер и pentest · разведка (reconnaissance) · перебор директорий (directory brute-force) · инструмент gobuster · access-лог веб-сервера · Broken Access Control.</p>
+    <p><strong>Сознательно не трогаем:</strong> как именно устроен HTTP (комната HTTP in Detail) · глубокий разбор веб-атак (SOC L1) · настройку SIEM (позже). Сегодня только общая картина и первый след в логах.</p>
+    <p><strong>Время:</strong> учебник ~18 мин · комната на THM ~15 мин · разбор со мной ~20 мин.</p>
+  </section>
+
+  <div class="box warn">
+    <div class="bt">🌧 Плохой день? Минимум за 6 минут</div>
+    <p>Прочитай раздел&nbsp;1 (что такое offensive security) и раздел&nbsp;4 (как это в логах), пройди комнату на THM. Остальное перенеси. Это не провал, это заложенный в план режим.</p>
+  </div>
+
+  <section class="box ask" id="ask">
+    <div class="bt">✍ Вопрос перед чтением — ответь до того, как читать дальше</div>
+    <p>Представь: у банка есть скрытая страница перевода денег, ссылки на неё нигде нет. Атакующий про неё не знает. Как ты думаешь, каким образом он может её найти, не зная адреса заранее? И какой след это оставит на сервере? Запиши два-три предположения своими словами прямо сейчас. В разделе «Сверка» вернёмся.</p>
+  </section>
+
+  <h2 id="what"><span class="n">01</span>Что такое offensive security</h2>
+  <hr class="rule">
+  <p>Есть два лагеря в безопасности, и всю комнату держит различие между ними.</p>
+  <p><strong>Offensive security</strong> <span class="en">(наступательная)</span> — это когда специально ищут дырки в системе, чтобы через них пролезть: находят баги в программах, обходят проверки доступа, пробуют слабые пароли. Люди из этого лагеря — <strong>этичные хакеры</strong> и <strong>пентестеры</strong> <span class="en">(penetration testers)</span>. Их работа — сломать систему с разрешения владельца и рассказать, где именно сломалось, пока это не сделал настоящий злоумышленник.</p>
+  <p><strong>Defensive security</strong> <span class="en">(оборонительная)</span> — второй лагерь, и это твоя будущая работа. Здесь не ломают, а замечают, что кто-то ломает, и реагируют. Ты идёшь в <strong>SOC-аналитики</strong>, то есть в защиту.</p>
+
+  <div class="box analogy">
+    <div class="bt">🔍 Аналогия</div>
+    <p>Offensive security — это нанятый магазином «вор», которому официально разрешили попробовать вынести товар. Он лезет в форточку, дёргает замки, проверяет, где касса без камеры. Потом пишет отчёт: «вот через эту форточку я зашёл за две минуты». Defensive security — это охранник, который смотрит на записи камер и должен по ним понять, что кто-то лез в форточку, даже если самого вора уже нет. Ты учишься быть охранником, но чтобы ловить вора, полезно один раз пройти его маршрут самому.</p>
+  </div>
+
+  <h2 id="why"><span class="n">02</span>Зачем это будущему SOC-аналитику</h2>
+  <hr class="rule">
+  <p>Комната просит тебя взломать учебный сайт FakeBank: найти скрытую страницу и перевести деньги. Возникает вопрос — зачем защитнику вообще учиться атаковать?</p>
+  <p>Затем, что <strong>ты не увидишь в логах того, чего не понимаешь</strong>. Когда ты сам один раз запустишь перебор директорий и увидишь, как за пару секунд улетает сотня запросов, ты навсегда запомнишь, как это выглядит со стороны сервера. И потом, глядя на сто строк с кодом ответа <code>404</code> подряд с одного адреса, ты не будешь гадать — ты узнаешь почерк.</p>
+
+  <div class="ticket">
+    <div class="th"><span>ALERT-2026-0914-0031 · web-01</span><span><b>severity: medium</b></span></div>
+    <div class="tb">
+      <p style="margin-top:0"><strong>Сработало правило:</strong> «более 20 ответов 404 с одного IP за 60 секунд». Источник <span class="mono">203.0.113.45</span>. Ты на смене L1. С чего начнёшь и что это вообще может быть?</p>
+      <p style="margin-bottom:0;color:var(--muted);font-size:14.5px">К концу главы у тебя будет готовый ответ на этот тикет — мы разберём его в конце.</p>
+    </div>
+  </div>
+
+  <h2 id="recon"><span class="n">03</span>Что делает атакующий</h2>
+  <hr class="rule">
+  <p>Прежде чем что-то ломать, атакующий изучает цель. Эта фаза называется <strong>разведка</strong> <span class="en">(reconnaissance)</span>. Одна из её частей — узнать, какие страницы и папки вообще есть на сайте, даже те, на которые нет ссылок.</p>
+  <p>Делается это <strong>перебором директорий</strong> <span class="en">(directory brute-force)</span>: берётся длинный список типовых имён — <code>admin</code>, <code>login</code>, <code>backup</code>, <code>config</code> — и по каждому дёргается сервер. Если страница есть, сервер отвечает <code>200</code>; если нет — <code>404</code>. Инструмент прогоняет весь список за секунды. В комнате ты используешь для этого <strong>gobuster</strong>.</p>
+
+  <details>
+    <summary>Копнуть глубже: почему это работает и как называется по-научному <span class="dgl">не обязательно</span></summary>
+    <div class="inner">
+      <p>Приём опирается на предсказуемость: администраторы называют служебные страницы одинаково по всему интернету, поэтому один и тот же словарь подходит к тысячам сайтов. В матрице MITRE ATT&amp;CK это отдельная техника — <strong>Active Scanning: Wordlist Scanning</strong>, идентификатор <code>T1595.003</code>, тактика Reconnaissance.<sup><a href="#s1">[1]</a></sup> Там же среди инструментов прямо названы Dirb, DirBuster и GoBuster, а реальные группировки APT41 и Volatile Cedar задокументированы как использующие такой перебор.<sup><a href="#s1">[1]</a></sup></p>
+      <p>Защита от самого перебора почти невозможна — сервер обязан отвечать на запросы. Поэтому защищаются иначе: не оставляют чувствительных страниц без проверки доступа. Что возвращает нас к тому, зачем страница перевода вообще открылась постороннему — см. раздел&nbsp;6.</p>
+    </div>
+  </details>
+
+  <h2 id="logs"><span class="n">04</span>Как это выглядит в логах</h2>
+  <hr class="rule">
+  <p>Веб-сервер записывает каждый запрос в <strong>access-лог</strong>. У nginx стандартный формат называется <code>combined</code> и по умолчанию пишется в <code>logs/access.log</code>.<sup><a href="#s4">[4]</a></sup> В нём есть поле, которое сегодня главное: <strong>User-Agent</strong> — программа, которая сделала запрос. Обычный человек приходит с браузером, а gobuster честно представляется своим именем.</p>
+
+  <div class="term">
+    <div class="bar"><i></i><i></i><i></i><span>web-01 : ~/logs</span>
+      <button class="copy" data-cmd="awk '{print $9}' access.log | sort | uniq -c | sort -rn">копировать</button></div>
+    <pre><span class="cmt"># сколько каких кодов ответа в логе</span>
+<span class="cmd">$ awk '{print $9}' access.log | sort | uniq -c | sort -rn</span>
+      9 <span class="hl">404</span>
+      6 200
+      1 301</pre>
+  </div>
+  <p>Девять ответов <code>404</code> — уже необычно много для тихого сайта. Смотрим, с кого они:</p>
+
+  <div class="term">
+    <div class="bar"><i></i><i></i><i></i><span>web-01 : ~/logs</span>
+      <button class="copy" data-cmd="awk '$9==404 {print $1}' access.log | sort | uniq -c | sort -rn">копировать</button></div>
+    <pre><span class="cmt"># кто генерирует 404-е</span>
+<span class="cmd">$ awk '$9==404 {print $1}' access.log | sort | uniq -c | sort -rn</span>
+      8 <span class="hl">203.0.113.45</span>
+      1 192.0.2.77</pre>
+  </div>
+  <p>Восемь из девяти — с одного адреса. А теперь самое наглядное: посмотрим, какими программами приходили. Поле User-Agent в формате <code>combined</code> стоит в кавычках последним, поэтому режем строку по кавычкам:</p>
+
+  <div class="term">
+    <div class="bar"><i></i><i></i><i></i><span>web-01 : ~/logs</span>
+      <button class="copy" data-cmd="awk -F'&quot;' '{print $6}' access.log | sort | uniq -c | sort -rn">копировать</button></div>
+    <pre><span class="cmd">$ awk -F'"' '{print $6}' access.log | sort | uniq -c | sort -rn</span>
+     10 <span class="hl">gobuster/3.8.2</span>
+      3 Mozilla/5.0 (Windows NT 10.0 ...) Chrome/128.0
+      2 Mozilla/5.0 (X11; Linux x86_64 ...) Firefox/128.0
+      1 Mozilla/5.0 (compatible; Googlebot/2.1; ...)</pre>
+  </div>
+  <p>Вот он, почерк. <code>gobuster/3.8.2</code> в User-Agent — это инструмент честно назвал себя: по умолчанию gobuster ставит строку вида <code>gobuster/ВЕРСИЯ</code>.<sup><a href="#s2">[2]</a></sup> В реальной атаке её, конечно, меняют флагом <code>--random-agent</code>, но на учебном и на ленивом атакующем ты увидишь именно так.</p>
+
+  <div class="box warn">
+    <div class="bt">⚠ Ловушка, на которой ловятся новички</div>
+    <p>User-Agent — это просто текст, который прислал клиент. Ему <strong>нельзя доверять как доказательству</strong>: атакующий пишет туда что угодно. «Пусто в User-Agent» или «в нём gobuster» — это зацепка, повод присмотреться, но не приговор. Доказательство собирается из совокупности: один адрес + серия 404 + ровный ритм в одну секунду + подозрительный User-Agent. Вот это уже картина.</p>
+  </div>
+
+  <h2 id="flow"><span class="n">05</span>Схема: путь атакующего и след в логе</h2>
+  <hr class="rule">
+  <p>Собери всё вместе. Слева — что делает атакующий, справа — что от этого остаётся у тебя в логе.</p>
+
+  <figure>
+  <svg viewBox="0 0 720 300" role="img" aria-label="Три шага атакующего: перебор директорий даёт серию 404, найденная скрытая страница даёт 200, затем возврат обычным браузером и POST-перевод">
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+      </marker>
+    </defs>
+    <!-- lane labels -->
+    <text x="150" y="26" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="#c0392f" letter-spacing="1">АТАКУЮЩИЙ</text>
+    <text x="560" y="26" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="#1f7a5c" letter-spacing="1">СЛЕД В ЛОГЕ</text>
+    <line x1="355" y1="40" x2="355" y2="288" stroke="currentColor" stroke-dasharray="3 5" opacity=".3"/>
+
+    <!-- step 1 -->
+    <rect x="40" y="46" width="230" height="52" rx="9" fill="none" stroke="#c0392f" stroke-width="1.5"/>
+    <text x="155" y="68" text-anchor="middle" font-family="Onest, sans-serif" font-size="13" font-weight="600" fill="currentColor">1 · перебор директорий</text>
+    <text x="155" y="86" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="currentColor" opacity=".7">gobuster dir -u ...</text>
+    <line x1="270" y1="72" x2="440" y2="72" stroke="currentColor" marker-end="url(#ar)"/>
+    <rect x="440" y="46" width="240" height="52" rx="9" fill="none" stroke="currentColor" opacity=".85"/>
+    <text x="560" y="68" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="currentColor">8 × 404 + 1 × 200</text>
+    <text x="560" y="86" text-anchor="middle" font-family="Onest, sans-serif" font-size="11" fill="currentColor" opacity=".7">один IP · UA gobuster · ~1 сек</text>
+
+    <!-- step 2 -->
+    <rect x="40" y="124" width="230" height="52" rx="9" fill="none" stroke="#c0392f" stroke-width="1.5"/>
+    <text x="155" y="146" text-anchor="middle" font-family="Onest, sans-serif" font-size="13" font-weight="600" fill="currentColor">2 · нашёл /bank-transfer</text>
+    <text x="155" y="164" text-anchor="middle" font-family="Onest, sans-serif" font-size="11" fill="currentColor" opacity=".7">скрытая страница без ссылок</text>
+    <line x1="270" y1="150" x2="440" y2="150" stroke="currentColor" marker-end="url(#ar)"/>
+    <rect x="440" y="124" width="240" height="52" rx="9" fill="none" stroke="currentColor" opacity=".85"/>
+    <text x="560" y="146" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="currentColor">GET /bank-transfer 200</text>
+    <text x="560" y="164" text-anchor="middle" font-family="Onest, sans-serif" font-size="11" fill="currentColor" opacity=".7">страница ответила, значит есть</text>
+
+    <!-- step 3 -->
+    <rect x="40" y="202" width="230" height="58" rx="9" fill="#fbe7e4" stroke="#c0392f" stroke-width="1.5"/>
+    <text x="155" y="224" text-anchor="middle" font-family="Onest, sans-serif" font-size="13" font-weight="700" fill="#c0392f">3 · вернулся браузером</text>
+    <text x="155" y="242" text-anchor="middle" font-family="Onest, sans-serif" font-size="11" fill="#c0392f" opacity=".85">открыл страницу и сделал перевод</text>
+    <line x1="270" y1="230" x2="440" y2="230" stroke="#c0392f" stroke-width="1.6" marker-end="url(#ar)"/>
+    <rect x="440" y="202" width="240" height="58" rx="9" fill="#fbe7e4" stroke="#c0392f" stroke-width="1.5"/>
+    <text x="560" y="224" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="#c0392f">POST /bank-transfer 200</text>
+    <text x="560" y="242" text-anchor="middle" font-family="Onest, sans-serif" font-size="11" fill="#c0392f" opacity=".85">тот же IP · UA сменился на браузер</text>
+
+    <text x="360" y="284" text-anchor="middle" font-family="Onest, sans-serif" font-size="11.5" fill="currentColor" opacity=".65">связывает все три шага один адрес 203.0.113.45</text>
+  </svg>
+  <figcaption>Главная улика — не отдельная строка, а то, что один и тот же адрес прошёл всю цепочку: разведка → находка → действие. Красным выделен шаг, ради которого всё затевалось.</figcaption>
+  </figure>
+
+  <h2 id="law"><span class="n">06</span>Закон: где проходит граница</h2>
+  <hr class="rule">
+  <p>Ключевое слово во всей теме — <strong>с разрешения</strong>. То же действие законно на своём стенде или на TryHackMe и уголовно наказуемо на чужом сайте. В Германии это регулирует так называемый «хакерский параграф».</p>
+  <p><strong>§ 202c StGB</strong> <span class="en">(Vorbereiten des Ausspähens und Abfangens von Daten)</span> наказывает подготовку к незаконному доступу к данным — изготовление или распространение соответствующих программ — лишением свободы <strong>до двух лет</strong> или штрафом.<sup><a href="#s3">[3]</a></sup></p>
+
+  <details>
+    <summary>Копнуть глубже: а не запрещает ли это gobuster и nmap? <span class="dgl">важно знать</span></summary>
+    <div class="inner">
+      <p>Именно этого боялись, когда параграф приняли. Вопрос дошёл до Конституционного суда, и в решении от 18 мая 2009 года <span class="en">(2 BvR 2233/07)</span> он разъяснил: программы двойного назначения <span class="en">(dual-use)</span>, то есть пригодные и для админской работы, и для атаки, <strong>сами по себе под § 202c не подпадают</strong>. Наказуемо не владение инструментом, а намерение использовать его для преступления, объективно проявленное.<sup><a href="#s3">[3]</a></sup></p>
+      <p>Для тебя вывод простой: держать gobuster и nmap на своей машине и тренироваться на TryHackMe законно. Запустить их против чужого сайта без письменного разрешения — нет. Разрешение всегда письменное и до начала работ.</p>
+    </div>
+  </details>
+
+  <section class="box ask" id="check">
+    <div class="bt">🔁 Сверка с твоим предсказанием</div>
+    <p>Вернись к тому, что ты записал в начале. Ты, скорее всего, предположил что-то про «перебор адресов» — и это ровно оно и есть, называется directory brute-force. След, который ты назвал, сравни с логом из раздела&nbsp;4: серия <code>404</code> с одного адреса плюс подозрительный User-Agent. Если про User-Agent ты не подумал — теперь это твоя новая зацепка. Отметь для себя, что угадал, а что нет: угаданное закрепляется, промах — то, что стоит проговорить на разборе.</p>
+  </section>
+
+  <h2 id="mistakes"><span class="n">07</span>Типичные ошибки новичка</h2>
+  <hr class="rule">
+  <div class="twrap">
+  <table>
+    <thead><tr><th>Ошибка</th><th>Почему кажется правильной</th><th>Как надо</th></tr></thead>
+    <tbody>
+      <tr><td>Считать gobuster в User-Agent доказательством атаки</td><td>Инструмент же назвал себя</td><td>Это зацепка, не приговор — UA подделывается. Доказывай совокупностью улик</td></tr>
+      <tr><td>Смотреть только на коды <code>200</code></td><td>«Успех важнее промахов»</td><td>Серия <code>404</code> — сам по себе признак перебора; именно она выдаёт разведку</td></tr>
+      <tr><td>Путать «попробовал» и «получилось»</td><td>Есть подозрительный трафик — значит, взломали</td><td>Вывод не сделан, пока не ответил: достиг ли атакующий цели (тут — <code>POST</code> прошёл)</td></tr>
+      <tr><td>Считать offensive-навык «не для защитника»</td><td>«Я же в оборону»</td><td>Не понимая атаки, не прочитаешь её след. Один раз пройди маршрут сам</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="terms"><span class="n">08</span>Термины: EN / RU / DE</h2>
+  <hr class="rule">
+  <div class="twrap">
+  <table>
+    <thead><tr><th>English</th><th>Русский</th><th>Deutsch</th><th>Что это</th></tr></thead>
+    <tbody>
+      <tr><td>Offensive security</td><td>наступательная безопасность</td><td>offensive Sicherheit</td><td>искать и использовать дыры, чтобы проверить защиту</td></tr>
+      <tr><td>Defensive security</td><td>оборонительная безопасность</td><td>defensive Sicherheit</td><td>замечать атаку и реагировать — работа SOC</td></tr>
+      <tr><td>Penetration test</td><td>тест на проникновение</td><td>Penetrationstest</td><td>санкционированная имитация атаки</td></tr>
+      <tr><td>Reconnaissance</td><td>разведка</td><td>Aufklärung</td><td>сбор информации о цели до атаки</td></tr>
+      <tr><td>Directory brute-force</td><td>перебор директорий</td><td>Verzeichnis-Bruteforce</td><td>поиск скрытых страниц по словарю</td></tr>
+      <tr><td>Access log</td><td>журнал доступа</td><td>Zugriffsprotokoll</td><td>запись всех запросов к веб-серверу</td></tr>
+      <tr><td>Vulnerability</td><td>уязвимость</td><td>Schwachstelle</td><td>слабое место, через которое лезут</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="links"><span class="n">09</span>Связи с остальным путём</h2>
+  <hr class="rule">
+  <div class="twrap">
+  <table>
+    <thead><tr><th>Направление</th><th>Тема</th><th>Где</th></tr></thead>
+    <tbody>
+      <tr><td>Опирается на</td><td>—</td><td>первая комната, опоры нет</td></tr>
+      <tr><td>Вернётся в</td><td>Коды ответов и устройство HTTP-запроса</td><td>Pre Security → How The Web Works → HTTP in Detail</td></tr>
+      <tr><td>Вернётся в</td><td>Разбор веб-атак по логам всерьёз</td><td>SOC L1 → Web Security Monitoring → Detecting Web Attacks</td></tr>
+      <tr><td>Вернётся в</td><td>Почему открылась скрытая страница = Broken Access Control</td><td>Cyber Security 101 → OWASP Top 10 2025 (A01)<sup><a href="#s5">[5]</a></sup></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="attack"><span class="n">10</span>Карта MITRE ATT&amp;CK</h2>
+  <hr class="rule">
+  <p>Одна техника на всю главу — но с неё начинается язык, на котором говорят все SOC.</p>
+  <div class="twrap">
+  <table>
+    <thead><tr><th>Тема главы</th><th>Тактика</th><th>Техника (ID)</th><th>Как увидеть</th></tr></thead>
+    <tbody>
+      <tr><td>Перебор директорий</td><td>Reconnaissance <span class="en">(TA0043)</span></td><td>Active Scanning: Wordlist Scanning <code>T1595.003</code><sup><a href="#s1">[1]</a></sup></td><td>серия 404 с одного IP за секунды в access-логе</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="interview"><span class="n">11</span>Вопросы с собеседований</h2>
+  <hr class="rule">
+  <details>
+    <summary>«What is the difference between a red team and a blue team?» <span class="dgl">EN</span></summary>
+    <div class="inner"><p>Сильный ответ: the red team plays the attacker — they emulate real adversaries to find weaknesses; the blue team defends — they monitor, detect and respond. As a SOC analyst I'm on the blue team, but I study offensive techniques so I can recognise their traces in logs.</p></div>
+  </details>
+  <details>
+    <summary>«Was ist der Unterschied zwischen einem Penetrationstest und einem echten Angriff?» <span class="dgl">DE</span></summary>
+    <div class="inner"><p>Сильный ответ: Der Penetrationstest ist genehmigt — es gibt eine schriftliche Erlaubnis des Eigentümers, einen definierten Umfang <span class="en">(Scope)</span> und einen Abschlussbericht. Ein echter Angriff hat all das nicht und ist strafbar, in Deutschland unter anderem nach § 202c StGB.</p></div>
+  </details>
+
+  <h2 id="self"><span class="n">12</span>Проверь себя</h2>
+  <hr class="rule">
+  <p>Отвечай письменно и <strong>до</strong> того, как раскрыть ответ. Рядом ставь процент уверенности — потом увидишь, где себя переоценил.</p>
+  <details>
+    <summary>1. Чем offensive security отличается от defensive?</summary>
+    <div class="inner"><p>Offensive ищет и использует дыры, чтобы проверить защиту (red team, пентестеры). Defensive замечает атаку и реагирует (blue team, SOC). Ты в defensive.</p></div>
+  </details>
+  <details>
+    <summary>2. Что такое перебор директорий и какой код ответа выдаёт его в логе?</summary>
+    <div class="inner"><p>Это поиск скрытых страниц по словарю типовых имён. В логе он оставляет серию ответов <code>404</code> (страницы нет) с редкими <code>200</code>/<code>301</code> на найденных — всё с одного адреса и за секунды.</p></div>
+  </details>
+  <details>
+    <summary>3. Почему <code>gobuster/3.8.2</code> в User-Agent — не доказательство атаки?</summary>
+    <div class="inner"><p>Потому что User-Agent присылает сам клиент и в него можно написать что угодно (флаг <code>--random-agent</code>). Это зацепка, а вывод строится из совокупности: адрес + серия 404 + ритм + UA.</p></div>
+  </details>
+  <details>
+    <summary>4. Тот же запрос gobuster против TryHackMe и против чужого сайта — в чём разница по закону?</summary>
+    <div class="inner"><p>В разрешении. На TryHackMe и своём стенде — законно. Против чужого сайта без письменного разрешения — нет; в Германии относится к § 202c StGB. Dual-use сам по себе не запрещён, наказуемо намерение.</p></div>
+  </details>
+  <details>
+    <summary>5. Вернись к тикету из раздела 2. Твой вердикт по ALERT-2026-0914-0031?</summary>
+    <div class="inner"><p>Пример сильного вердикта: <em>с адреса 203.0.113.45 проведён перебор директорий (8×404, UA gobuster, ~1 сек) — уверенность высокая, видно прямо в логе. Найдена скрытая страница <code>/bank-transfer</code> (200). Затем с того же адреса обычным браузером выполнен <code>POST /bank-transfer</code> — то есть перевод, скорее всего, прошёл: уверенность средняя, POST в логе есть, но результат перевода access-лог не показывает, нужен лог приложения. Рекомендация: эскалировать, проверить лог приложения и заблокировать адрес.</em> Обрати внимание: уверенность разная по частям вердикта — это и есть зрелый ответ.</p></div>
+  </details>
+
+  <h2 id="practice"><span class="n">13</span>Практика вне THM</h2>
+  <hr class="rule">
+  <p>Небольшое задание в браузере, работает на твоём M1 без всяких виртуалок. Ниже — тот самый учебный <code>access.log</code>, который я разбирал в главе (16 строк). Скопируй его к себе в файл и прогони команды из раздела&nbsp;4 сам — числа должны совпасть с моими.</p>
+  <div class="term">
+    <div class="bar"><i></i><i></i><i></i><span>access.log · пример</span>
+      <button class="copy" data-cmd="203.0.113.45 - - [14/Sep/2026:02:14:07 +0000] &quot;GET /admin HTTP/1.1&quot; 404 153 &quot;-&quot; &quot;gobuster/3.8.2&quot;">копировать строку</button></div>
+    <pre>203.0.113.45 - - [14/Sep/2026:02:14:07 +0000] "GET /admin HTTP/1.1" 404 153 "-" "gobuster/3.8.2"
+203.0.113.45 - - [14/Sep/2026:02:14:07 +0000] "GET /bank-transfer HTTP/1.1" <span class="ok">200</span> 2710 "-" "gobuster/3.8.2"
+203.0.113.45 - - [14/Sep/2026:02:17:12 +0000] "<span class="hl">POST</span> /bank-transfer HTTP/1.1" 200 312 "..." "...Firefox/128.0"</pre>
+  </div>
+  <p><strong>Задача:</strong> одной командой найди все запросы с адреса <code>203.0.113.45</code>, у которых код ответа <em>не</em> <code>404</code>. Что это за строки и что они означают? (Подсказка: <code>grep</code> по адресу и <code>awk</code> по девятому полю.) Результат — три строки — это готовый мини-отчёт для портфолио.</p>
+
+  <div class="cheat" id="cheat">
+    <h3>🃏 Шпаргалка на один экран</h3>
+    <ul>
+      <li><b>offensive</b> ищет дыры (red team) · <b>defensive</b> ловит атаку (blue team, ты)</li>
+      <li><b>recon</b> разведка → <b>brute-force</b> перебор директорий по словарю</li>
+      <li><b>gobuster</b> инструмент перебора; UA по умолчанию <code>gobuster/версия</code></li>
+      <li><b>след:</b> серия 404 с одного IP за секунды = перебор</li>
+      <li><b>User-Agent</b> подделывается → зацепка, не доказательство</li>
+      <li><b>вердикт:</b> «пробовал» ≠ «получилось»; ищи POST/200 на цели</li>
+      <li><b>закон:</b> всё решает разрешение; § 202c StGB; dual-use сам по себе легален</li>
+      <li><b>ATT&amp;CK:</b> Wordlist Scanning <code>T1595.003</code></li>
+    </ul>
+  </div>
+
+  <h2 id="facts"><span class="n">14</span>Реестр фактов</h2>
+  <hr class="rule">
+  <p>Всё, что в главе утверждалось как факт, — с источником. Проверено 11 сентября 2026.</p>
+  <ol class="src">
+    <li id="s1">Техника Active Scanning: Wordlist Scanning <code>T1595.003</code>, тактика Reconnaissance; в инструментах названы Dirb, DirBuster, GoBuster; примеры групп APT41, Volatile Cedar. — MITRE ATT&amp;CK, <a href="https://attack.mitre.org/techniques/T1595/003/" target="_blank" rel="noopener">attack.mitre.org/techniques/T1595/003</a></li>
+    <li id="s2">gobuster по умолчанию отправляет User-Agent вида <code>gobuster/ВЕРСИЯ</code>; меняется флагами <code>-a</code> / <code>--random-agent</code>. — исходный код gobuster (libgobuster, функция DefaultUserAgent) и README, <a href="https://github.com/OJ/gobuster" target="_blank" rel="noopener">github.com/OJ/gobuster</a></li>
+    <li id="s3">§ 202c StGB: подготовка к незаконному доступу наказывается лишением свободы до двух лет или штрафом. Решение BVerfG от 18.05.2009 (2 BvR 2233/07): dual-use-программы сами по себе под параграф не подпадают. — <a href="https://www.juraforum.de/gesetze/stgb/202c-vorbereiten-des-ausspaehens-und-abfangens-von-daten" target="_blank" rel="noopener">Gesetzestext</a>, <a href="https://www.bundesverfassungsgericht.de/SharedDocs/Pressemitteilungen/DE/2009/bvg09-067.html" target="_blank" rel="noopener">BVerfG Pressemitteilung</a></li>
+    <li id="s4">Стандартный формат nginx <code>combined</code> включает поле <code>$http_user_agent</code> последним и по умолчанию пишется в <code>logs/access.log</code>. — nginx docs, <a href="https://nginx.org/en/docs/http/ngx_http_log_module.html" target="_blank" rel="noopener">ngx_http_log_module</a></li>
+    <li id="s5">Broken Access Control — категория A01 в OWASP Top 10:2025. — <a href="https://top10.owasp.org/2025/" target="_blank" rel="noopener">top10.owasp.org/2025</a></li>
+  </ol>
+
+  <div class="fb" id="fb">
+    <div class="bt">💬 Отзыв — 30 секунд, и формат станет лучше</div>
+    <p style="margin-top:0">Ответь тремя строчками прямо в чат, я учту в следующих учебниках:</p>
+    <ol>
+      <li>Что зашло: аналогия, тикет, логи, схема — что сработало лучше всего?</li>
+      <li>Что лишнее или скучное — что можно выкинуть?</li>
+      <li>Где было сложно или, наоборот, слишком разжёвано?</li>
+    </ol>
+  </div>
+</main>
+</div>
+
+<button class="totop" id="totop" aria-label="Наверх">↑</button>
+
+<script>
+(function(){
+  var root=document.documentElement;
+  var LS={get:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},
+          set:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
+
+  /* ---- theme (persisted) ---- */
+  var saved=LS.get('thm_theme');
+  if(saved==='dark'||saved==='light')root.setAttribute('data-theme',saved);
+  function curTheme(){var e=root.getAttribute('data-theme');if(e)return e;
+    return matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}
+  function toggleTheme(){var n=curTheme()==='dark'?'light':'dark';
+    root.setAttribute('data-theme',n);LS.set('thm_theme',n);}
+  var t1=document.getElementById('theme'),t2=document.getElementById('mtheme');
+  t1&&t1.addEventListener('click',toggleTheme);
+  t2&&t2.addEventListener('click',toggleTheme);
+
+  /* ---- font size (persisted) ---- */
+  var fs=parseFloat(LS.get('thm_fs'))||1;
+  function applyFs(){fs=Math.min(1.35,Math.max(0.85,Math.round(fs*100)/100));
+    root.style.setProperty('--fs',fs);LS.set('thm_fs',fs);}
+  applyFs();
+  function bump(d){fs+=d;applyFs();}
+  ['fsup','mfsup'].forEach(function(id){var b=document.getElementById(id);
+    b&&b.addEventListener('click',function(){bump(0.06);});});
+  ['fsdown','mfsdown'].forEach(function(id){var b=document.getElementById(id);
+    b&&b.addEventListener('click',function(){bump(-0.06);});});
+
+  /* ---- copy buttons ---- */
+  document.querySelectorAll('.copy').forEach(function(b){
+    b.addEventListener('click',function(){
+      var t=b.getAttribute('data-cmd')||'';
+      if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){
+        var o=b.textContent;b.textContent='скопировано ✓';
+        setTimeout(function(){b.textContent=o;},1400);},function(){});}});
+  });
+
+  /* ---- mobile drawer ---- */
+  var side=document.getElementById('side'),scrim=document.getElementById('scrim'),
+      menu=document.getElementById('menu');
+  function openMenu(){side.classList.add('open');scrim.classList.add('show');}
+  function closeMenu(){side.classList.remove('open');scrim.classList.remove('show');}
+  menu&&menu.addEventListener('click',openMenu);
+  scrim&&scrim.addEventListener('click',closeMenu);
+
+  /* ---- toc active state + click closes drawer ---- */
+  var links=[].slice.call(document.querySelectorAll('#toc a'));
+  var map={};links.forEach(function(a){map[a.getAttribute('href').slice(1)]=a;
+    a.addEventListener('click',function(){if(window.innerWidth<=900)closeMenu();});});
+  var obs=new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){
+      links.forEach(function(a){a.classList.remove('on');});
+      var a=map[e.target.id]; if(a){a.classList.add('on');
+        if(window.innerWidth>900)a.scrollIntoView({block:'nearest'});}
+    }});},{rootMargin:'-12% 0px -78% 0px'});
+  document.querySelectorAll('main [id]').forEach(function(el){
+    if(map[el.id])obs.observe(el);});
+
+  /* ---- reading progress + back-to-top ---- */
+  var bar=document.getElementById('bar'),totop=document.getElementById('totop'),
+      ticking=false;
+  function upd(){ticking=false;
+    var h=document.documentElement,
+        max=(h.scrollHeight-h.clientHeight)||1,
+        p=Math.min(1,Math.max(0,h.scrollTop/max));
+    bar.style.width=(p*100).toFixed(1)+'%';
+    totop.classList.toggle('show',h.scrollTop>600);}
+  window.addEventListener('scroll',function(){
+    if(!ticking){ticking=true;requestAnimationFrame(upd);}},{passive:true});
+  totop.addEventListener('click',function(){
+    window.scrollTo({top:0,behavior:'smooth'});});
+  upd();
+})();
+</script>
+
+</body></html>

