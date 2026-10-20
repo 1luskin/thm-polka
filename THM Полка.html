@@ -1,0 +1,212 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>THM Полка</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Unbounded:wght@500;700&display=swap">
+<style>
+/* Layout: очередь тикетов SOC — пути как очереди, учебники как тикеты со статусом-полосой слева */
+:root{
+  --bg:#eef1f4; --surface:#ffffff; --ink:#16212e; --muted:#5b6876; --line:#d5dbe2;
+  --accent:#c2620a; --accent-soft:#fbe9d6;
+  --st-todo:#8794a2; --st-reading:#2f6fb5; --st-done:#2e8a57; --st-passed:#7b4fc2;
+  --danger:#b3261e;
+  --f-display:"Unbounded","Golos Text",system-ui,sans-serif;
+  --f-body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f151c; --surface:#17202a; --ink:#e3e9ef; --muted:#93a1af; --line:#2a3644;
+  --accent:#f0954a; --accent-soft:#3a2716;
+  --st-todo:#7d8b99; --st-reading:#5d9be0; --st-done:#4fb27a; --st-passed:#a684e6; --danger:#ef7a72;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f151c; --surface:#17202a; --ink:#e3e9ef; --muted:#93a1af; --line:#2a3644;
+  --accent:#f0954a; --accent-soft:#3a2716;
+  --st-todo:#7d8b99; --st-reading:#5d9be0; --st-done:#4fb27a; --st-passed:#a684e6; --danger:#ef7a72;
+  color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:860px;margin:0 auto;padding-block:28px 64px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:28px}
+header{display:flex;flex-direction:column;gap:10px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,5vw,36px);line-height:1.1;margin:0;text-wrap:balance}
+.sub{color:var(--muted);margin:0;max-width:60ch}
+.stats{display:flex;flex-wrap:wrap;gap:8px 20px;font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.stats b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;display:flex}
+.bar span{display:block;height:100%}
+.notice{border:1px dashed var(--line);border-radius:8px;padding:14px 16px;color:var(--muted);font-size:14px}
+section.path{display:flex;flex-direction:column;gap:8px}
+.path h2{font-family:var(--f-mono);font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0;display:flex;gap:10px;align-items:baseline}
+.path h2 .cnt{font-weight:400}
+.book{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--st);border-radius:6px}
+.book[data-st="none"]{--st:var(--line)}
+.book[data-st="todo"]{--st:var(--st-todo)}
+.book[data-st="reading"]{--st:var(--st-reading)}
+.book[data-st="done"]{--st:var(--st-done)}
+.book[data-st="passed"]{--st:var(--st-passed)}
+.row{display:grid;grid-template-columns:1fr auto;gap:6px 14px;align-items:center;padding:12px 14px}
+.title{min-width:0;display:flex;flex-direction:column;gap:2px}
+.title strong{font-weight:600;font-size:16px}
+.meta{font-size:13px;color:var(--muted)}
+.meta .score{font-family:var(--f-mono);color:var(--st-passed)}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.chip{font-family:var(--f-mono);font-size:12px;padding:3px 9px;border-radius:999px;border:1px solid var(--st);color:var(--ink);background:transparent;white-space:nowrap}
+.book[data-st="none"] .chip{color:var(--muted)}
+a.open{font-weight:600;color:var(--accent);text-decoration:none;font-size:14px;padding:4px 2px}
+a.open:hover{text-decoration:underline}
+button{font:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+details.more summary{list-style:none;cursor:pointer;font-size:13px;color:var(--muted);padding:0 14px 10px;user-select:none}
+details.more summary::-webkit-details-marker{display:none}
+details.more summary::before{content:"▸ ";}
+details.more[open] summary::before{content:"▾ ";}
+.panel{display:flex;flex-direction:column;gap:14px;padding:4px 14px 16px;border-top:1px solid var(--line);padding-top:14px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:6px;padding:5px 10px;font-size:13px}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);font-weight:600}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:520px){.grid2{grid-template-columns:1fr}.row{grid-template-columns:1fr}.actions{justify-content:flex-start}}
+label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-family:var(--f-mono);letter-spacing:.03em;min-width:0}
+input,textarea,select{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:7px 9px;width:100%;box-sizing:border-box}
+textarea{min-height:64px;resize:vertical}
+.panel-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--surface);border-radius:6px;padding:7px 14px;font-weight:600;font-size:14px}
+.btn.ghost{background:transparent;color:var(--accent)}
+.link-danger{background:none;border:none;color:var(--danger);font-size:13px;padding:4px 0}
+.saved{font-size:12px;color:var(--st-done);font-family:var(--f-mono)}
+.add{background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.add summary{padding:12px 14px;font-weight:600;color:var(--accent)}
+.add form{display:flex;flex-direction:column;gap:10px;padding:0 14px 14px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);font-family:var(--f-mono)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">TryHackMe · SOC Analyst L1</div>
+    <h1>THM Полка</h1>
+    <p class="sub">Все учебники в одном месте. Отмечай статус, пиши заметки — всё сохраняется и видно с любого устройства. Оценки разборов и экзаменов сюда вписывает Claude.</p>
+    <div class="stats" id="stats"></div>
+    <div class="bar" id="bar" aria-hidden="true"></div>
+    <div class="legend">
+      <span><i style="background:var(--st-todo)"></i>не начат</span>
+      <span><i style="background:var(--st-reading)"></i>читаю</span>
+      <span><i style="background:var(--st-done)"></i>прочитан</span>
+      <span><i style="background:var(--st-passed)"></i>разбор сдан</span>
+    </div>
+  </header>
+
+  <div id="shelf"><div class="notice">Загружаю полку…</div></div>
+
+  <details class="add" id="addBox" hidden>
+    <summary>+ Добавить учебник</summary>
+    <form id="addForm">
+      <label for="f-title">Название<input id="f-title" required placeholder="Учебник: Cyber Threat Intelligence"></label>
+      <label for="f-url">Ссылка на учебник<input id="f-url" type="url" required placeholder="https://claude.ai/code/artifact/…"></label>
+      <div class="grid2">
+        <label for="f-path">Путь<select id="f-path"></select></label>
+        <label for="f-rooms">Комнаты (по желанию)<input id="f-rooms" placeholder="Intro to CTI, MISP…"></label>
+      </div>
+      <div><button class="btn" type="submit">Добавить</button> <span class="saved" id="addMsg"></span></div>
+    </form>
+  </details>
+</div>
+
+<script>
+const PATHS=["01 Pre Security","02 Cyber Security 101","03 SOC Level 1","04 SOC Level 2","05 Defending Azure","Вне курса"];
+const ST={none:"не отмечен",todo:"не начат",reading:"читаю",done:"прочитан",passed:"разбор сдан"};
+const ORDER=["todo","reading","done","passed"];
+let db=null, canWrite=true, books=[], openId=null;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function render(){
+  const shelf=$("#shelf");
+  if(!books.length){shelf.innerHTML='<div class="notice">Полка пустая. Добавь первый учебник формой ниже — или попроси Claude закинуть.</div>';renderStats();return}
+  const groups={};
+  books.forEach(b=>{const p=PATHS.includes(b.path)?b.path:"Вне курса";(groups[p]=groups[p]||[]).push(b)});
+  shelf.innerHTML=PATHS.filter(p=>groups[p]).map(p=>{
+    const list=groups[p].sort((a,b)=>(a.order??99)-(b.order??99));
+    return `<section class="path"><h2>${esc(p)} <span class="cnt">${list.length}</span></h2>${list.map(card).join("")}</section>`;
+  }).join("");
+  shelf.querySelectorAll("details.more").forEach(d=>d.addEventListener("toggle",()=>{if(d.open)openId=d.dataset.id;else if(openId===d.dataset.id)openId=null}));
+  renderStats();
+}
+function card(b){
+  const st=ST[b.status]?b.status:"none";
+  const res=[b.razbor&&`разбор <span class="score">${esc(b.razbor)}</span>`,b.exam&&`экзамен <span class="score">${esc(b.exam)}</span>`].filter(Boolean).join(" · ");
+  const meta=[b.rooms&&esc(b.rooms),res].filter(Boolean).join(" · ");
+  const dis=canWrite?"":"disabled";
+  return `<article class="book" data-st="${st}">
+    <div class="row">
+      <div class="title"><strong>${esc(b.title)}</strong>${meta?`<span class="meta">${meta}</span>`:""}</div>
+      <div class="actions"><span class="chip">${ST[st]}</span>${b.url?`<a class="open" href="${esc(b.url)}" target="_blank" rel="noopener">Читать →</a>`:""}</div>
+    </div>
+    <details class="more" data-id="${esc(b.id)}" ${openId===b.id?"open":""}>
+      <summary>статус, результаты, заметки</summary>
+      <div class="panel">
+        <div class="seg" role="group" aria-label="Статус">${ORDER.map(s=>`<button type="button" ${dis} aria-pressed="${b.status===s}" onclick="setStatus('${esc(b.id)}','${s}')">${ST[s]}</button>`).join("")}</div>
+        <div class="grid2">
+          <label for="rz-${esc(b.id)}">Разбор<input id="rz-${esc(b.id)}" ${dis} value="${esc(b.razbor)}" placeholder="напр. 8/10"></label>
+          <label for="ex-${esc(b.id)}">Экзамен<input id="ex-${esc(b.id)}" ${dis} value="${esc(b.exam)}" placeholder="напр. 74/100"></label>
+        </div>
+        <label for="wk-${esc(b.id)}">Слабые места<textarea id="wk-${esc(b.id)}" ${dis} placeholder="что подтянуть">${esc(b.weak)}</textarea></label>
+        <label for="nt-${esc(b.id)}">Мои заметки<textarea id="nt-${esc(b.id)}" ${dis} placeholder="мысли, вопросы, где застрял">${esc(b.notes)}</textarea></label>
+        ${canWrite?`<div class="panel-foot"><div><button class="btn" type="button" onclick="saveFields('${esc(b.id)}',this)">Сохранить</button> <span class="saved" id="ok-${esc(b.id)}"></span></div>
+        <span id="del-${esc(b.id)}"><button class="link-danger" type="button" onclick="askDel('${esc(b.id)}')">Убрать с полки</button></span></div>`:""}
+      </div>
+    </details>
+  </article>`;
+}
+function renderStats(){
+  const n=books.length,c=s=>books.filter(b=>b.status===s).length;
+  const done=c("done")+c("passed");
+  $("#stats").innerHTML=`<span><b>${n}</b> учебников</span><span><b>${done}</b> прочитано</span><span><b>${c("passed")}</b> разборов сдано</span><span><b>${c("reading")}</b> в процессе</span>`;
+  $("#bar").innerHTML=n?["passed","done","reading"].map(s=>`<span style="width:${c(s)/n*100}%;background:var(--st-${s})"></span>`).join(""):"";
+}
+async function write(id,data){
+  try{await db.doc("books/"+id).update({...data,updatedAt:new Date().toISOString()});return true}
+  catch(e){if(e&&e.code==="invalid_argument"){canWrite=false;render()}return false}
+}
+window.setStatus=async(id,s)=>{const b=books.find(x=>x.id===id);if(!b||b.status===s)return;b.status=s;render();await write(id,{status:s})};
+window.saveFields=async(id,btn)=>{
+  const g=k=>document.getElementById(k+"-"+id).value.trim();
+  btn.disabled=true;
+  const ok=await write(id,{razbor:g("rz"),exam:g("ex"),weak:g("wk"),notes:g("nt")});
+  btn.disabled=false;
+  const m=document.getElementById("ok-"+id);if(m)m.textContent=ok?"Сохранено":"Не сохранилось — попробуй ещё раз";
+};
+window.askDel=id=>{document.getElementById("del-"+id).innerHTML=`<span class="meta">Точно убрать? </span><button class="link-danger" type="button" onclick="doDel('${id}')">Да, убрать</button> <button class="link-danger" style="color:var(--muted)" type="button" onclick="render()">Отмена</button>`};
+window.doDel=async id=>{try{await db.doc("books/"+id).delete()}catch(e){}};
+window.render=render;
+
+$("#f-path").innerHTML=PATHS.map(p=>`<option>${p}</option>`).join("");
+$("#addForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const path=$("#f-path").value, same=books.filter(b=>b.path===path);
+  const data={title:$("#f-title").value.trim(),url:$("#f-url").value.trim(),path,rooms:$("#f-rooms").value.trim(),
+    order:same.length?Math.max(...same.map(b=>b.order||0))+1:1,status:"todo",razbor:"",exam:"",weak:"",notes:"",addedAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+  try{await db.collection("books").add(data);e.target.reset();$("#addMsg").textContent="Добавлено"}
+  catch(err){$("#addMsg").textContent="Не получилось добавить — проверь ссылку и попробуй ещё раз"}
+});
+
+(async()=>{
+  db=await window.claude?.use?.("db").catch(()=>null);
+  if(!db){$("#shelf").innerHTML='<div class="notice">База полки здесь не открылась. Открой страницу в claude.ai, войдя в свой аккаунт.</div>';return}
+  const user=await window.claude.use("user").catch(()=>null);
+  const cw=user?await user.can("data.write"):null; if(cw===false)canWrite=false;
+  if(canWrite)$("#addBox").hidden=false;
+  db.collection("books").onSnapshot(snap=>{
+    const active=document.activeElement;
+    if(active&&/^(rz|ex|wk|nt|f)-/.test(active.id)&&!snap.metadata.hasPendingWrites&&openId){/* keep typing context */}
+    books=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(active&&/^(rz|ex|wk|nt)-/.test(active.id))return;
+    render();
+  },err=>{$("#shelf").innerHTML='<div class="notice">Связь с базой пропала. Обнови страницу.</div>'});
+})();
+</script>
+
+</body></html>
