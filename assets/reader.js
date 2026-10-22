@@ -23,6 +23,15 @@
   var prefs = get("thm-reader:prefs", { night: false, zoom: 1, rate: 1 });
   if (prefs.terms == null) prefs.terms = true;
   if (prefs.logs == null) prefs.logs = true;
+  // забота о глазах: по умолчанию включено то, что почти всем помогает, остальное — по вкусу
+  if (prefs.theme == null) prefs.theme = "book";      // book | paper | soft
+  if (prefs.autoWarm == null) prefs.autoWarm = true;   // вечером (20:00–7:00) сама включается мягкая тёмная тема
+  if (prefs.dimMedia == null) prefs.dimMedia = true;   // приглушать картинки и схемы в тёмной теме
+  if (prefs.width == null) prefs.width = "comfy";      // ширина строки в фокусе: narrow | comfy | full
+  if (prefs.lineh == null) prefs.lineh = "normal";     // normal | loose
+  if (prefs.font == null) prefs.font = "book";         // book | serif | sans
+  if (prefs.ruler == null) prefs.ruler = false;        // линейка чтения
+  if (prefs.breaks == null) prefs.breaks = true;       // напоминание 20-20-20
   function save() { st.lastOpen = new Date().toISOString(); put(KEY, st); summary(); }
 
   // ---------- структура учебника ----------
@@ -137,9 +146,26 @@
     "html.thmr-focus .toc,html.thmr-focus #toc,html.thmr-focus aside.side,html.thmr-focus .topbar,html.thmr-focus .mtop,html.thmr-focus #menubtn,html.thmr-focus nav.progress,html.thmr-focus #pbar{display:none!important}",
     "html.thmr-focus .layout,html.thmr-focus .wrap{display:block!important;max-width:none!important;width:auto!important;margin:0!important}",
     "html.thmr-focus main.content,html.thmr-focus main,html.thmr-focus .wrap{max-width:none!important;width:auto!important;margin-left:0!important;margin-right:0!important}",
-    "@media (min-width:700px){html.thmr-focus main.content,html.thmr-focus main,html.thmr-focus .wrap{padding-left:max(24px,4vw,env(safe-area-inset-left,0px))!important;padding-right:max(32px,4vw,env(safe-area-inset-right,0px))!important}}",
+    "@media (min-width:700px){html.thmr-focus.thmr-w-full main.content,html.thmr-focus.thmr-w-full main,html.thmr-focus.thmr-w-full .wrap:not(:has(>main)){padding-left:max(24px,4vw,env(safe-area-inset-left,0px))!important;padding-right:max(32px,4vw,env(safe-area-inset-right,0px))!important}}",
     "html.thmr-focus main p,html.thmr-focus main li,html.thmr-focus .wrap p,html.thmr-focus .wrap li,html.thmr-focus .lead,html.thmr-focus .sub,html.thmr-focus figcaption{max-width:none!important}",
     "@media (prefers-reduced-motion:reduce){#thmr-done,#thmr-done *,#thmr-head .h-ring .fg{animation:none!important;transition:none!important}#thmr-done path{stroke-dashoffset:0}}",
+    "html.thmr-paper{--bg:#f3ead7!important;--ground:#f3ead7!important;--surface:#faf4e6!important;--surface-2:#ede2c9!important;--ink:#3b2f22!important;--muted:#6e5e4a!important;--faint:#8a7a64!important;--line:#d9cbad!important;--line-soft:#e6dbc2!important}",
+    "html.thmr-paper body{background:#f3ead7!important}",
+    "html.thmr-soft{--bg:#1d1a16!important;--ground:#1d1a16!important;--surface:#25211c!important;--surface-2:#2b2620!important;--ink:#e3d9c8!important;--muted:#a89a85!important;--faint:#857965!important;--line:#3a332a!important;--line-soft:#2f2a23!important;--code-bg:#16130f!important;--term:#16130f!important}",
+    "html.thmr-soft body{background:#1d1a16!important}",
+    "html.thmr-dim main img,html.thmr-dim main figure svg,html.thmr-dim main .diagram,html.thmr-dim .wrap img,html.thmr-dim .wrap .diagram,html.thmr-dim main svg:not(#thmr *){filter:brightness(.82) contrast(.96)}",
+    "html.thmr-focus.thmr-w-narrow main.content,html.thmr-focus.thmr-w-narrow main,html.thmr-focus.thmr-w-narrow .wrap{max-width:62ch!important;margin-left:auto!important;margin-right:auto!important}",
+    "html.thmr-focus.thmr-w-comfy main.content,html.thmr-focus.thmr-w-comfy main,html.thmr-focus.thmr-w-comfy .wrap{max-width:78ch!important;margin-left:auto!important;margin-right:auto!important}",
+    "html.thmr-focus .wrap:has(>main){max-width:none!important;margin:0!important;padding-left:0!important;padding-right:0!important}",
+    "html.thmr-loose main p,html.thmr-loose main li,html.thmr-loose .wrap p,html.thmr-loose .wrap li,html.thmr-loose main dd{line-height:1.95!important}",
+    "html.thmr-loose main p,html.thmr-loose .wrap p{margin-bottom:1.1em}",
+    "html.thmr-f-serif main :is(p,li,td,blockquote,figcaption,dd,dt),html.thmr-f-serif .wrap :is(p,li,td,blockquote,figcaption,dd,dt){font-family:'Literata',Georgia,serif!important}",
+    "html.thmr-f-sans main :is(p,li,td,blockquote,figcaption,dd,dt),html.thmr-f-sans .wrap :is(p,li,td,blockquote,figcaption,dd,dt){font-family:'Golos Text',-apple-system,'Segoe UI',system-ui,sans-serif!important}",
+    "html.thmr-ruler main :is(p,li,h1,h2,h3,h4,pre,blockquote,table,figure,dt,dd),html.thmr-ruler .wrap :is(p,li,h1,h2,h3,h4,pre,blockquote,table,figure,dt,dd){opacity:.42;transition:opacity .25s}",
+    "html.thmr-ruler .thmr-rcur{opacity:1!important}",
+    "html.thmr-ruler :is(#thmr,#thmr-head) *{opacity:1!important}",
+    "#thmr-break{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2147483003;background:var(--r-bg);color:var(--r-fg);border:1px solid var(--r-line);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.35);padding:22px;width:min(360px,calc(100vw - 32px));display:flex;flex-direction:column;gap:10px;text-align:center;align-items:center;font-size:14px}",
+    "#thmr-break b{font-size:16px}#thmr-break .bk-n{font-size:46px;font-weight:700;color:var(--r-acc);font-variant-numeric:tabular-nums;line-height:1.1}",
     "@media (prefers-reduced-motion:reduce){#thmr *{transition:none!important}}"
   ].join("\n");
   document.head.appendChild(css);
@@ -248,19 +274,30 @@
     var z = (prefs.zoom || 1) * (prefs.focus ? focusScale() : 1);
     root.style.zoom = Math.abs(z - 1) > 0.001 ? String(Math.round(z * 100) / 100) : "";
     setTimeout(function () { if (typeof paintMap === "function") paintMap(); }, 60);
-    var n = document.getElementById("thmr-night");
-    if (prefs.night) {
-      if (!document.documentElement.getAttribute("data-thmr-prev")) document.documentElement.setAttribute("data-thmr-prev", document.documentElement.getAttribute("data-theme") || "none");
-      document.documentElement.setAttribute("data-theme", "dark");
-      if (!n) document.body.appendChild(el("div", { id: "thmr-night", "aria-hidden": "true" }));
+    var n = document.getElementById("thmr-night"), H = document.documentElement;
+    var th = effTheme(), want = prefs.night || th === "soft" ? "dark" : th === "paper" ? "light" : null;
+    if (want) {
+      if (!H.getAttribute("data-thmr-prev")) H.setAttribute("data-thmr-prev", H.getAttribute("data-theme") || "none");
+      H.setAttribute("data-theme", want);
     } else {
-      var prev = document.documentElement.getAttribute("data-thmr-prev");
+      var prev = H.getAttribute("data-thmr-prev");
       if (prev) {
-        if (prev === "none") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", prev);
-        document.documentElement.removeAttribute("data-thmr-prev");
+        if (prev === "none") H.removeAttribute("data-theme"); else H.setAttribute("data-theme", prev);
+        H.removeAttribute("data-thmr-prev");
       }
-      if (n) n.remove();
     }
+    if (prefs.night) { if (!n) document.body.appendChild(el("div", { id: "thmr-night", "aria-hidden": "true" })); } else if (n) n.remove();
+    H.classList.toggle("thmr-paper", !prefs.night && th === "paper");
+    H.classList.toggle("thmr-soft", !prefs.night && th === "soft");
+    var dark = H.getAttribute("data-theme") === "dark" || (!H.getAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches);
+    H.classList.toggle("thmr-dim", !!prefs.dimMedia && dark);
+    ["narrow", "comfy", "full"].forEach(function (w) { H.classList.toggle("thmr-w-" + w, prefs.width === w); });
+    H.classList.toggle("thmr-loose", prefs.lineh === "loose");
+    H.classList.toggle("thmr-f-serif", prefs.font === "serif");
+    H.classList.toggle("thmr-f-sans", prefs.font === "sans");
+    if (prefs.font !== "book") loadFont();
+    H.classList.toggle("thmr-ruler", !!prefs.ruler);
+    if (prefs.ruler) setTimeout(rulerMove, 30);
     put("thm-reader:prefs", prefs);
   }
 
@@ -593,6 +630,17 @@
           return '<button class="t-b" data-a="rate" data-v="' + r + '" aria-pressed="' + (prefs.rate === r) + '">' + r + "×</button>";
         }).join("") + "</div>");
       }
+      function seg(key, opts) {
+        return '<div class="t-row">' + opts.map(function (o) { return '<button class="t-b" data-a="set" data-k="' + key + '" data-v="' + o[0] + '" aria-pressed="' + (prefs[key] === o[0]) + '">' + o[1] + "</button>"; }).join("") + "</div>";
+      }
+      function tg(key, label) { return '<button class="t-b" data-a="tog" data-k="' + key + '" aria-pressed="' + !!prefs[key] + '">' + label + "</button>"; }
+      h.push('<div class="t-h">Глаза</div>');
+      h.push('<div class="t-mut">Тема</div>' + seg("theme", [["book", "Как в учебнике"], ["paper", "Бумага"], ["soft", "Мягкая тёмная"]]));
+      h.push('<div class="t-row">' + tg("autoWarm", "Вечером мягкая тёмная") + tg("dimMedia", "Приглушать картинки") + '</div>');
+      h.push('<div class="t-mut">Ширина строки в фокусе</div>' + seg("width", [["narrow", "Узко"], ["comfy", "Удобно"], ["full", "Во всю"]]));
+      h.push('<div class="t-mut">Интервал</div>' + seg("lineh", [["normal", "Обычный"], ["loose", "Свободный"]]));
+      h.push('<div class="t-mut">Шрифт</div>' + seg("font", [["book", "Как в учебнике"], ["serif", "Книжный"], ["sans", "Без засечек"]]));
+      h.push('<div class="t-row">' + tg("ruler", "Линейка чтения") + tg("breaks", "Перерыв 20-20-20") + '</div>');
       h.push('<div class="t-h">Чтение</div>');
       h.push('<div class="t-row"><button class="t-b" data-a="z-" aria-label="Мельче">A−</button><span class="t-mut">' + Math.round((prefs.zoom || 1) * 100) + '%</span><button class="t-b" data-a="z+" aria-label="Крупнее">A+</button>' +
         '<button class="t-b" data-a="night" aria-pressed="' + !!prefs.night + '">Ночной режим</button></div>');
@@ -658,6 +706,8 @@
     else if (a === "z+") { prefs.zoom = Math.min(1.6, Math.round(((prefs.zoom || 1) + 0.1) * 10) / 10); applyPrefs(); }
     else if (a === "night") { prefs.night = !prefs.night; applyPrefs(); }
     else if (a === "focus") { prefs.focus = !prefs.focus; applyFocus(); }
+    else if (a === "set") { prefs[b.dataset.k] = b.dataset.v; applyPrefs(); }
+    else if (a === "tog") { prefs[b.dataset.k] = !prefs[b.dataset.k]; if (b.dataset.k === "breaks") brkSecs = 0; applyPrefs(); }
     else if (a === "terms") { prefs.terms = !prefs.terms; applyToggles(); }
     else if (a === "logs") { prefs.logs = !prefs.logs; applyToggles(); }
     renderPanel();
@@ -968,6 +1018,58 @@
     vp.style.top = (window.scrollY / H * 100) + "%";
     vp.style.height = Math.max(1.5, window.innerHeight / H * 100) + "%";
   }
+
+
+  // ---------- забота о глазах ----------
+  function evening() { var h = new Date().getHours(); return h >= 20 || h < 7; }
+  function effTheme() { return prefs.theme !== "book" ? prefs.theme : (prefs.autoWarm && evening() ? "soft" : "book"); }
+  setInterval(function () { if (prefs.autoWarm && prefs.theme === "book") applyPrefs(); }, 60000);
+  if (window.matchMedia) matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () { applyPrefs(); });
+  function loadFont() {
+    if (document.getElementById("thmr-fonts")) return;
+    var l = document.createElement("link"); l.id = "thmr-fonts"; l.rel = "stylesheet";
+    l.href = "https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600&family=Golos+Text:wght@400;600&display=swap";
+    document.head.appendChild(l);
+  }
+  // линейка чтения: ярким остаётся блок в середине экрана, остальное приглушено
+  var RSEL = "p,li,h1,h2,h3,h4,pre,blockquote,table,figure,dt,dd", rBlocks = null, rCur = null;
+  function rulerMove() {
+    if (!prefs.ruler) { if (rCur) rCur.classList.remove("thmr-rcur"); rCur = null; return; }
+    if (!rBlocks) rBlocks = Array.prototype.filter.call(root.querySelectorAll(RSEL), function (b) { return !b.querySelector(RSEL) && !b.closest("#thmr,#thmr-head,nav,aside,.toc"); });
+    var mid = window.innerHeight * 0.42, best = null, bd = 1e9;
+    for (var i = 0; i < rBlocks.length; i++) {
+      var r = rBlocks[i].getBoundingClientRect();
+      if (r.height === 0) continue;
+      var d = r.top > mid ? r.top - mid : r.bottom < mid ? mid - r.bottom : 0;
+      if (d < bd) { bd = d; best = rBlocks[i]; if (d === 0) break; }
+    }
+    if (best !== rCur) { if (rCur) rCur.classList.remove("thmr-rcur"); if (best) best.classList.add("thmr-rcur"); rCur = best; }
+  }
+  window.addEventListener("scroll", function () { if (prefs.ruler && !rulerMove.r) rulerMove.r = requestAnimationFrame(function () { rulerMove.r = 0; rulerMove(); }); }, { passive: true });
+  // перерыв 20-20-20: каждые 20 минут чтения — посмотреть вдаль 20 секунд
+  var brkSecs = 0, brkBox = null;
+  setInterval(function () {
+    if (!prefs.breaks || brkBox || document.hidden || Date.now() - lastAct > 90000) return;
+    if (++brkSecs >= 20 * 60) { brkSecs = 0; showBreak(); }
+  }, 1000);
+  function showBreak() {
+    var left = 20;
+    brkBox = el("div", { id: "thmr-break", role: "alertdialog", "aria-label": "Перерыв для глаз" },
+      '<b>20 минут чтения — дай глазам отдохнуть</b><span>Посмотри на что-нибудь вдали, метров за 6, 20 секунд.</span><span class="bk-n">20</span>' +
+      '<div class="t-row"><button class="t-b" data-b="skip">Пропустить</button><button class="t-b" data-b="off">Больше не напоминать</button></div>');
+    ui.appendChild(brkBox);
+    var t = setInterval(function () {
+      left--; var nEl = brkBox && brkBox.querySelector(".bk-n");
+      if (nEl) nEl.textContent = left > 0 ? left : "✓";
+      if (left <= 0) { clearInterval(t); setTimeout(closeBreak, 1500); }
+    }, 1000);
+    brkBox.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-b]"); if (!b) return;
+      if (b.dataset.b === "off") { prefs.breaks = false; put("thm-reader:prefs", prefs); renderPanel(); }
+      clearInterval(t); closeBreak();
+    });
+  }
+  function closeBreak() { if (brkBox) brkBox.remove(); brkBox = null; }
 
   // ---------- старт ----------
   function start() {
