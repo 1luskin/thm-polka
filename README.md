@@ -12,6 +12,9 @@
 - `search.html`, `glossary.html`, `mitre.html`, `ports.html`, `tools.html` — справочники. Данные для них в `data/`, их собирает `tools/build_index.py` из учебников.
 - `tools/attack/enterprise-compact.json` — выжимка MITRE ATT&CK Enterprise (сейчас v20.0) из github.com/mitre-attack/attack-stix-data. Обновлять при выходе новой версии.
 - `tools/refdata.py` — словари портов и инструментов (описания для SOC).
+- `path.html` — «Мой путь»: лента событий учёбы. `assets/progress.js` — общий слой данных прогресса (серии, таймер THM, бейджи), `assets/fx.js` — конфетти и тосты.
+- `data/chapters.json` — главы каждого учебника (для бусин на полке), собирает `tools/build_index.py`.
+- `assets/og/` — картинки-превью для ссылок, `tools/og.py` рисует их шрифтами из `tools/fonts/` (SIL OFL).
 
 ## Как добавить новый учебник
 
@@ -32,8 +35,9 @@
 
 `path` — одно из: `01 Pre Security`, `02 Cyber Security 101`, `03 SOC Level 1`, `04 SOC Level 2`, `05 Defending Azure`, `Вне курса`. `order` — порядок внутри пути.
 
-3. Подключить читалку и офлайн к новому учебнику: `python3 tools/inject.py` (уже подключённые пропускаются).
-   Пересобрать поиск, глоссарий, MITRE, порты и инструменты: `python3 tools/build_index.py` (нужны `beautifulsoup4` и `lxml`).
+3. Пересобрать поиск, главы, глоссарий, MITRE, порты и инструменты: `python3 tools/build_index.py` (нужны `beautifulsoup4` и `lxml`).
+   Сделать картинку-превью для ссылок: `python3 tools/og.py` (нужен Pillow).
+   Подключить читалку, офлайн и превью ко всем страницам: `python3 tools/inject.py` (повторный запуск безопасен).
 4. В `sw.js` поднять версию `CACHE` (`thm-polka-v1` → `v2` …), чтобы телефон подтянул обновление.
 5. Закоммитить и запушить в `main`. GitHub Pages обновит сайт за 1–2 минуты.
 

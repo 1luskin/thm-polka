@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Собирает справочные данные сайта из учебников в books/.
 Запуск после добавления или правки учебника:  python3 tools/build_index.py
-Пишет: data/search.json, data/glossary.json, data/mitre.json, data/ports.json, data/tools.json"""
+Пишет: data/search.json, data/chapters.json, data/glossary.json, data/mitre.json, data/ports.json, data/tools.json"""
 import json, pathlib, re, sys
 from bs4 import BeautifulSoup, NavigableString, Comment
 
@@ -13,6 +13,9 @@ DATA = ROOT / "data"
 DATA.mkdir(exist_ok=True)
 SKIP = {"script", "style", "noscript", "svg", "nav", "aside", "template"}
 SKIP_CLASS = {"toc", "side", "topbar", "mtop", "progress"}
+
+
+HEADS = ["h1", "h2"]  # разделы учебника — заголовки h1/h2 с id (их же считает читалка)
 
 
 def norm(s):
@@ -36,11 +39,11 @@ def sections(soup):
     root = soup.select_one("main.content") or soup.select_one("main") or soup.select_one(".wrap") or soup.body
     out = [{"id": "", "title": "Начало", "parts": [], "el": []}]
     for node in root.descendants:
-        if getattr(node, "name", None) == "h2" and node.get("id") and not skipped(node):
+        if getattr(node, "name", None) in HEADS and node.get("id") and not skipped(node):
             out.append({"id": node["id"], "title": norm(node.get_text(" ")), "parts": [], "el": [node]})
             continue
         if isinstance(node, NavigableString) and not isinstance(node, Comment):
-            if node.parent and node.parent.name == "h2" and node.parent.get("id"):
+            if node.parent and node.parent.name in HEADS and node.parent.get("id"):
                 continue
             if skipped(node.parent):
                 continue
@@ -51,10 +54,10 @@ def sections(soup):
 
 
 def section_of(el, root):
-    """id ближайшего h2 перед элементом."""
-    h = el.find_previous("h2", id=True)
+    """id ближайшего заголовка раздела перед элементом."""
+    h = el.find_previous(HEADS, id=True)
     while h is not None and skipped(h):
-        h = h.find_previous("h2", id=True)
+        h = h.find_previous(HEADS, id=True)
     return (h["id"], norm(h.get_text(" "))) if h is not None else ("", "Начало")
 
 
@@ -62,7 +65,40 @@ books = json.loads((ROOT / "books.json").read_text(encoding="utf8"))
 attack = json.loads((ROOT / "tools/attack/enterprise-compact.json").read_text(encoding="utf8"))
 tech = {t["id"]: t for t in attack["techniques"]}
 
-search, glossary, mitre_seen, ports_seen, tools_seen = [], {}, {}, {}, {}
+search, glossary, mitre_seen, ports_seen, tools_seen, chapters = [], {}, {}, {}, {}, {}
+
+
+def chapters_of(soup):
+    """Главы учебника для бусин на полке: [{t: название, s: [id разделов]}].
+    Разделы — все h1/h2 с id (их же считает читалка). Глава — пункт верхнего уровня оглавления (.toc a.t1),
+    иначе каждый h1 с id, а если и их нет — каждый раздел сам себе глава."""
+    h2s = [h for h in soup.find_all(HEADS, id=True) if not skipped(h)]
+    ids = [h["id"] for h in h2s]
+    pos = {h["id"]: i for i, h in enumerate(h2s)}
+    starts = []
+    for a in soup.select(".toc a.t1, #toc a.t1"):
+        href = a.get("href", "")
+        if not href.startswith("#"):
+            continue
+        el = soup.find(id=href[1:])
+        if el is None:
+            continue
+        if el.get("id") not in pos:
+            el = el.find_next(HEADS, id=True)
+        if el is not None and el.get("id") in pos:
+            starts.append(pos[el["id"]])
+    if not starts:
+        starts = [i for i, h in enumerate(h2s) if h.name == "h1"]
+    starts = sorted(set(starts))
+    if not starts:
+        return [{"t": norm(h.get_text(" ")), "s": [h["id"]]} for h in h2s]
+    out = []
+    if starts[0] > 0:
+        out.append({"t": "Начало", "s": ids[: starts[0]]})
+    for n, st in enumerate(starts):
+        end = starts[n + 1] if n + 1 < len(starts) else len(ids)
+        out.append({"t": norm(h2s[st].get_text(" ")), "s": ids[st:end]})
+    return out
 PORT_RX = [
     r"[Пп]орт(?:а|у|ом|е|ы|ов|ам|ах)?\s*(?:№\s*)?(\d{1,5})",
     r"\b[Pp]orts?\s+(\d{1,5})",
@@ -91,6 +127,7 @@ for b in books:
     if not path.exists():
         continue
     soup = BeautifulSoup(path.read_text(encoding="utf8"), "lxml")
+    chapters[b["id"]] = chapters_of(soup)
     root, secs = sections(soup)
     for s in secs:
         ref = {"book": b["id"], "sec": s["id"], "title": s["title"]}
@@ -132,6 +169,7 @@ def dump(name, obj):
 
 
 dump("search.json", search)
+dump("chapters.json", chapters)
 dump("glossary.json", sorted(glossary.values(), key=lambda g: g["en"].lower()))
 
 # MITRE: полная матрица текущей версии + где встречалось в учебниках

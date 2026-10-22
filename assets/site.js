@@ -1,7 +1,7 @@
 /* Общее для справочных страниц: навигация, список учебников, ссылки на разделы, отметка «прочитано». */
 (function () {
   var PAGES = [
-    ["index.html", "Полка"], ["search.html", "Поиск"], ["glossary.html", "Глоссарий"],
+    ["index.html", "Полка"], ["path.html", "Мой путь"], ["search.html", "Поиск"], ["glossary.html", "Глоссарий"],
     ["mitre.html", "MITRE ATT&CK"], ["ports.html", "Порты"], ["tools.html", "Инструменты"]
   ];
   var here = location.pathname.split("/").pop() || "index.html";

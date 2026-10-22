@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>THM Полка</title>
+<!--thm-og:start--><meta name="description" content="Учебники по TryHackMe на пути в SOC Analyst L1: полка с прогрессом, поиск, глоссарий EN/RU/DE, карта MITRE ATT&amp;CK."><meta property="og:type" content="website"><meta property="og:site_name" content="THM Полка"><meta property="og:locale" content="ru_RU"><meta property="og:title" content="THM Полка"><meta property="og:description" content="Учебники по TryHackMe на пути в SOC Analyst L1: полка с прогрессом, поиск, глоссарий EN/RU/DE, карта MITRE ATT&amp;CK."><meta property="og:url" content="https://1luskin.github.io/thm-polka/"><meta property="og:image" content="https://1luskin.github.io/thm-polka/assets/og/site.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><!--thm-og:end-->
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <meta name="theme-color" content="#16212e">
@@ -12,126 +13,218 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Unbounded:wght@500;700&display=swap">
 <style>
-/* Layout: очередь тикетов SOC — пути как очереди, учебники как тикеты со статусом-полосой слева */
+/* Layout: книжная полка сверху (корешки по путям THM), под ней пульт — таймер, активность, бейджи, ниже карточки учебников */
 :root{
   --bg:#eef1f4; --surface:#ffffff; --ink:#16212e; --muted:#5b6876; --line:#d5dbe2;
-  --accent:#c2620a; --accent-soft:#fbe9d6;
-  --st-todo:#8794a2; --st-reading:#2f6fb5; --st-done:#2e8a57; --st-passed:#7b4fc2;
-  --danger:#b3261e;
+  --accent:#c2620a; --accent-soft:#fbe9d6; --gilt:#c9a24f; --cream:#f6eedd; --plank:#c7cfd8;
+  --st-todo:#8794a2; --st-reading:#2f6fb5; --st-done:#2e8a57; --st-passed:#7b4fc2; --danger:#b3261e;
+  /* переплёты по путям */
+  --b-ps:#2f6b5a; --b-cs:#2c4f7c; --b-l1:#8a3b2e; --b-l2:#5a3f78; --b-az:#1f6f86; --b-x:#55606c;
   --f-display:"Unbounded","Golos Text",system-ui,sans-serif;
   --f-body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0f151c; --surface:#17202a; --ink:#e3e9ef; --muted:#93a1af; --line:#2a3644;
-  --accent:#f0954a; --accent-soft:#3a2716;
+  --accent:#f0954a; --accent-soft:#3a2716; --gilt:#d9b26a; --cream:#f3ead6; --plank:#2f3c4a;
   --st-todo:#7d8b99; --st-reading:#5d9be0; --st-done:#4fb27a; --st-passed:#a684e6; --danger:#ef7a72;
+  --b-ps:#3a7d6a; --b-cs:#365e92; --b-l1:#9c4637; --b-l2:#6b4c8c; --b-az:#2a8099; --b-x:#64707d;
   color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0f151c; --surface:#17202a; --ink:#e3e9ef; --muted:#93a1af; --line:#2a3644;
-  --accent:#f0954a; --accent-soft:#3a2716;
+  --accent:#f0954a; --accent-soft:#3a2716; --gilt:#d9b26a; --cream:#f3ead6; --plank:#2f3c4a;
   --st-todo:#7d8b99; --st-reading:#5d9be0; --st-done:#4fb27a; --st-passed:#a684e6; --danger:#ef7a72;
+  --b-ps:#3a7d6a; --b-cs:#365e92; --b-l1:#9c4637; --b-l2:#6b4c8c; --b-az:#2a8099; --b-x:#64707d;
   color-scheme:dark}
-body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
-.wrap{max-width:860px;margin:0 auto;padding-block:28px 64px;
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;margin:0}
+[hidden]{display:none!important}
+.wrap{max-width:980px;margin:0 auto;padding-block:24px 64px;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
   display:flex;flex-direction:column;gap:28px}
 header{display:flex;flex-direction:column;gap:10px}
 .eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
 h1{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,5vw,36px);line-height:1.1;margin:0;text-wrap:balance}
-.sub{color:var(--muted);margin:0;max-width:60ch}
+h2.sec{font-family:var(--f-mono);font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+h2.sec .cnt{font-weight:400}
+.sub{color:var(--muted);margin:0;max-width:62ch}
+.quick{display:flex;flex-wrap:wrap;gap:6px}
+.quick a{font-family:var(--f-mono);font-size:13px;color:var(--ink);text-decoration:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px}
+.quick a:hover{border-color:var(--accent);color:var(--accent)}
 .stats{display:flex;flex-wrap:wrap;gap:8px 20px;font-family:var(--f-mono);font-size:13px;color:var(--muted)}
 .stats b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
-.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;display:flex}
-.bar span{display:block;height:100%}
+.stats .streak b{color:var(--accent)}
 .notice{border:1px dashed var(--line);border-radius:8px;padding:14px 16px;color:var(--muted);font-size:14px}
+button{font:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--surface);border-radius:6px;padding:7px 14px;font-weight:600;font-size:14px;text-decoration:none;display:inline-block}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.plain{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn:disabled{opacity:.5;cursor:default}
+
+/* ---------- полка с корешками ---------- */
+.case{display:flex;flex-wrap:wrap;gap:22px 26px;align-items:flex-end}
+.grp{display:flex;flex-direction:column;min-width:0}
+.spines{display:flex;align-items:flex-end;gap:5px;padding-inline:8px;min-height:120px}
+.plank{height:10px;background:var(--plank);border-radius:2px;box-shadow:0 6px 10px -6px rgba(0,0,0,.35)}
+.plabel{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:7px;padding-inline:8px;display:flex;gap:8px}
+.plabel b{color:var(--ink);font-weight:600}
+.spine{--k:1;position:relative;display:block;width:calc(var(--w) * var(--k));height:calc(var(--h) * var(--k));background:var(--b);border-radius:3px 3px 1px 1px;
+  color:var(--cream);text-decoration:none;box-shadow:inset 3px 0 0 rgba(255,255,255,.08),inset -3px 0 0 rgba(0,0,0,.18);transition:transform .18s ease;overflow:hidden}
+.spine:hover,.spine:focus-visible{transform:translateY(-7px)}
+.spine::before,.spine::after{content:"";position:absolute;left:5px;right:5px;height:6px;border-top:2px solid var(--gilt);border-bottom:2px solid var(--gilt);opacity:.85;z-index:2}
+.spine::before{top:12px}.spine::after{bottom:12px}
+.spine .fill{position:absolute;left:0;right:0;bottom:0;height:var(--p);background:linear-gradient(rgba(255,255,255,.26),rgba(255,255,255,.12));transition:height .6s ease}
+.spine .fill.lvl{border-top:2px solid rgba(246,238,221,.9)}
+.spine .st{position:absolute;inset:30px 0 42px;display:flex;align-items:center;justify-content:center;z-index:3}
+.spine .st span{writing-mode:vertical-rl;transform:rotate(180deg);font-weight:600;font-size:12px;letter-spacing:.01em;line-height:1.12;max-height:100%;max-width:calc(var(--w) * var(--k) - 10px);overflow:hidden;white-space:normal;text-align:center;text-shadow:0 1px 1px rgba(0,0,0,.35)}
+.spine .pc{position:absolute;left:0;right:0;bottom:22px;text-align:center;font-family:var(--f-mono);font-size:10px;z-index:3;font-variant-numeric:tabular-nums}
+.spine .seal{position:absolute;top:26px;left:50%;transform:translateX(-50%);width:16px;height:16px;border-radius:50%;background:var(--gilt);color:#2a1d05;font-size:10px;font-weight:700;display:grid;place-items:center;z-index:4}
+.spine.cur .ribbon{position:absolute;top:0;right:6px;width:9px;height:46px;background:var(--accent);clip-path:polygon(0 0,100% 0,100% 100%,50% 82%,0 100%);z-index:5}
+.spine.ghost{background:transparent;border:1.5px dashed var(--line);box-shadow:none;color:var(--muted)}
+.spine.ghost::before,.spine.ghost::after{display:none}
+.spine.ghost:hover{transform:none}
+.spine.ghost .st span{font-weight:500;font-size:11px;text-shadow:none}
+@media (max-width:560px){.spine{--k:.86}.spine .st span{font-size:11px}.case{gap:18px 14px}}
+
+/* ---------- пульт: продолжить + таймер ---------- */
+.deck{display:grid;grid-template-columns:1.2fr 1fr;gap:12px}
+@media (max-width:720px){.deck{grid-template-columns:1fr}}
+.resume{display:flex;flex-direction:column;gap:10px;justify-content:space-between}
+.resume small,.timer small{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.resume b{font-size:17px}
+.resume span{font-size:14px;color:var(--muted);overflow-wrap:anywhere}
+.timer{display:flex;flex-direction:column;gap:10px}
+.timer .clock{font-family:var(--f-mono);font-size:32px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:.02em;line-height:1}
+.timer.run .clock{color:var(--accent)}
+.timer .row1{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.timer .btns{display:flex;gap:8px;flex-wrap:wrap}
+.timer .t-meta{font-size:13px;color:var(--muted)}
+.dot-live{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-right:6px;animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25}}
+select,input,textarea{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:7px 9px;width:100%;box-sizing:border-box}
+label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-family:var(--f-mono);letter-spacing:.03em;min-width:0}
+.inline{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+.inline label{flex:1 1 120px}
+.warn{background:var(--accent-soft);border:1px solid var(--accent);border-radius:8px;padding:10px 12px;font-size:14px;display:flex;flex-direction:column;gap:8px}
+
+/* ---------- календарь активности ---------- */
+.heat-wrap{overflow-x:auto;padding-bottom:4px}
+.heat{display:flex;gap:3px;min-width:min-content;align-items:flex-start}
+.heat .dl{display:grid;grid-template-rows:16px repeat(7,12px);gap:3px;font-family:var(--f-mono);font-size:10px;color:var(--muted);margin-right:4px}
+.heat .wk{display:grid;grid-template-rows:16px repeat(7,12px);gap:3px}
+.heat .mo{font-family:var(--f-mono);font-size:10px;color:var(--muted);white-space:nowrap;width:12px;overflow:visible}
+.heat .c{width:12px;height:12px;border-radius:2px;background:var(--line)}
+.heat .c.l1{background:color-mix(in srgb,var(--accent) 28%,var(--surface))}
+.heat .c.l2{background:color-mix(in srgb,var(--accent) 52%,var(--surface))}
+.heat .c.l3{background:color-mix(in srgb,var(--accent) 76%,var(--surface))}
+.heat .c.l4{background:var(--accent)}
+.heat .c.today{outline:1.5px solid var(--ink);outline-offset:1px}
+.heat .c.fut{background:transparent}
+.heat-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px;font-family:var(--f-mono)}
+.heat-foot .lg{display:flex;gap:3px;align-items:center}
+.heat-foot .lg i{width:12px;height:12px;border-radius:2px;display:inline-block}
+
+/* ---------- бейджи ---------- */
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.bdg{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+.hex{flex:0 0 46px;height:52px;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);display:grid;place-items:center;font-family:var(--f-mono);font-weight:600;font-size:14px;background:var(--line);color:var(--muted)}
+.bdg.on .hex{background:linear-gradient(160deg,var(--gilt),var(--accent));color:#24170a}
+.bdg .bt{min-width:0;display:flex;flex-direction:column;gap:2px}
+.bdg .bt b{font-size:14px}
+.bdg .bt span{font-size:12px;color:var(--muted)}
+.bdg .pb{height:4px;border-radius:2px;background:var(--line);overflow:hidden;margin-top:3px}
+.bdg .pb i{display:block;height:100%;background:var(--accent)}
+.bdg.off{opacity:.85}
+
+/* ---------- карточки учебников ---------- */
 section.path{display:flex;flex-direction:column;gap:8px}
-.path h2{font-family:var(--f-mono);font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0;display:flex;gap:10px;align-items:baseline}
-.path h2 .cnt{font-weight:400}
-.book{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--st);border-radius:6px}
-.book[data-st="none"]{--st:var(--line)}
-.book[data-st="todo"]{--st:var(--st-todo)}
-.book[data-st="reading"]{--st:var(--st-reading)}
-.book[data-st="done"]{--st:var(--st-done)}
-.book[data-st="passed"]{--st:var(--st-passed)}
-.row{display:grid;grid-template-columns:1fr auto;gap:6px 14px;align-items:center;padding:12px 14px}
-.title{min-width:0;display:flex;flex-direction:column;gap:2px}
+.book{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--b);border-radius:6px}
+.row{display:grid;grid-template-columns:1fr auto;gap:6px 14px;align-items:start;padding:12px 14px}
+.title{min-width:0;display:flex;flex-direction:column;gap:5px}
 .title strong{font-weight:600;font-size:16px}
 .meta{font-size:13px;color:var(--muted)}
 .meta .score{font-family:var(--f-mono);color:var(--st-passed)}
 .actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
-.chip{font-family:var(--f-mono);font-size:12px;padding:3px 9px;border-radius:999px;border:1px solid var(--st);color:var(--ink);background:transparent;white-space:nowrap}
-.book[data-st="none"] .chip{color:var(--muted)}
+.chip{font-family:var(--f-mono);font-size:12px;padding:3px 9px;border-radius:999px;border:1px solid var(--st);color:var(--ink);white-space:nowrap}
+.book[data-st="none"] .chip{--st:var(--line);color:var(--muted)}
+.book[data-st="todo"] .chip{--st:var(--st-todo)}
+.book[data-st="reading"] .chip{--st:var(--st-reading)}
+.book[data-st="done"] .chip{--st:var(--st-done)}
+.book[data-st="passed"] .chip{--st:var(--st-passed)}
 a.open{font-weight:600;color:var(--accent);text-decoration:none;font-size:14px;padding:4px 2px}
 a.open:hover{text-decoration:underline}
-button{font:inherit;cursor:pointer}
-button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.beads{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.bead{width:11px;height:11px;border-radius:50%;border:1.5px solid var(--b);background:transparent;display:block;position:relative}
+.bead.half{background:linear-gradient(90deg,var(--b) 50%,transparent 50%)}
+.bead.full{background:var(--b)}
+.bead.cur::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:2px solid var(--accent);animation:pulse 1.6s ease-in-out infinite}
+.bead:hover{transform:scale(1.25)}
+.prog{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 details.more summary{list-style:none;cursor:pointer;font-size:13px;color:var(--muted);padding:0 14px 10px;user-select:none}
 details.more summary::-webkit-details-marker{display:none}
-details.more summary::before{content:"▸ ";}
-details.more[open] summary::before{content:"▾ ";}
-.panel{display:flex;flex-direction:column;gap:14px;padding:4px 14px 16px;border-top:1px solid var(--line);padding-top:14px}
+details.more summary::before{content:"▸ "}
+details.more[open] summary::before{content:"▾ "}
+.panel{display:flex;flex-direction:column;gap:14px;padding:14px 14px 16px;border-top:1px solid var(--line)}
 .seg{display:flex;flex-wrap:wrap;gap:6px}
 .seg button{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:6px;padding:5px 10px;font-size:13px}
 .seg button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);font-weight:600}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media (max-width:520px){.grid2{grid-template-columns:1fr}.row{grid-template-columns:1fr}.actions{justify-content:flex-start}}
-label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-family:var(--f-mono);letter-spacing:.03em;min-width:0}
-input,textarea,select{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:7px 9px;width:100%;box-sizing:border-box}
 textarea{min-height:64px;resize:vertical}
 .panel-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-.btn{border:1px solid var(--accent);background:var(--accent);color:var(--surface);border-radius:6px;padding:7px 14px;font-weight:600;font-size:14px}
-.btn.ghost{background:transparent;color:var(--accent)}
 .link-danger{background:none;border:none;color:var(--danger);font-size:13px;padding:4px 0}
 .saved{font-size:12px;color:var(--st-done);font-family:var(--f-mono)}
 .add{background:var(--surface);border:1px solid var(--line);border-radius:8px}
-.add summary{padding:12px 14px;font-weight:600;color:var(--accent)}
+.add summary{padding:12px 14px;font-weight:600;color:var(--accent);cursor:pointer}
 .add form{display:flex;flex-direction:column;gap:10px;padding:0 14px 14px}
-.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);font-family:var(--f-mono)}
-.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
-.resume{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
-.resume .rl{min-width:0;display:flex;flex-direction:column;gap:2px}
-.resume .rl small{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.resume .rl b{font-weight:600}
-.resume .rl span{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
-a.btn{text-decoration:none;display:inline-block}
-.prog{display:flex;align-items:center;gap:8px;font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
-.prog .pb{flex:0 0 90px;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
-.prog .pb i{display:block;height:100%;background:var(--st-reading)}
-.streak b{color:var(--accent)}
-.quick{display:flex;flex-wrap:wrap;gap:6px}
-.quick a{font-family:var(--f-mono);font-size:13px;color:var(--ink);text-decoration:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px}
-.quick a:hover{border-color:var(--accent);color:var(--accent)}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
-<style>body{margin:0}[hidden]{display:none!important}</style>
 </head>
 <body>
-
 <div class="wrap">
   <header>
     <div class="eyebrow">TryHackMe · SOC Analyst L1</div>
-    <nav class="quick" aria-label="Справочники"><a href="search.html">Поиск</a><a href="glossary.html">Глоссарий</a><a href="mitre.html">MITRE ATT&amp;CK</a><a href="ports.html">Порты</a><a href="tools.html">Инструменты</a></nav>
+    <nav class="quick" aria-label="Разделы"><a href="path.html">Мой путь</a><a href="search.html">Поиск</a><a href="glossary.html">Глоссарий</a><a href="mitre.html">MITRE ATT&amp;CK</a><a href="ports.html">Порты</a><a href="tools.html">Инструменты</a></nav>
     <h1>THM Полка</h1>
-    <p class="sub">Все учебники в одном месте. Отмечай статус и пиши заметки. Прогресс, закладки и выделения хранятся в этом браузере. На другое устройство их можно перенести внизу через «Экспорт».</p>
+    <p class="sub">Учебники по TryHackMe на пути в SOC. Корешок заполняется по мере чтения, закладка-ленточка — где ты сейчас. Прогресс хранится в этом браузере, на другое устройство его переносит «Экспорт» внизу.</p>
     <div class="stats" id="stats"></div>
-    <div id="resume"></div>
-    <div class="bar" id="bar" aria-hidden="true"></div>
-    <div class="legend">
-      <span><i style="background:var(--st-todo)"></i>не начат</span>
-      <span><i style="background:var(--st-reading)"></i>читаю</span>
-      <span><i style="background:var(--st-done)"></i>прочитан</span>
-      <span><i style="background:var(--st-passed)"></i>разбор сдан</span>
-    </div>
   </header>
 
-  <div id="shelf"><div class="notice">Загружаю полку…</div></div>
+  <section aria-labelledby="h-shelf">
+    <h2 class="sec" id="h-shelf">Полка</h2>
+    <div class="case" id="case"><div class="notice">Загружаю полку…</div></div>
+  </section>
 
-  <details class="add" id="addBox" hidden>
+  <div class="deck">
+    <div class="card resume" id="resume"></div>
+    <div class="card timer" id="timer"></div>
+  </div>
+
+  <section aria-labelledby="h-heat">
+    <h2 class="sec" id="h-heat">Активность <span class="cnt" id="heatSum"></span></h2>
+    <div class="card">
+      <div class="heat-wrap" id="heatWrap"><div class="heat" id="heat"></div></div>
+      <div class="heat-foot"><span>Чтение учебников и таймер THM вместе. День идёт в серию от 1 минуты.</span>
+        <span class="lg">меньше <i style="background:var(--line)"></i><i class="c l1" style="background:color-mix(in srgb,var(--accent) 28%,var(--surface))"></i><i style="background:color-mix(in srgb,var(--accent) 52%,var(--surface))"></i><i style="background:color-mix(in srgb,var(--accent) 76%,var(--surface))"></i><i style="background:var(--accent)"></i> больше</span></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-badges">
+    <h2 class="sec" id="h-badges">Бейджи <span class="cnt" id="badgeSum"></span></h2>
+    <div class="badges" id="badges"></div>
+  </section>
+
+  <section aria-labelledby="h-books">
+    <h2 class="sec" id="h-books">Учебники</h2>
+    <div id="shelf" style="display:flex;flex-direction:column;gap:22px"></div>
+  </section>
+
+  <details class="add" id="addBox">
     <summary>+ Добавить учебник</summary>
     <form id="addForm">
       <label for="f-title">Название<input id="f-title" required placeholder="Учебник: Cyber Threat Intelligence"></label>
-      <label for="f-url">Ссылка на учебник<input id="f-url" type="url" required placeholder="https://claude.ai/code/artifact/…"></label>
+      <label for="f-url">Ссылка на учебник<input id="f-url" type="url" required placeholder="https://…"></label>
       <div class="grid2">
         <label for="f-path">Путь<select id="f-path"></select></label>
         <label for="f-rooms">Комнаты (по желанию)<input id="f-rooms" placeholder="Intro to CTI, MISP…"></label>
@@ -142,135 +235,267 @@ a.btn{text-decoration:none;display:inline-block}
 
   <details class="add">
     <summary>Перенести прогресс на другое устройство</summary>
-    <form onsubmit="event.preventDefault();importData()">
-      <div><button class="btn ghost" type="button" onclick="exportData()">Экспорт</button> <span class="saved" id="ioMsg"></span></div>
+    <form id="ioForm">
+      <div><button class="btn ghost" type="button" id="expBtn">Экспорт</button> <span class="saved" id="ioMsg"></span></div>
       <label for="io">Вставь сюда экспорт с другого устройства<textarea id="io"></textarea></label>
       <div><button class="btn" type="submit">Импорт</button></div>
     </form>
   </details>
 </div>
 
+<script src="assets/progress.js"></script>
+<script src="assets/fx.js"></script>
 <script>
-let BOOKS=[];
-
+(function(){
+"use strict";
 const PATHS=["01 Pre Security","02 Cyber Security 101","03 SOC Level 1","04 SOC Level 2","05 Defending Azure","Вне курса"];
+const BIND={"01 Pre Security":"--b-ps","02 Cyber Security 101":"--b-cs","03 SOC Level 1":"--b-l1","04 SOC Level 2":"--b-l2","05 Defending Azure":"--b-az","Вне курса":"--b-x"};
+const SHORT={"01 Pre Security":"Pre Security","02 Cyber Security 101":"Cyber Security 101","03 SOC Level 1":"SOC Level 1","04 SOC Level 2":"SOC Level 2","05 Defending Azure":"Defending Azure","Вне курса":"Вне курса"};
 const ST={none:"не отмечен",todo:"не начат",reading:"читаю",done:"прочитан",passed:"разбор сдан"};
 const ORDER=["todo","reading","done","passed"];
-let db=null, canWrite=true, books=[], openId=null;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const bind=p=>"var("+(BIND[p]||"--b-x")+")";
+function hash(s){let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h}
 
-function render(){
-  const shelf=$("#shelf");
-  if(!books.length){shelf.innerHTML='<div class="notice">Полка пустая. Добавь первый учебник формой ниже — или попроси Claude закинуть.</div>';renderStats();return}
-  const groups={};
-  books.forEach(b=>{const p=PATHS.includes(b.path)?b.path:"Вне курса";(groups[p]=groups[p]||[]).push(b)});
-  shelf.innerHTML=PATHS.filter(p=>groups[p]).map(p=>{
-    const list=groups[p].sort((a,b)=>(a.order??99)-(b.order??99));
-    return `<section class="path"><h2>${esc(p)} <span class="cnt">${list.length}</span></h2>${list.map(card).join("")}</section>`;
-  }).join("");
-  shelf.querySelectorAll("details.more").forEach(d=>d.addEventListener("toggle",()=>{if(d.open)openId=d.dataset.id;else if(openId===d.dataset.id)openId=null}));
-  renderStats();
+let BOOKS=[], CH={}, books=[], openId=null, store=TP.shelf();
+function persist(){return TP.put("thm-polka-v1",store)}
+function prog(b){return TP.bookProgress(b.id,CH[b.id])}
+function rebuild(){
+  books=[...BOOKS,...store.added].filter(b=>!store.removed.includes(b.id)).map(b=>{
+    const x={...b,...(store.state[b.id]||{})}, p=prog(b);
+    x.p=p;
+    if((!x.status||x.status==="none"||x.status==="todo")&&p.seen>1)x.status="reading";
+    if((!x.status||x.status==="none"||x.status==="todo"||x.status==="reading")&&p.total&&p.seen>=p.total)x.status="done";
+    return x});
+}
+function groups(){const g={};books.forEach(b=>{const p=PATHS.includes(b.path)?b.path:"Вне курса";(g[p]=g[p]||[]).push(b)});Object.values(g).forEach(l=>l.sort((a,b)=>(a.order??99)-(b.order??99)));return g}
+function lastBook(){let best=null;books.forEach(b=>{if(b.p.lastOpen&&(!best||b.p.lastOpen>best.p.lastOpen))best=b});return best}
+
+/* ---------- полка с корешками ---------- */
+function renderCase(){
+  const g=groups(), cur=lastBook();
+  if(!books.length){$("#case").innerHTML='<div class="notice">Полка пустая. Добавь первый учебник формой ниже или попроси Claude.</div>';return}
+  const ahead=PATHS.filter(p=>p!=="Вне курса"&&!g[p]);
+  const ghost=ahead.length?`<div class="grp"><div class="spines">${ahead.map((p,i)=>`<span class="spine ghost" style="--w:40px;--h:${150+i*12}px" title="${esc(SHORT[p])}: учебников пока нет"><span class="st"><span>${esc(SHORT[p])}</span></span></span>`).join("")}</div><div class="plank"></div><div class="plabel"><span>Впереди</span></div></div>`:"";
+  $("#case").innerHTML=PATHS.filter(p=>g[p]).map(p=>{
+    const list=g[p];
+    const done=list.filter(b=>b.p.total&&b.p.seen>=b.p.total).length;
+    const spines=list.map(b=>{
+      const h=hash(b.id), w=40+Math.min(b.p.total||10,40)*0.5, ht=196+h%44;
+      const pct=b.p.pct, lvl=pct>0&&pct<100;
+      return `<a class="spine${cur&&cur.id===b.id?" cur":""}" href="${esc(b.url)}" style="--b:${bind(p)};--w:${w.toFixed(0)}px;--h:${ht}px;--p:${pct}%" title="${esc(b.title)} · прочитано ${pct}%" aria-label="${esc(b.title)}, прочитано ${pct}%">
+        <span class="fill${lvl?" lvl":""}"></span>${b.status==="passed"?'<span class="seal" aria-hidden="true">✓</span>':""}<span class="ribbon" aria-hidden="true"></span>
+        <span class="st"><span>${esc(b.title)}</span></span><span class="pc">${pct}%</span></a>`;
+    }).join("");
+    return `<div class="grp"><div class="spines">${spines}</div><div class="plank"></div><div class="plabel"><span>${esc(SHORT[p])}</span><b>${done}/${list.length}</b></div></div>`;
+  }).join("")+ghost;
+}
+
+/* ---------- продолжить ---------- */
+function renderResume(){
+  const b=lastBook();
+  if(!b){const first=books[0];$("#resume").innerHTML=first?`<div><small>С чего начать</small></div><b>${esc(first.title)}</b><span>Открой учебник — дальше полка сама запомнит, где ты остановился.</span><div><a class="btn" href="${esc(first.url)}">Открыть →</a></div>`:"";return}
+  $("#resume").innerHTML=`<div><small>Продолжить</small></div><div style="display:flex;flex-direction:column;gap:4px"><b>${esc(b.title)}</b>${b.p.lastCh?`<span>${esc(b.p.lastCh)}</span>`:""}<span>прочитано ${b.p.pct}%${b.p.quizTotal?` · квизы ${b.p.quizOk}/${b.p.quizTotal}`:""}</span></div><div><a class="btn" href="${esc(b.url)}">Открыть →</a></div>`;
+}
+
+/* ---------- таймер THM ---------- */
+let tick=null, confirmSecs=null, manualOpen=false;
+function bookOptions(sel){return `<option value="">Без привязки</option>`+books.map(b=>`<option value="${esc(b.id)}"${b.id===sel?" selected":""}>${esc(b.title)}</option>`).join("")}
+function renderTimer(){
+  const s=TP.timer.state(), el=TP.timer.elapsed(s), sk=TP.streak();
+  const has=s.running||el>0;
+  const box=$("#timer"); box.classList.toggle("run",s.running);
+  let h=`<div class="row1"><small>${s.running?'<span class="dot-live" aria-hidden="true"></span>':""}Таймер THM</small><span class="t-meta">сегодня в THM: ${TP.fmtDur(sk.todayThm)}</span></div>
+    <div class="row1"><span class="clock" id="clock">${TP.fmtClock(el)}</span>
+      <div class="btns">${s.running?`<button class="btn plain" data-t="pause">❚❚ Пауза</button><button class="btn" data-t="stop">■ Стоп</button>`
+        :has?`<button class="btn" data-t="start">▶ Дальше</button><button class="btn plain" data-t="stop">Записать</button><button class="btn plain" data-t="reset">Сбросить</button>`
+        :`<button class="btn" data-t="start">▶ Старт</button>`}</div></div>
+    <label for="t-book">Над чем работаешь<select id="t-book">${bookOptions(s.book)}</select></label>`;
+  if(confirmSecs!=null){
+    h+=`<div class="warn" role="alert"><span>Таймер шёл ${TP.fmtDur(confirmSecs)}. Забыл выключить? Поправь, сколько минут реально занимался.</span>
+      <div class="inline"><label for="t-fix">Минут<input id="t-fix" type="number" min="1" max="1440" value="${Math.round(confirmSecs/60)}"></label><button class="btn" data-t="save-fix">Записать</button><button class="btn plain" data-t="cancel-fix">Отмена</button></div></div>`;
+  }
+  h+=`<details id="manual"${manualOpen?" open":""}><summary class="t-meta" style="cursor:pointer">Забыл включить? Вписать вручную</summary>
+    <form id="manForm" class="inline" style="margin-top:8px"><label for="m-min">Минут<input id="m-min" type="number" min="1" max="1440" required placeholder="45"></label>
+    <label for="m-day">День<input id="m-day" type="date" value="${TP.dayKey()}" max="${TP.dayKey()}"></label>
+    <label for="m-book" style="flex-basis:100%">Учебник<select id="m-book">${bookOptions(s.book)}</select></label>
+    <button class="btn" type="submit">Добавить</button><span class="saved" id="m-msg"></span></form></details>`;
+  box.innerHTML=h;
+  clearInterval(tick);
+  if(s.running)tick=setInterval(()=>{const c=$("#clock");const t=TP.timer.elapsed();if(c)c.textContent=TP.fmtClock(t);document.title="▶ "+TP.fmtClock(t)+" · THM Полка"},1000);
+  else document.title="THM Полка";
+}
+$("#timer").addEventListener("click",e=>{
+  const b=e.target.closest("[data-t]");if(!b)return;
+  const a=b.dataset.t, s=TP.timer.state();
+  if(a==="start")TP.timer.start($("#t-book")?.value);
+  else if(a==="pause")TP.timer.pause();
+  else if(a==="reset"){TP.timer.reset();}
+  else if(a==="stop"){const secs=TP.timer.elapsed();
+    if(secs<60){TP.timer.reset();THMFX.toast("Меньше минуты — не записываю");}
+    else if(secs>4*3600){TP.timer.pause();confirmSecs=secs;}
+    else{TP.timer.stop();THMFX.toast("Записано: "+TP.fmtDur(secs)+" в THM");}}
+  else if(a==="save-fix"){const m=+$("#t-fix").value;if(m>0){TP.timer.stop(m*60);THMFX.toast("Записано: "+TP.fmtDur(m*60)+" в THM")}confirmSecs=null;}
+  else if(a==="cancel-fix"){confirmSecs=null;}
+  renderAll();
+});
+$("#timer").addEventListener("change",e=>{if(e.target.id==="t-book")TP.timer.setBook(e.target.value)});
+$("#timer").addEventListener("toggle",e=>{if(e.target.id==="manual")manualOpen=e.target.open},true);
+$("#timer").addEventListener("submit",e=>{
+  if(e.target.id!=="manForm")return;e.preventDefault();
+  const m=+$("#m-min").value, day=$("#m-day").value||TP.dayKey(), bk=$("#m-book").value;
+  if(!(m>0))return;
+  const end=TP.parseDay(day); if(day===TP.dayKey())end.setTime(Date.now()); else end.setHours(20,0,0,0);
+  TP.timer.add(m*60,bk,end);
+  manualOpen=false; THMFX.toast("Добавлено: "+TP.fmtDur(m*60)+" в THM"); renderAll();
+});
+
+/* ---------- календарь активности ---------- */
+const MON=["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
+function renderHeat(){
+  const wrapW=$("#heatWrap").clientWidth||600, weeks=Math.max(16,Math.min(53,Math.floor((wrapW-34)/15)));
+  const d=TP.days(), today=new Date(); today.setHours(0,0,0,0);
+  const start=new Date(today); start.setDate(start.getDate()-((today.getDay()+6)%7)-(weeks-1)*7);
+  let h=`<div class="dl"><span></span><span>пн</span><span></span><span>ср</span><span></span><span>пт</span><span></span><span>вс</span></div>`, lastM=-1;
+  for(let w=0;w<weeks;w++){
+    const ws=new Date(start); ws.setDate(start.getDate()+w*7);
+    const we=new Date(ws); we.setDate(ws.getDate()+6);
+    const mo=(we.getDate()<=7&&we.getMonth()!==lastM&&w<weeks-1)?MON[we.getMonth()]:""; if(mo)lastM=we.getMonth();
+    let col=`<span class="mo">${mo}</span>`;
+    for(let i=0;i<7;i++){
+      const x=new Date(ws); x.setDate(ws.getDate()+i); const k=TP.dayKey(x);
+      if(x>today){col+=`<span class="c fut"></span>`;continue}
+      const v=d[k]||{read:0,thm:0}, m=(v.read+v.thm)/60;
+      const l=m<1?0:m<15?1:m<45?2:m<90?3:4;
+      const label=`${x.getDate()} ${MON[x.getMonth()]}: `+(m<1?"не занимался":`${TP.fmtDur(v.read+v.thm)} (учебники ${TP.fmtDur(v.read)}, THM ${TP.fmtDur(v.thm)})`);
+      col+=`<span class="c${l?" l"+l:""}${x.getTime()===today.getTime()?" today":""}" title="${label}" aria-label="${label}"></span>`;
+    }
+    h+=`<div class="wk">${col}</div>`;
+  }
+  $("#heat").innerHTML=h;
+  const wrap=$("#heatWrap"); wrap.scrollLeft=wrap.scrollWidth;
+  const t30=TP.totals(30), sk=TP.streak();
+  $("#heatSum").textContent=`· за 30 дней ${TP.fmtDur(t30.all)} · лучшая серия ${sk.best} ${TP.plural(sk.best,"день","дня","дней")}`;
+}
+
+/* ---------- бейджи ---------- */
+let badgeInit=false;
+function renderBadges(){
+  const r=TP.badges(BOOKS,CH);
+  const list=r.list.slice().sort((a,b)=>(b.earned-a.earned)||(a.earned?a.at.localeCompare(b.at):(b.have/b.need)-(a.have/a.need)));
+  $("#badgeSum").textContent=`· ${r.list.filter(b=>b.earned).length} из ${r.list.length}`;
+  $("#badges").innerHTML=list.map(b=>`<div class="bdg ${b.earned?"on":"off"}"><span class="hex" aria-hidden="true">${esc(b.g)}</span><span class="bt"><b>${esc(b.t)}</b><span>${esc(b.d)}</span>
+    ${b.earned?`<span>получен ${new Date(b.at).toLocaleDateString("ru-RU",{day:"numeric",month:"long"})}</span>`:`<span>${b.have} из ${b.need}</span><span class="pb"><i style="width:${Math.round(b.have/b.need*100)}%"></i></span>`}</span></div>`).join("");
+  if(r.fresh.length){
+    r.fresh.slice(0,2).forEach((b,i)=>setTimeout(()=>THMFX.toast("Новый бейдж: "+b.t),i*600));
+    if(r.fresh.length>2)setTimeout(()=>THMFX.toast("И ещё "+(r.fresh.length-2)+" "+TP.plural(r.fresh.length-2,"бейдж","бейджа","бейджей")),1200);
+    THMFX.confetti();
+  }
+  badgeInit=true;
+}
+
+/* ---------- карточки ---------- */
+function beads(b){
+  if(!b.p.beads.length)return "";
+  return `<span class="beads" aria-label="Главы: прочитано ${b.p.beads.filter(x=>x.seen>=x.n).length} из ${b.p.beads.length}">${b.p.beads.map(c=>{
+    const cls=c.seen>=c.n?"full":c.seen?"half":"";
+    return `<a class="bead ${cls}${c.cur?" cur":""}" href="${esc(b.url)}#${encodeURIComponent(c.first)}" title="${esc(c.t)} · ${c.seen}/${c.n} ${TP.plural(c.n,"раздел","раздела","разделов")}${c.cur?" · ты здесь":""}"></a>`}).join("")}</span>`;
 }
 function card(b){
-  const st=ST[b.status]?b.status:"none";
+  const st=ST[b.status]?b.status:"none", thm=TP.timer.byBook()[b.id]||0;
   const res=[b.razbor&&`разбор <span class="score">${esc(b.razbor)}</span>`,b.exam&&`экзамен <span class="score">${esc(b.exam)}</span>`].filter(Boolean).join(" · ");
   const meta=[b.rooms&&esc(b.rooms),res].filter(Boolean).join(" · ");
-  const dis=canWrite?"":"disabled";
-  return `<article class="book" data-st="${st}">
+  const pl=[b.p.total?`${b.p.pct}% прочитано`:"",b.p.quizTotal?`квизы ${b.p.quizOk}/${b.p.quizTotal}`:"",b.p.readSecs>=60?`чтение ${TP.fmtDur(b.p.readSecs)}`:"",thm>=60?`THM ${TP.fmtDur(thm)}`:""].filter(Boolean).join(" · ");
+  return `<article class="book" data-st="${st}" style="--b:${bind(b.path)}">
     <div class="row">
-      <div class="title"><strong>${esc(b.title)}</strong>${meta?`<span class="meta">${meta}</span>`:""}${progLine(b)}</div>
+      <div class="title"><strong>${esc(b.title)}</strong>${meta?`<span class="meta">${meta}</span>`:""}${beads(b)}${pl?`<span class="prog">${pl}</span>`:""}</div>
       <div class="actions"><span class="chip">${ST[st]}</span>${b.url?`<a class="open" href="${esc(b.url)}">Читать →</a>`:""}</div>
     </div>
     <details class="more" data-id="${esc(b.id)}" ${openId===b.id?"open":""}>
       <summary>статус, результаты, заметки</summary>
       <div class="panel">
-        <div class="seg" role="group" aria-label="Статус">${ORDER.map(s=>`<button type="button" ${dis} aria-pressed="${b.status===s}" onclick="setStatus('${esc(b.id)}','${s}')">${ST[s]}</button>`).join("")}</div>
+        <div class="seg" role="group" aria-label="Статус">${ORDER.map(s=>`<button type="button" aria-pressed="${b.status===s}" data-act="status" data-id="${esc(b.id)}" data-v="${s}">${ST[s]}</button>`).join("")}</div>
         <div class="grid2">
-          <label for="rz-${esc(b.id)}">Разбор<input id="rz-${esc(b.id)}" ${dis} value="${esc(b.razbor)}" placeholder="напр. 8/10"></label>
-          <label for="ex-${esc(b.id)}">Экзамен<input id="ex-${esc(b.id)}" ${dis} value="${esc(b.exam)}" placeholder="напр. 74/100"></label>
+          <label for="rz-${esc(b.id)}">Разбор<input id="rz-${esc(b.id)}" value="${esc(b.razbor)}" placeholder="напр. 8/10"></label>
+          <label for="ex-${esc(b.id)}">Экзамен<input id="ex-${esc(b.id)}" value="${esc(b.exam)}" placeholder="напр. 74/100"></label>
         </div>
-        <label for="wk-${esc(b.id)}">Слабые места<textarea id="wk-${esc(b.id)}" ${dis} placeholder="что подтянуть">${esc(b.weak)}</textarea></label>
-        <label for="nt-${esc(b.id)}">Мои заметки<textarea id="nt-${esc(b.id)}" ${dis} placeholder="мысли, вопросы, где застрял">${esc(b.notes)}</textarea></label>
-        ${canWrite?`<div class="panel-foot"><div><button class="btn" type="button" onclick="saveFields('${esc(b.id)}',this)">Сохранить</button> <span class="saved" id="ok-${esc(b.id)}"></span></div>
-        <span id="del-${esc(b.id)}"><button class="link-danger" type="button" onclick="askDel('${esc(b.id)}')">Убрать с полки</button></span></div>`:""}
+        <label for="wk-${esc(b.id)}">Слабые места<textarea id="wk-${esc(b.id)}" placeholder="что подтянуть">${esc(b.weak)}</textarea></label>
+        <label for="nt-${esc(b.id)}">Мои заметки<textarea id="nt-${esc(b.id)}" placeholder="мысли, вопросы, где застрял">${esc(b.notes)}</textarea></label>
+        <div class="panel-foot"><div><button class="btn" type="button" data-act="save" data-id="${esc(b.id)}">Сохранить</button> <span class="saved" id="ok-${esc(b.id)}"></span></div>
+        <span id="del-${esc(b.id)}"><button class="link-danger" type="button" data-act="ask-del" data-id="${esc(b.id)}">Убрать с полки</button></span></div>
       </div>
     </details>
   </article>`;
 }
-function R(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}}
-function progLine(b){
-  const r=R("thm-reader:summary",{})[b.id]; if(!r||!r.chapters)return "";
-  const pct=Math.round(r.seen/r.chapters*100);
-  const q=r.quizTotal?` · квизы ${r.quizOk}/${r.quizTotal}`:"";
-  const min=r.readSecs?` · ${Math.round(r.readSecs/60)} мин`:"";
-  return `<span class="prog"><span class="pb"><i style="width:${pct}%"></i></span>${pct}% прочитано${q}${min}</span>`;
+function renderCards(){
+  const g=groups();
+  $("#shelf").innerHTML=books.length?PATHS.filter(p=>g[p]).map(p=>`<section class="path"><h2 class="sec">${esc(p)} <span class="cnt">${g[p].length}</span></h2>${g[p].map(card).join("")}</section>`).join(""):"";
+  $("#shelf").querySelectorAll("details.more").forEach(d=>d.addEventListener("toggle",()=>{if(d.open)openId=d.dataset.id;else if(openId===d.dataset.id)openId=null}));
 }
-function dayKey(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
-function streak(){
-  const days=R("thm-reader:days",{}); let n=0; const d=new Date();
-  if(!(days[dayKey(d)]>=60)) d.setDate(d.getDate()-1);
-  while(days[dayKey(d)]>=60){n++;d.setDate(d.getDate()-1)}
-  return {n,today:Math.round((days[dayKey(new Date())]||0)/60)};
+function write(id,data,hist){
+  const cur=store.state[id]||{};
+  store.state[id]={...cur,...data,updatedAt:new Date().toISOString(),hist:[...(cur.hist||[]),...(hist||[])].slice(-200)};
+  return persist();
 }
-function renderResume(){
-  const sum=R("thm-reader:summary",{}); let best=null;
-  books.forEach(b=>{const r=sum[b.id];if(r&&r.lastOpen&&(!best||r.lastOpen>best.r.lastOpen))best={b,r}});
-  $("#resume").innerHTML=best?`<div class="resume"><div class="rl"><small>Продолжить</small><b>${esc(best.b.title)}</b>${best.r.lastCh?`<span>${esc(best.r.lastCh)}</span>`:""}</div><a class="btn" href="${esc(best.b.url)}">Открыть →</a></div>`:"";
-}
-function renderStats(){
-  const n=books.length,c=s=>books.filter(b=>b.status===s).length;
-  const done=c("done")+c("passed");
-  const sk=streak();
-  $("#stats").innerHTML=`<span class="streak">серия <b>${sk.n}</b> дн.</span><span>сегодня <b>${sk.today}</b> мин</span><span><b>${n}</b> учебников</span><span><b>${done}</b> прочитано</span><span><b>${c("passed")}</b> разборов сдано</span><span><b>${c("reading")}</b> в процессе</span>`;
-  $("#bar").innerHTML=n?["passed","done","reading"].map(s=>`<span style="width:${c(s)/n*100}%;background:var(--st-${s})"></span>`).join(""):"";
-  renderResume();
-}
-const KEY="thm-polka-v1";
-function load(){try{return JSON.parse(localStorage.getItem(KEY))||{state:{},added:[],removed:[]}}catch(e){return {state:{},added:[],removed:[]}}}
-function persist(){try{localStorage.setItem(KEY,JSON.stringify(store));return true}catch(e){return false}}
-let store=load();
-function rebuild(){
-  const sum=R("thm-reader:summary",{});
-  books=[...BOOKS,...store.added].filter(b=>!store.removed.includes(b.id)).map(b=>{
-    const x={...b,...(store.state[b.id]||{})};
-    if((!x.status||x.status==="none"||x.status==="todo")&&sum[b.id]&&sum[b.id].seen>1)x.status="reading";
-    return x});
-}
-async function write(id,data){store.state[id]={...(store.state[id]||{}),...data,updatedAt:new Date().toISOString()};const ok=persist();rebuild();return ok}
-window.setStatus=async(id,s)=>{const b=books.find(x=>x.id===id);if(!b||b.status===s)return;b.status=s;render();await write(id,{status:s})};
-window.saveFields=async(id,btn)=>{
-  const g=k=>document.getElementById(k+"-"+id).value.trim();
-  btn.disabled=true;
-  const ok=await write(id,{razbor:g("rz"),exam:g("ex"),weak:g("wk"),notes:g("nt")});
-  btn.disabled=false;
-  const m=document.getElementById("ok-"+id);if(m)m.textContent=ok?"Сохранено":"Не сохранилось — попробуй ещё раз";
-};
-window.askDel=id=>{document.getElementById("del-"+id).innerHTML=`<span class="meta">Точно убрать? </span><button class="link-danger" type="button" onclick="doDel('${id}')">Да, убрать</button> <button class="link-danger" style="color:var(--muted)" type="button" onclick="render()">Отмена</button>`};
-window.doDel=id=>{store.removed.push(id);persist();rebuild();render()};
-window.render=render;
-
-$("#f-path").innerHTML=PATHS.map(p=>`<option>${p}</option>`).join("");
-$("#addForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  const path=$("#f-path").value, same=books.filter(b=>b.path===path);
-  const data={title:$("#f-title").value.trim(),url:$("#f-url").value.trim(),path,rooms:$("#f-rooms").value.trim(),
-    order:same.length?Math.max(...same.map(b=>b.order||0))+1:1,status:"todo",razbor:"",exam:"",weak:"",notes:"",addedAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
-  data.id="u"+Date.now();store.added.push(data);persist();rebuild();render();e.target.reset();$("#addMsg").textContent="Добавлено";
+$("#shelf").addEventListener("click",e=>{
+  const b=e.target.closest("[data-act]");if(!b)return;
+  const id=b.dataset.id, a=b.dataset.act, at=new Date().toISOString();
+  if(a==="status"){const v=b.dataset.v;write(id,{status:v},[{status:v,at}]);if(v==="passed"){THMFX.confetti();THMFX.toast("Разбор сдан!")}renderAll();}
+  else if(a==="save"){
+    const g=k=>document.getElementById(k+"-"+id).value.trim(), cur=store.state[id]||{}, hist=[];
+    if(g("rz")&&g("rz")!==(cur.razbor||""))hist.push({razbor:g("rz"),at});
+    if(g("ex")&&g("ex")!==(cur.exam||""))hist.push({exam:g("ex"),at});
+    const ok=write(id,{razbor:g("rz"),exam:g("ex"),weak:g("wk"),notes:g("nt")},hist);
+    rebuild();renderCase();renderBadges();
+    const m=document.getElementById("ok-"+id);if(m)m.textContent=ok?"Сохранено":"Не сохранилось — попробуй ещё раз";
+  }
+  else if(a==="ask-del"){document.getElementById("del-"+id).innerHTML=`<span class="meta">Точно убрать? </span><button class="link-danger" type="button" data-act="del" data-id="${esc(id)}">Да, убрать</button> <button class="link-danger" style="color:var(--muted)" type="button" data-act="cancel" data-id="${esc(id)}">Отмена</button>`}
+  else if(a==="del"){store.removed.push(id);persist();renderAll();}
+  else if(a==="cancel"){renderAll();}
 });
 
+/* ---------- сводка ---------- */
+function renderStats(){
+  const sk=TP.streak(), t7=TP.totals(7), all=TP.totals(), done=books.filter(b=>b.status==="done"||b.status==="passed").length;
+  $("#stats").innerHTML=`<span class="streak">серия <b>${sk.cur}</b> ${TP.plural(sk.cur,"день","дня","дней")}</span><span>сегодня <b>${TP.fmtDur(sk.today)}</b></span><span>за неделю <b>${TP.fmtDur(t7.all)}</b></span><span>всего <b>${TP.fmtDur(all.all)}</b></span><span><b>${done}</b> из ${books.length} учебников прочитано</span>`;
+}
+
+function renderAll(){rebuild();renderStats();renderCase();renderResume();renderTimer();renderHeat();renderBadges();renderCards()}
+
+/* ---------- добавить, экспорт, импорт ---------- */
+$("#f-path").innerHTML=PATHS.map(p=>`<option>${p}</option>`).join("");
+$("#addForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const path=$("#f-path").value, same=books.filter(b=>b.path===path);
+  const data={id:"u"+Date.now(),title:$("#f-title").value.trim(),url:$("#f-url").value.trim(),path,rooms:$("#f-rooms").value.trim(),
+    order:same.length?Math.max(...same.map(b=>b.order||0))+1:1,added:TP.dayKey()};
+  store.added.push(data);persist();renderAll();e.target.reset();$("#addMsg").textContent="Добавлено";
+});
 function dump(){const o={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("thm-"))o[k]=localStorage.getItem(k)}}catch(e){}return {thm:1,keys:o}}
-window.exportData=()=>{const t=JSON.stringify(dump());navigator.clipboard?.writeText(t).then(()=>msg("Скопировано — вставь на другом устройстве в «Импорт»"),()=>{$("#io").value=t;msg("Скопируй текст из поля")})};
-window.importData=()=>{try{const v=JSON.parse($("#io").value);
-  if(v.thm&&v.keys){Object.keys(v.keys).forEach(k=>{if(k.startsWith("thm-"))localStorage.setItem(k,v.keys[k])});store=load()}
-  else if(v.state){store=v;persist()} else throw 0;
-  rebuild();render();msg("Прогресс загружен: статусы, закладки, выделения, квизы")}catch(e){msg("Не похоже на экспорт полки — проверь текст")}};
 function msg(t){$("#ioMsg").textContent=t}
-$("#addBox").hidden=false;
-fetch("books.json",{cache:"no-store"}).then(r=>r.json()).then(list=>{BOOKS=list;rebuild();render()})
- .catch(()=>{$("#shelf").innerHTML='<div class="notice">Не загрузился список учебников (books.json). Обнови страницу.</div>'});
+$("#expBtn").addEventListener("click",()=>{const t=JSON.stringify(dump());
+  if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>msg("Скопировано — вставь на другом устройстве в «Импорт»"),()=>{$("#io").value=t;$("#io").select();msg("Скопируй текст из поля")});
+  else{$("#io").value=t;$("#io").select();msg("Скопируй текст из поля")}});
+$("#ioForm").addEventListener("submit",e=>{e.preventDefault();try{const v=JSON.parse($("#io").value);
+  if(v.thm&&v.keys){Object.keys(v.keys).forEach(k=>{if(k.startsWith("thm-"))localStorage.setItem(k,v.keys[k])})}
+  else if(v.state){TP.put("thm-polka-v1",v)} else throw 0;
+  store=TP.shelf();renderAll();msg("Прогресс загружен: статусы, закладки, выделения, квизы, таймер")}catch(err){msg("Не похоже на экспорт полки — проверь текст")}});
+
+/* ---------- старт ---------- */
+Promise.all([
+  fetch("books.json",{cache:"no-store"}).then(r=>r.json()),
+  fetch("data/chapters.json").then(r=>r.ok?r.json():{}).catch(()=>({}))
+]).then(([list,ch])=>{BOOKS=list;CH=ch;renderAll()})
+ .catch(()=>{$("#case").innerHTML='<div class="notice">Не загрузился список учебников. Обнови страницу.</div>'});
+let rt=null, rz=null;
+addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(()=>{if(BOOKS.length)renderHeat()},250)});
+addEventListener("storage",e=>{if(e.key&&e.key.startsWith("thm-")){clearTimeout(rt);rt=setTimeout(()=>{if(typing())return;store=TP.shelf();renderAll()},300)}});
+addEventListener("pageshow",e=>{if(e.persisted){store=TP.shelf();renderAll()}});
+const typing=()=>{const a=document.activeElement;return a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)};
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&BOOKS.length&&!typing()){store=TP.shelf();renderAll()}});
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
-addEventListener("pageshow",e=>{if(e.persisted){rebuild();render()}});
+})();
 </script>
 </body>
 </html>

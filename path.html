@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Мой путь · THM Полка</title>
+<!--thm-og:start--><meta name="description" content="Лента учёбы на пути в SOC: учебники, разборы, бейджи и дни занятий."><meta property="og:type" content="website"><meta property="og:site_name" content="THM Полка"><meta property="og:locale" content="ru_RU"><meta property="og:title" content="Мой путь · THM Полка"><meta property="og:description" content="Лента учёбы на пути в SOC: учебники, разборы, бейджи и дни занятий."><meta property="og:url" content="https://1luskin.github.io/thm-polka/path.html"><meta property="og:image" content="https://1luskin.github.io/thm-polka/assets/og/site.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><!--thm-og:end-->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="theme-color" content="#16212e">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Unbounded:wght@500;700&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+:root{--gilt:#c9a24f;--b-ps:#2f6b5a;--b-cs:#2c4f7c;--b-l1:#8a3b2e;--b-l2:#5a3f78;--b-az:#1f6f86;--b-x:#55606c;--st-passed:#7b4fc2}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--gilt:#d9b26a;--b-ps:#3a7d6a;--b-cs:#365e92;--b-l1:#9c4637;--b-l2:#6b4c8c;--b-az:#2a8099;--b-x:#64707d;--st-passed:#a684e6}}
+:root[data-theme="dark"]{--gilt:#d9b26a;--b-ps:#3a7d6a;--b-cs:#365e92;--b-l1:#9c4637;--b-l2:#6b4c8c;--b-az:#2a8099;--b-x:#64707d;--st-passed:#a684e6}
+.wrap{max-width:760px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.kpi b{font-family:var(--f-mono);font-size:20px;font-variant-numeric:tabular-nums}
+.kpi span{font-size:12px;color:var(--muted)}
+.month{display:flex;flex-direction:column;gap:0}
+.month h2{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 0 8px;font-weight:600}
+.ev{display:grid;grid-template-columns:62px 22px 1fr;gap:0 10px;align-items:start;position:relative}
+.ev .dt{font-family:var(--f-mono);font-size:12px;color:var(--muted);text-align:right;padding-top:3px;font-variant-numeric:tabular-nums}
+.ev .rail{position:relative;align-self:stretch;display:flex;justify-content:center}
+.ev .rail::before{content:"";position:absolute;top:0;bottom:0;left:50%;width:2px;margin-left:-1px;background:var(--line)}
+.ev:first-of-type .rail::before{top:10px}
+.ev .dot{position:relative;z-index:1;margin-top:5px;width:12px;height:12px;border-radius:50%;background:var(--c,var(--muted));box-shadow:0 0 0 3px var(--bg)}
+.ev.badge .dot{width:14px;height:16px;border-radius:0;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:var(--gilt);margin-top:3px}
+.ev.day .dot{width:8px;height:8px;margin-top:7px;background:var(--line)}
+.ev .body{padding:0 0 16px;min-width:0}
+.ev .body b{font-weight:600}
+.ev .body p{margin:2px 0 0;font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.ev.day .body{padding-bottom:10px;font-size:13px;color:var(--muted)}
+.ev .body a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="site" aria-label="Разделы сайта"></nav>
+  <h1>Мой путь</h1>
+  <p class="sub">Лента твоей учёбы: когда учебники появились на полке, когда ты их начал и дочитал, сданные разборы, бейджи и дни занятий. Всё собирается само из прогресса на этом устройстве.</p>
+  <div class="kpis" id="kpis"></div>
+  <div class="tools-row"><label class="chk"><input type="checkbox" id="days"> показать каждый день занятий</label></div>
+  <div id="feed"><div class="notice">Собираю ленту…</div></div>
+</div>
+<script src="assets/site.js"></script>
+<script src="assets/progress.js"></script>
+<script>
+(function(){
+  var S=Site, $=function(s){return document.querySelector(s)}, books=[], CH={};
+  var BIND={"01 Pre Security":"--b-ps","02 Cyber Security 101":"--b-cs","03 SOC Level 1":"--b-l1","04 SOC Level 2":"--b-l2","05 Defending Azure":"--b-az"};
+  var ST={todo:"не начат",reading:"читаю",done:"прочитан",passed:"разбор сдан"};
+  var MON=["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"];
+  var WD=["вс","пн","вт","ср","чт","пт","сб"];
+  try{$("#days").checked=localStorage.getItem("thm-ui:path-days")==="1"}catch(e){}
+  function col(b){return "var("+(BIND[b&&b.path]||"--b-x")+")"}
+  function link(b){return '<a href="'+S.esc(b.url)+'">'+S.esc(b.title)+'</a>'}
+  function events(){
+    var ev=[], sh=TP.shelf(), byId={};
+    books.forEach(function(b){byId[b.id]=b});
+    books.forEach(function(b){
+      if(b.added)ev.push({at:b.added+"T09:00:00",k:"book",c:col(b),t:"На полке новый учебник",d:link(b)+(b.rooms?" · "+S.esc(b.rooms):"")});
+      var p=TP.bookProgress(b.id,CH[b.id]);
+      if(p.firstOpen)ev.push({at:p.firstOpen,k:"book",c:col(b),t:"Начал читать",d:link(b)});
+      if(p.doneAt)ev.push({at:p.doneAt,k:"book",c:col(b),t:"Дочитал до конца",d:link(b)+(p.quizTotal?" · квизы "+p.quizOk+"/"+p.quizTotal:"")});
+      ((sh.state[b.id]||{}).hist||[]).forEach(function(h){
+        if(h.status)ev.push({at:h.at,k:"st",c:"var(--st-passed)",t:"Статус: "+(ST[h.status]||h.status),d:link(b)});
+        if(h.razbor)ev.push({at:h.at,k:"st",c:"var(--st-passed)",t:"Разбор: "+S.esc(h.razbor),d:link(b)});
+        if(h.exam)ev.push({at:h.at,k:"st",c:"var(--st-passed)",t:"Экзамен: "+S.esc(h.exam),d:link(b)});
+      });
+    });
+    var r=TP.badges(books,CH);
+    r.list.filter(function(x){return x.earned}).forEach(function(x){ev.push({at:x.at,k:"badge",t:"Бейдж «"+S.esc(x.t)+"»",d:S.esc(x.d)})});
+    if($("#days").checked){
+      var d=TP.days(), sess=TP.get("thm-timer:sessions",[]);
+      Object.keys(d).forEach(function(k){
+        var v=d[k]; if(v.read+v.thm<60)return;
+        var bk={}; sess.forEach(function(s){if(s.book&&TP.dayKey(new Date(s.end))===k)bk[s.book]=1});
+        var names=Object.keys(bk).map(function(id){return byId[id]?byId[id].title:""}).filter(Boolean);
+        ev.push({at:k+"T23:59:00",k:"day",t:"Учёба "+TP.fmtDur(v.read+v.thm)+" (учебники "+TP.fmtDur(v.read)+", THM "+TP.fmtDur(v.thm)+")"+(names.length?" · "+S.esc(names.join(", ")):"")});
+      });
+    }
+    return ev.sort(function(a,b){return a.at<b.at?1:a.at>b.at?-1:0});
+  }
+  function render(){
+    var all=TP.totals(), sk=TP.streak(), d=TP.days(), active=Object.keys(d).filter(function(k){return d[k].read+d[k].thm>=60}).sort();
+    var done=books.filter(function(b){var p=TP.bookProgress(b.id,CH[b.id]);return p.total&&p.seen>=p.total}).length;
+    var badges=TP.badges(books,CH).list.filter(function(x){return x.earned}).length;
+    $("#kpis").innerHTML=[
+      [active.length?new Date(TP.parseDay(active[0])).toLocaleDateString("ru-RU",{day:"numeric",month:"short"}):"—","первый день учёбы"],
+      [active.length,TP.plural(active.length,"день","дня","дней")+" занятий"],
+      [TP.fmtDur(all.all),"всего: учебники и THM"],
+      [sk.best,"лучшая серия"],
+      [done+" / "+books.length,"учебников дочитано"],
+      [badges,TP.plural(badges,"бейдж","бейджа","бейджей")]
+    ].map(function(k){return '<div class="kpi"><b>'+k[0]+'</b><span>'+k[1]+'</span></div>'}).join("");
+    var ev=events();
+    if(!ev.length){$("#feed").innerHTML='<div class="notice">Пока пусто. Открой учебник или запусти таймер THM на полке — события появятся здесь сами.</div>';return}
+    var h="", curM="";
+    ev.forEach(function(e){
+      var dt=new Date(e.at.length<=10?e.at+"T12:00:00":e.at), m=MON[dt.getMonth()]+" "+dt.getFullYear();
+      if(m!==curM){if(curM)h+="</div>";h+='<div class="month"><h2>'+m+'</h2>';curM=m}
+      h+='<div class="ev '+e.k+'"'+(e.c?' style="--c:'+e.c+'"':'')+'><span class="dt">'+dt.getDate()+" "+WD[dt.getDay()]+'</span><span class="rail"><span class="dot"></span></span><div class="body">'+(e.k==="day"?e.t:'<b>'+e.t+'</b>'+(e.d?'<p>'+e.d+'</p>':''))+'</div></div>';
+    });
+    $("#feed").innerHTML=h+"</div>";
+  }
+  $("#days").addEventListener("change",function(){try{localStorage.setItem("thm-ui:path-days",this.checked?"1":"0")}catch(e){}render()});
+  Promise.all([S.books,fetch("data/chapters.json").then(function(r){return r.json()}).catch(function(){return {}})]).then(function(r){books=r[0];CH=r[1];render()})
+    .catch(function(){$("#feed").innerHTML='<div class="notice">Не загрузились данные. Обнови страницу.</div>'});
+})();
+</script>
+</body>
+</html>
