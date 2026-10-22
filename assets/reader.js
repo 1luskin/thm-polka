@@ -135,8 +135,10 @@
     "#thmr-map .vp{position:absolute;left:-3px;right:-3px;border:2px solid var(--r-fg);border-radius:4px;pointer-events:none;opacity:.55}",
     "@media (max-width:700px),(hover:none){#thmr-map{width:4px;top:auto;bottom:90px;height:40vh;pointer-events:none;opacity:.8}#thmr-map .bm{left:-2px;width:8px}#thmr-map .vp{left:-2px;right:-2px;border-width:1.5px}}",
     "html.thmr-focus .toc,html.thmr-focus #toc,html.thmr-focus aside.side,html.thmr-focus .topbar,html.thmr-focus .mtop,html.thmr-focus #menubtn,html.thmr-focus nav.progress,html.thmr-focus #pbar{display:none!important}",
-    "html.thmr-focus .layout,html.thmr-focus .wrap{display:block!important}",
-    "html.thmr-focus main.content,html.thmr-focus main{max-width:68ch!important;margin-left:auto!important;margin-right:auto!important;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}",
+    "html.thmr-focus .layout,html.thmr-focus .wrap{display:block!important;max-width:none!important;width:auto!important;margin:0!important}",
+    "html.thmr-focus main.content,html.thmr-focus main,html.thmr-focus .wrap{max-width:none!important;width:auto!important;margin-left:0!important;margin-right:0!important}",
+    "@media (min-width:700px){html.thmr-focus main.content,html.thmr-focus main,html.thmr-focus .wrap{padding-left:max(24px,4vw,env(safe-area-inset-left,0px))!important;padding-right:max(32px,4vw,env(safe-area-inset-right,0px))!important}}",
+    "html.thmr-focus main p,html.thmr-focus main li,html.thmr-focus .wrap p,html.thmr-focus .wrap li,html.thmr-focus .lead,html.thmr-focus .sub,html.thmr-focus figcaption{max-width:none!important}",
     "@media (prefers-reduced-motion:reduce){#thmr-done,#thmr-done *,#thmr-head .h-ring .fg{animation:none!important;transition:none!important}#thmr-done path{stroke-dashoffset:0}}",
     "@media (prefers-reduced-motion:reduce){#thmr *{transition:none!important}}"
   ].join("\n");
@@ -242,7 +244,9 @@
 
   // ---------- шрифт и ночной режим ----------
   function applyPrefs() {
-    root.style.zoom = prefs.zoom && prefs.zoom !== 1 ? String(prefs.zoom) : "";
+    // в фокусе текст на всю ширину страницы и крупнее — чем шире экран, тем крупнее
+    var z = (prefs.zoom || 1) * (prefs.focus ? focusScale() : 1);
+    root.style.zoom = Math.abs(z - 1) > 0.001 ? String(Math.round(z * 100) / 100) : "";
     setTimeout(function () { if (typeof paintMap === "function") paintMap(); }, 60);
     var n = document.getElementById("thmr-night");
     if (prefs.night) {
@@ -748,8 +752,14 @@
   }
 
   // ---------- режим фокуса и переключатели ----------
+  function focusScale() {
+    var w = window.innerWidth;
+    return w >= 1700 ? 1.32 : w >= 1280 ? 1.22 : w >= 900 ? 1.12 : 1;
+  }
+  window.addEventListener("resize", function () { if (prefs.focus) { clearTimeout(focusScale.t); focusScale.t = setTimeout(applyPrefs, 150); } });
   function applyFocus() {
     document.documentElement.classList.toggle("thmr-focus", !!prefs.focus);
+    applyPrefs();
     if (hd) hd.querySelector('[data-h="focus"]').setAttribute("aria-pressed", String(!!prefs.focus));
     put("thm-reader:prefs", prefs);
     setTimeout(paintMap, 80);
