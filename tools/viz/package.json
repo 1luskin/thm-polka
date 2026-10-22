@@ -1,0 +1,13 @@
+{
+  "name": "thm-polka-viz-tools",
+  "private": true,
+  "type": "module",
+  "description": "Инструменты сборки визуала: карта мира и страны IP. npm install в этой папке.",
+  "dependencies": {
+    "@ip-location-db/dbip-country": "2.3.2026060120",
+    "d3-geo": "3.1.1",
+    "i18n-iso-countries": "7.11.3",
+    "topojson-client": "3.1.0",
+    "world-atlas": "2.0.2"
+  }
+}

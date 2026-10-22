@@ -42,3 +42,39 @@
 5. Закоммитить и запушить в `main`. GitHub Pages обновит сайт за 1–2 минуты.
 
 Правишь учебник, который уже лежит на полке, — просто перезаписываешь его файл в `books/`. `id` не меняй: к нему привязан прогресс.
+
+## Визуал в учебниках
+
+`assets/viz.js` (иконки — `assets/icons.js`, карта — `assets/world.json`) рисует графики и схемы прямо в учебнике. Читалка подгружает его сама. В HTML учебника блок задаётся так:
+
+```html
+<figure class="thv" data-v="ТИП"><figcaption><b>Заголовок</b><span>Источник данных или «Учебный пример: …»</span></figcaption>
+<script type="application/json">{ …данные… }</script></figure>
+```
+
+| Тип | Что рисует | Данные |
+|---|---|---|
+| `timeline` | события во времени столбиками + отметки | `{"points":[["10:20",12,"bad"]…],"unit":"…","marks":[{"i":7,"text":"успешный вход","kind":"good"}]}` |
+| `hours` | активность по 24 часам, ночь подсвечена | `{"values":[24 числа],"unit":"…","tz":"…"}` |
+| `topn` | топ-N горизонтальными полосами | `{"items":[["183.62.140.253",286,"bad"]…],"unit":"…"}` |
+| `baseline` | норма (полоса) и сегодня (линия), выбросы красным | `{"labels":[…],"lo":[…],"hi":[…],"v":[…]}` |
+| `heat` | тепловая карта строки × столбцы | `{"rows":[…],"cols":[…],"values":[[…]…],"unit":"…"}` |
+| `ptree` | дерево процессов с раскрытием командной строки | `{"root":{"n":"winword.exe","u":"user","note":"…","cmd":"…","bad":true,"c":[…]}}` |
+| `graph` | граф связей слева направо | `{"nodes":[{"id","label","sub","icon","kind"}],"edges":[["a","b","подпись","bad"]]}` |
+| `scene` | сцена из иконок по зонам (Интернет / DMZ / LAN) | как `graph` + `"zones":[{"id","label","kind"}]`, у узлов `"zone"` |
+| `route` | путь пакета по шагам с анимацией | `{"nodes":[…],"steps":[{"from","to","text"}]}` |
+| `seq` | диаграмма обмена сообщениями по шагам | `{"actors":[…],"msgs":[{"f":0,"t":1,"text","note","kind","dash"}]}` |
+| `chain` | kill chain с прогрессом атаки | `{"stages":[{"name","ru","state":"done/cur/","note"}]}` |
+| `layers` | пакет по слоям, ширина = байты | `{"layers":[{"name","bytes","note","fields":[["поле","значение","смысл"]]}]}` |
+| `decode` | раскодирование по шагам | `{"input":"…","steps":[{"op","out","note"}]}` |
+| `diff` | до / после построчно | `{"a":{"title","lines":[…]},"b":{"title","lines":[…]}}` |
+| `siem` | мини-SIEM: поиск и фильтры по таблице событий | `{"cols":[…],"rows":[[…]…],"filter":[номера колонок],"tasks":[…]}` |
+| `event` | карточки Event ID | `{"cards":[{"id","name","log","kind","fields":[[…]],"look"}]}` |
+| `matrix` | «где видно»: строки × источники, 2/1/0 | `{"cols":[…],"rows":[{"name","id","v":[2,1,0…]}]}` |
+| `severity` | калькулятор приоритета с кнопками | `{"factors":[{"name","opts":[["вариант",баллы]],"gate":true}],"levels":[[мин,"Название","kind","что делать"]]}` |
+| `ui` | интерфейс инструмента: `eventviewer`, `splunk`, `wireshark` | `{"app","title","cols","rows","detail":[…],"query","hist","filter"}` |
+| `map` | карта мира по странам | `{"counts":{"CN":341},"names":{"CN":"Китай"},"unit","attr"}` |
+
+`kind`: `bad`, `good`, `warn`, `acc` или пусто. Иконки: laptop, desktop, server, dc, db, cloud, globe, router, switch, firewall, attacker, user, analyst, shield, mail, file, log, key, lock, phone, terminal, browser, bug, alert, search, siem, house, dns, vpn, usb, gear, packet.
+
+Обложки глав рисуются сами перед заголовками «Глава N» / «ЧАСТЬ N». Иллюстрация учебника — `assets/illustrations/<id>.svg`, их рисует `tools/viz/illustrations.py`. Готовые блоки для 7 первых учебников и расчёт по реальным датасетам — `tools/viz/build.py` (сначала `npm install` в `tools/viz` для стран IP по DB-IP Lite).

@@ -32,6 +32,7 @@
   if (prefs.font == null) prefs.font = "book";         // book | serif | sans
   if (prefs.ruler == null) prefs.ruler = false;        // линейка чтения
   if (prefs.breaks == null) prefs.breaks = true;       // напоминание 20-20-20
+  if (prefs.covers == null) prefs.covers = true;       // обложки глав
   function save() { st.lastOpen = new Date().toISOString(); put(KEY, st); summary(); }
 
   // ---------- структура учебника ----------
@@ -297,6 +298,7 @@
     H.classList.toggle("thmr-f-sans", prefs.font === "sans");
     if (prefs.font !== "book") loadFont();
     H.classList.toggle("thmr-ruler", !!prefs.ruler);
+    H.classList.toggle("thv-nocovers", !prefs.covers);
     if (prefs.ruler) setTimeout(rulerMove, 30);
     put("thm-reader:prefs", prefs);
   }
@@ -307,7 +309,7 @@
     var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
       acceptNode: function (n) {
         var p = n.parentNode;
-        if (!p || p.closest("#thmr, #thmr-head, script, style, noscript")) return NodeFilter.FILTER_REJECT;
+        if (!p || p.closest("#thmr, #thmr-head, script, style, noscript, .thv, .thv-cover")) return NodeFilter.FILTER_REJECT;
         return NodeFilter.FILTER_ACCEPT;
       }
     });
@@ -433,7 +435,7 @@
   function speakBlocks() {
     var start = currentChapter() || chapters[0];
     var blocks = Array.prototype.filter.call(root.querySelectorAll("h2, h3, p, li, blockquote"), function (b) {
-      if (b.closest("#thmr, nav, aside, .toc, pre, details:not([open]), [hidden], .qz-opts, .opts")) return false;
+      if (b.closest("#thmr, nav, aside, .toc, pre, details:not([open]), [hidden], .qz-opts, .opts, .thv")) return false;
       if (b.tagName === "LI" && b.querySelector("p")) return false;
       if (!b.offsetParent && b.tagName !== "H2") return false;
       return (b.textContent || "").trim().length > 1;
@@ -640,7 +642,7 @@
       h.push('<div class="t-mut">Ширина строки в фокусе</div>' + seg("width", [["narrow", "Узко"], ["comfy", "Удобно"], ["full", "Во всю"]]));
       h.push('<div class="t-mut">Интервал</div>' + seg("lineh", [["normal", "Обычный"], ["loose", "Свободный"]]));
       h.push('<div class="t-mut">Шрифт</div>' + seg("font", [["book", "Как в учебнике"], ["serif", "Книжный"], ["sans", "Без засечек"]]));
-      h.push('<div class="t-row">' + tg("ruler", "Линейка чтения") + tg("breaks", "Перерыв 20-20-20") + '</div>');
+      h.push('<div class="t-row">' + tg("ruler", "Линейка чтения") + tg("breaks", "Перерыв 20-20-20") + tg("covers", "Обложки глав") + '</div>');
       h.push('<div class="t-h">Чтение</div>');
       h.push('<div class="t-row"><button class="t-b" data-a="z-" aria-label="Мельче">A−</button><span class="t-mut">' + Math.round((prefs.zoom || 1) * 100) + '%</span><button class="t-b" data-a="z+" aria-label="Крупнее">A+</button>' +
         '<button class="t-b" data-a="night" aria-pressed="' + !!prefs.night + '">Ночной режим</button></div>');
@@ -736,7 +738,27 @@
     var n = before + 1;
     announce(h, before, n);
     if (n >= chapters.length && !st.doneAt) { st.doneAt = new Date().toISOString(); celebrate(); }
-    save(); updateHead(true); paintMap();
+    save(); updateHead(true); paintMap(); syncChecks();
+  }
+  // галочки в собственном оглавлении учебника ставятся сами, когда все разделы главы прочитаны
+  function syncChecks() {
+    var idx = {}; chapters.forEach(function (c, i) { idx[c.id] = i; });
+    function group(els, attr) {
+      var list = Array.prototype.filter.call(els, function (e) { return idx[e.getAttribute(attr)] != null; })
+        .sort(function (a, b) { return idx[a.getAttribute(attr)] - idx[b.getAttribute(attr)]; });
+      return list.map(function (e, i) {
+        var from = idx[e.getAttribute(attr)], to = i + 1 < list.length ? idx[list[i + 1].getAttribute(attr)] : chapters.length;
+        var done = to > from; for (var k = from; k < to; k++) if (!st.seen[chapters[k].id]) { done = false; break; }
+        return { el: e, done: done };
+      });
+    }
+    group(document.querySelectorAll(".ck .ck-i[data-id]"), "data-id").forEach(function (g) {
+      var box = g.el.querySelector(".ck-box");
+      if (g.done && !g.el.classList.contains("on") && box) box.click();
+    });
+    group(document.querySelectorAll("nav.progress input[type=checkbox][data-ch]"), "data-ch").forEach(function (g) {
+      if (g.done && !g.el.checked) { g.el.checked = true; g.el.dispatchEvent(new Event("change", { bubbles: true })); g.el.dispatchEvent(new Event("input", { bubbles: true })); }
+    });
   }
   function checkSeen() {
     var vh = window.innerHeight, atEnd = vh + window.scrollY >= document.documentElement.scrollHeight - 80;
@@ -789,7 +811,7 @@
       var m = list.filter(function (b) { return b.id === BOOK; })[0]; if (!m) return;
       hd.querySelector(".h-title b").textContent = m.title;
       hd.querySelector(".h-title small").textContent = (m.path || "").replace(/^\d+\s+/, "");
-      if (BIND[m.path]) hd.style.setProperty("--hb", BIND[m.path]);
+      if (BIND[m.path]) { hd.style.setProperty("--hb", BIND[m.path]); PATHCOL = BIND[m.path]; document.querySelectorAll(".thv-cover").forEach(function (c) { c.style.setProperty("--cv", PATHCOL); }); }
     }).catch(function () {});
   }
   function updateHead(anim) {
@@ -855,7 +877,7 @@
     Array.prototype.forEach.call(root.querySelectorAll("pre"), function (pre) {
       var code = pre.querySelector("code");
       if (code && /\blanguage-/.test(code.className)) return;
-      if (pre.closest(".fb, .fld, #thmr") || pre.classList.contains("hljs")) return;
+      if (pre.closest(".fb, .fld, #thmr, .thv") || pre.classList.contains("hljs")) return;
       var targets = [];
       Array.prototype.forEach.call(pre.childNodes, function (n) { if (n.nodeType === 3) targets.push(n); });
       if (code) Array.prototype.forEach.call(code.childNodes, function (n) { if (n.nodeType === 3) targets.push(n); });
@@ -919,7 +941,7 @@
             if (heads.has(n)) used = {};
             if (SKIP.indexOf(n.tagName) >= 0 || glosTables.has(n) || n.id === "thmr" || n.id === "thmr-head") return NodeFilter.FILTER_REJECT;
             var c = n.classList;
-            if (c && (c.contains("qz") || c.contains("quiz") || c.contains("fld") || c.contains("fb") || c.contains("tr") || c.contains("triage") || c.contains("ck") || c.contains("toc") || c.contains("kc") || c.contains("thmr-term"))) return NodeFilter.FILTER_REJECT;
+            if (c && (c.contains("thv") || c.contains("thv-cover") || c.contains("thv-ill") || c.contains("qz") || c.contains("quiz") || c.contains("fld") || c.contains("fb") || c.contains("tr") || c.contains("triage") || c.contains("ck") || c.contains("toc") || c.contains("kc") || c.contains("thmr-term"))) return NodeFilter.FILTER_REJECT;
             return NodeFilter.FILTER_SKIP;
           }
           return NodeFilter.FILTER_ACCEPT;
@@ -1035,7 +1057,10 @@
   var RSEL = "p,li,h1,h2,h3,h4,pre,blockquote,table,figure,dt,dd", rBlocks = null, rCur = null;
   function rulerMove() {
     if (!prefs.ruler) { if (rCur) rCur.classList.remove("thmr-rcur"); rCur = null; return; }
-    if (!rBlocks) rBlocks = Array.prototype.filter.call(root.querySelectorAll(RSEL), function (b) { return !b.querySelector(RSEL) && !b.closest("#thmr,#thmr-head,nav,aside,.toc"); });
+    if (!rBlocks) rBlocks = Array.prototype.filter.call(root.querySelectorAll(RSEL), function (b) {
+      if (b.matches("figure.thv")) return true;
+      return !b.querySelector(RSEL) && !b.closest("#thmr,#thmr-head,nav,aside,.toc,.thv");
+    });
     var mid = window.innerHeight * 0.42, best = null, bd = 1e9;
     for (var i = 0; i < rBlocks.length; i++) {
       var r = rBlocks[i].getBoundingClientRect();
@@ -1071,6 +1096,22 @@
   }
   function closeBreak() { if (brkBox) brkBox.remove(); brkBox = null; }
 
+  // ---------- визуал в учебнике (графики, схемы, обложки глав) ----------
+  var PATHCOL = "#55606c";
+  function loadScript(name, cb) {
+    var sc = document.createElement("script"); sc.src = new URL(name, SCRIPT_SRC).href; sc.onload = cb; sc.onerror = function () {}; document.head.appendChild(sc);
+  }
+  function viz() {
+    loadScript("icons.js", function () {
+      loadScript("viz.js", function () {
+        if (!window.THV) return;
+        THV.renderAll(root);
+        THV.covers(root, PATHCOL);
+        rBlocks = null; measure(); paintMap();
+      });
+    });
+  }
+
   // ---------- старт ----------
   function start() {
     head();
@@ -1081,9 +1122,11 @@
     paintAll();
     measure();
     buildMap();
+    viz();
     terms();
     save();
     updateHead(false);
+    setTimeout(syncChecks, 300);
     if (!location.hash && st.pos && st.pos.id && document.getElementById(st.pos.id) && chapters.indexOf(document.getElementById(st.pos.id)) > 0) {
       var p = st.pos;
       toast("Продолжить: " + p.title, "Продолжить", function () { goTo(p.id, p.off); });
