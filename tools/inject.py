@@ -31,6 +31,8 @@ def og(title, desc, url, image):
         + f'<meta property="og:url" content="{e(url)}"><meta property="og:image" content="{e(image)}">'
         + '<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">'
         + '<meta name="twitter:card" content="summary_large_image">'
+        + '<link rel="icon" href="/thm-polka/assets/favicon.svg" type="image/svg+xml"><link rel="icon" href="/thm-polka/favicon.ico" sizes="32x32">'
+        + '<link rel="apple-touch-icon" href="/thm-polka/assets/apple-touch-icon.png">'
         + OG_END
     )
 
