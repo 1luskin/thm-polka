@@ -144,6 +144,7 @@ section.path{display:flex;flex-direction:column;gap:8px}
 .title{min-width:0;display:flex;flex-direction:column;gap:5px}
 .title strong{font-weight:600;font-size:16px}
 .meta{font-size:13px;color:var(--muted)}
+.meta.times{display:block}.thm-t{opacity:.85;white-space:nowrap}
 .meta .score{font-family:var(--f-mono);color:var(--st-passed)}
 .actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
 .chip{font-family:var(--f-mono);font-size:12px;padding:3px 9px;border-radius:999px;border:1px solid var(--st);color:var(--ink);white-space:nowrap}
@@ -258,7 +259,7 @@ const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 const bind=p=>"var("+(BIND[p]||"--b-x")+")";
 function hash(s){let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h}
 
-let BOOKS=[], CH={}, books=[], openId=null, store=TP.shelf();
+let BOOKS=[], CH={}, TM={}, books=[], openId=null, store=TP.shelf();
 function persist(){return TP.put("thm-polka-v1",store)}
 function prog(b){return TP.bookProgress(b.id,CH[b.id])}
 function rebuild(){
@@ -402,6 +403,14 @@ function beads(b){
     const cls=c.seen>=c.n?"full":c.seen?"half":"";
     return `<a class="bead ${cls}${c.cur?" cur":""}" href="${esc(b.url)}#${encodeURIComponent(c.first)}" title="${esc(c.t)} · ${c.seen}/${c.n} ${TP.plural(c.n,"раздел","раздела","разделов")}${c.cur?" · ты здесь":""}"></a>`}).join("")}</span>`;
 }
+function hm(m){const h=Math.floor(m/60),r=m%60;return h?(r?`${h} ч ${r} мин`:`${h} ч`):`${r} мин`}
+function times(b){
+  const t=TM[b.id]; if(!t)return "";
+  let thm="";
+  if(t.rooms){const n=`${t.rooms} ${TP.plural(t.rooms,"комната","комнаты","комнат")}`;
+    thm=t.thm?` <span class="thm-t" title="${t.unknown?`Сумма оценок THM; у ${t.unknown} ${TP.plural(t.unknown,"комнаты","комнат","комнат")} THM время не пишет`:"Сумма оценок времени со страниц комнат THM"}">(на THM ~${hm(t.thm)}${t.unknown?"+":""} · ${n})</span>`:` <span class="thm-t">(${n} на THM)</span>`}
+  return `<span class="meta times">📖 ~${hm(t.read)} чтения${thm}</span>`;
+}
 function card(b){
   const st=ST[b.status]?b.status:"none", thm=TP.timer.byBook()[b.id]||0;
   const res=[b.razbor&&`разбор <span class="score">${esc(b.razbor)}</span>`,b.exam&&`экзамен <span class="score">${esc(b.exam)}</span>`].filter(Boolean).join(" · ");
@@ -409,7 +418,7 @@ function card(b){
   const pl=[b.p.total?`${b.p.pct}% прочитано`:"",b.p.quizTotal?`квизы ${b.p.quizOk}/${b.p.quizTotal}`:"",b.p.readSecs>=60?`чтение ${TP.fmtDur(b.p.readSecs)}`:"",thm>=60?`THM ${TP.fmtDur(thm)}`:""].filter(Boolean).join(" · ");
   return `<article class="book" data-st="${st}" style="--b:${bind(b.path)}">
     <div class="row">
-      <div class="title"><strong>${esc(b.title)}</strong>${meta?`<span class="meta">${meta}</span>`:""}${beads(b)}${pl?`<span class="prog">${pl}</span>`:""}</div>
+      <div class="title"><strong>${esc(b.title)}</strong>${meta?`<span class="meta">${meta}</span>`:""}${times(b)}${beads(b)}${pl?`<span class="prog">${pl}</span>`:""}</div>
       <div class="actions"><span class="chip">${ST[st]}</span>${b.url?`<a class="open" href="${esc(b.url)}">Читать →</a>`:""}</div>
     </div>
     <details class="more" data-id="${esc(b.id)}" ${openId===b.id?"open":""}>
@@ -485,8 +494,9 @@ $("#ioForm").addEventListener("submit",e=>{e.preventDefault();try{const v=JSON.p
 /* ---------- старт ---------- */
 Promise.all([
   fetch("books.json",{cache:"no-store"}).then(r=>r.json()),
-  fetch("data/chapters.json").then(r=>r.ok?r.json():{}).catch(()=>({}))
-]).then(([list,ch])=>{BOOKS=list;CH=ch;renderAll()})
+  fetch("data/chapters.json").then(r=>r.ok?r.json():{}).catch(()=>({})),
+  fetch("data/times.json",{cache:"no-store"}).then(r=>r.ok?r.json():{}).catch(()=>({}))
+]).then(([list,ch,tm])=>{BOOKS=list;CH=ch;TM=tm;renderAll()})
  .catch(()=>{$("#case").innerHTML='<div class="notice">Не загрузился список учебников. Обнови страницу.</div>'});
 let rt=null, rz=null;
 addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(()=>{if(BOOKS.length)renderHeat()},250)});

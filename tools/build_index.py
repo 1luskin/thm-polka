@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Собирает справочные данные сайта из учебников в books/.
 Запуск после добавления или правки учебника:  python3 tools/build_index.py
-Пишет: data/search.json, data/chapters.json, data/glossary.json, data/mitre.json, data/ports.json, data/tools.json"""
+Пишет: data/search.json, data/chapters.json, data/glossary.json, data/mitre.json, data/ports.json, data/tools.json, data/times.json
+
+Время: чтение = слова / READ_WPM; THM = сумма оценок комнат из поля thm в books.json по tools/thm_rooms.json."""
 import json, pathlib, re, sys
 from bs4 import BeautifulSoup, NavigableString, Comment
 
@@ -122,6 +124,13 @@ def add(dic, key, ref):
         lst.append(ref)
 
 
+READ_WPM = 150  # учебный текст с логами и таблицами читается медленнее обычного
+THM_ROOMS = json.loads((ROOT / "tools" / "thm_rooms.json").read_text(encoding="utf8"))
+times = {}
+missing = sorted({r for b in books for r in b.get("thm", []) if r not in THM_ROOMS})
+if missing:
+    print("Нет в tools/thm_rooms.json (добавь с временем со страницы комнаты):", ", ".join(missing))
+
 for b in books:
     path = ROOT / b["url"]
     if not path.exists():
@@ -129,6 +138,11 @@ for b in books:
     soup = BeautifulSoup(path.read_text(encoding="utf8"), "lxml")
     chapters[b["id"]] = chapters_of(soup)
     root, secs = sections(soup)
+    words = sum(len(s["text"].split()) for s in secs)
+    mins = [THM_ROOMS.get(r, {}).get("min") for r in b.get("thm", [])]
+    times[b["id"]] = {"words": words, "read": max(5, round(words / READ_WPM / 5) * 5),
+                      "thm": sum(m for m in mins if m), "rooms": len(mins),
+                      "unknown": sum(1 for m in mins if not m)}
     for s in secs:
         ref = {"book": b["id"], "sec": s["id"], "title": s["title"]}
         search.append({"b": b["id"], "s": s["id"], "t": s["title"], "x": s["text"][:20000]})
@@ -170,6 +184,7 @@ def dump(name, obj):
 
 dump("search.json", search)
 dump("chapters.json", chapters)
+dump("times.json", times)
 dump("glossary.json", sorted(glossary.values(), key=lambda g: g["en"].lower()))
 
 # MITRE: полная матрица текущей версии + где встречалось в учебниках

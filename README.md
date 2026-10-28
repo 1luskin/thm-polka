@@ -29,13 +29,16 @@
  "path": "03 SOC Level 1",
  "order": 1,
  "rooms": "Intro to CTI, CTI for Alert Triage, MISP, OpenCTI, Trooper",
+ "thm": ["cyberthreatintel", "ctiforalerttriage", "misp", "opencti", "trooper"],
  "added": "2026-10-21"
 }
 ```
 
+`thm` — коды комнат из адреса `tryhackme.com/room/<код>`. Время каждой комнаты (поле «NN min» на её странице) записать в `tools/thm_rooms.json`; если THM время не показывает — `null`. `build_index.py` предупредит о комнате, которой там нет. Время чтения считается само по объёму текста (150 слов в минуту) и вместе с временем THM видно на карточке полки.
+
 `path` — одно из: `01 Pre Security`, `02 Cyber Security 101`, `03 SOC Level 1`, `04 SOC Level 2`, `05 Defending Azure`, `Вне курса`. `order` — порядок внутри пути.
 
-3. Пересобрать поиск, главы, глоссарий, MITRE, порты и инструменты: `python3 tools/build_index.py` (нужны `beautifulsoup4` и `lxml`).
+3. Пересобрать поиск, главы, время чтения и THM, глоссарий, MITRE, порты и инструменты: `python3 tools/build_index.py` (нужны `beautifulsoup4` и `lxml`).
    Сделать картинку-превью для ссылок: `python3 tools/og.py` (нужен Pillow).
    Подключить читалку, офлайн и превью ко всем страницам: `python3 tools/inject.py` (повторный запуск безопасен).
 4. В `sw.js` поднять версию `CACHE` (`thm-polka-v1` → `v2` …), чтобы телефон подтянул обновление.

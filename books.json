@@ -6,7 +6,27 @@
   "path": "01 Pre Security",
   "order": 1,
   "rooms": "",
-  "added": "2026-09-16"
+  "added": "2026-09-16",
+  "thm": [
+   "offensivesecurityintro",
+   "defensivesecurityintro",
+   "careersincyber",
+   "insideacomputer",
+   "computertypes",
+   "clientserverbasics",
+   "virtualisationbasics",
+   "cloudcomputingfundamentals",
+   "operatingsystemsintroduction",
+   "windowsbasics",
+   "linuxclibasics",
+   "windowsclibasics",
+   "operatingsystemsecurity",
+   "datarepresentation",
+   "dataencoding",
+   "pythonsimpledemo",
+   "javascriptsimpledemo",
+   "databasesqlbasics"
+  ]
  },
  {
   "id": "ps-05-network",
@@ -15,7 +35,14 @@
   "path": "01 Pre Security",
   "order": 5,
   "rooms": "What is Networking?, Intro to LAN, OSI Model, Packets & Frames, Extending Your Network",
-  "added": "2026-09-28"
+  "added": "2026-09-28",
+  "thm": [
+   "whatisnetworking",
+   "introtolan",
+   "osimodelzi",
+   "packetsframes",
+   "extendingyournetwork"
+  ]
  },
  {
   "id": "ps-06-web",
@@ -24,7 +51,13 @@
   "path": "01 Pre Security",
   "order": 6,
   "rooms": "DNS in Detail, HTTP in Detail, How Websites Work, Putting it all together",
-  "added": "2026-09-28"
+  "added": "2026-09-28",
+  "thm": [
+   "dnsindetail",
+   "httpindetail",
+   "howwebsiteswork",
+   "puttingitalltogether"
+  ]
  },
  {
   "id": "cs101-01",
@@ -33,7 +66,12 @@
   "path": "02 Cyber Security 101",
   "order": 1,
   "rooms": "",
-  "added": "2026-09-17"
+  "added": "2026-09-17",
+  "thm": [
+   "offensivesecurityintro",
+   "defensivesecurityintro",
+   "searchskills"
+  ]
  },
  {
   "id": "cs101-linux",
@@ -42,7 +80,12 @@
   "path": "02 Cyber Security 101",
   "order": 2,
   "rooms": "Linux Fundamentals 1–3",
-  "added": "2026-09-23"
+  "added": "2026-09-23",
+  "thm": [
+   "linuxfundamentalspart1",
+   "linuxfundamentalspart2",
+   "linuxfundamentalspart3"
+  ]
  },
  {
   "id": "cs101-windows-ad",
@@ -51,7 +94,13 @@
   "path": "02 Cyber Security 101",
   "order": 3,
   "rooms": "",
-  "added": "2026-09-27"
+  "added": "2026-09-27",
+  "thm": [
+   "windowsfundamentals1xbx",
+   "windowsfundamentals2x0x",
+   "windowsfundamentals3xzx",
+   "winadbasics"
+  ]
  },
  {
   "id": "x-offensive-intro",
@@ -60,6 +109,9 @@
   "path": "Вне курса",
   "order": 1,
   "rooms": "",
-  "added": "2026-09-11"
+  "added": "2026-09-11",
+  "thm": [
+   "offensivesecurityintro"
+  ]
  }
 ]
