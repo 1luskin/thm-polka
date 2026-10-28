@@ -1,0 +1,1576 @@
+<title>Учебник: Command Line</title><!--thm-og:start--><meta name="description" content="Cyber Security 101 · Windows Command Line, Windows PowerShell, Linux Shells"><meta property="og:type" content="website"><meta property="og:site_name" content="THM Полка"><meta property="og:locale" content="ru_RU"><meta property="og:title" content="Учебник: Command Line"><meta property="og:description" content="Cyber Security 101 · Windows Command Line, Windows PowerShell, Linux Shells"><meta property="og:url" content="https://1luskin.github.io/thm-polka/books/cs101-cli.html"><meta property="og:image" content="https://1luskin.github.io/thm-polka/assets/og/cs101-cli.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><link rel="icon" href="/thm-polka/assets/favicon.svg" type="image/svg+xml"><link rel="icon" href="/thm-polka/favicon.ico" sizes="32x32"><link rel="apple-touch-icon" href="/thm-polka/assets/apple-touch-icon.png"><!--thm-og:end-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#eef1f5; --surface:#ffffff; --surface-2:#f6f8fa;
+  --ink:#111a22; --muted:#5b6b7b; --line:#d5dde5; --line-soft:#e4eaf0;
+  --accent:#1a5fa8; --accent-soft:#e3edf8;
+  --alert:#a85e0e; --alert-soft:#f9eedd;
+  --ok:#0f7551; --ok-soft:#e2f2eb;
+  --code-bg:#101a24; --code-ink:#dbe6f0; --code-dim:#8aa0b4;
+  --fs:17px; --maxw:none;
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d141b; --surface:#141d26; --surface-2:#19232e;
+    --ink:#e4ecf3; --muted:#93a5b6; --line:#25323f; --line-soft:#1e2933;
+    --accent:#6ba8f5; --accent-soft:#16283c;
+    --alert:#e0a555; --alert-soft:#2c2417;
+    --ok:#52c095; --ok-soft:#13291f;
+    --code-bg:#080e14; --code-ink:#d7e3ef; --code-dim:#7f95a9;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d141b; --surface:#141d26; --surface-2:#19232e;
+  --ink:#e4ecf3; --muted:#93a5b6; --line:#25323f; --line-soft:#1e2933;
+  --accent:#6ba8f5; --accent-soft:#16283c;
+  --alert:#e0a555; --alert-soft:#2c2417;
+  --ok:#52c095; --ok-soft:#13291f;
+  --code-bg:#080e14; --code-ink:#d7e3ef; --code-dim:#7f95a9;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:var(--fs);line-height:1.68;-webkit-text-size-adjust:100%}
+a{color:var(--accent);text-underline-offset:2px;overflow-wrap:anywhere}
+li,p,td,th{overflow-wrap:break-word}
+a:focus-visible,button:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+
+/* ---------- progress + topbar ---------- */
+#pbar{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;height:3px;background:transparent;z-index:40}
+#pbar i{display:block;height:100%;width:0;background:var(--accent);transition:width .12s linear}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;display:flex;align-items:center;gap:10px;
+  background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);padding:8px 16px;font-family:var(--sans)}
+.topbar .brand{font-size:.82rem;font-weight:600;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto}
+.topbar .spacer{flex:1}
+.btn{font-family:var(--sans);font-size:.78rem;font-weight:500;color:var(--ink);background:var(--surface-2);
+  border:1px solid var(--line);border-radius:7px;padding:5px 9px;cursor:pointer;line-height:1.2}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+#readpct{font-family:var(--sans);font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+#menubtn{display:none}
+
+/* ---------- layout ---------- */
+.layout{display:grid;grid-template-columns:262px minmax(0,1fr);gap:34px;align-items:start;
+  max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:26px 80px}
+.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 58px);max-height:calc(100vh - 92px);overflow-y:auto;
+  font-family:var(--sans);font-size:.83rem;line-height:1.35;border-left:2px solid var(--line-soft);padding-left:14px}
+.toc .toc-h{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.toc a{display:block;color:var(--muted);text-decoration:none;padding:4px 0;border-left:2px solid transparent;margin-left:-16px;padding-left:14px}
+.toc a.t1{color:var(--ink);font-weight:600;margin-top:12px;font-size:.84rem}
+.toc a.t2{padding-left:26px;font-size:.8rem}
+.toc a:hover{color:var(--accent)}
+.toc a.on{color:var(--accent);border-left-color:var(--accent);font-weight:600}
+.content{min-width:0;max-width:70ch}
+
+/* ---------- typography ---------- */
+h1{font-family:var(--sans);font-size:2.05rem;line-height:1.15;font-weight:600;letter-spacing:-.015em;margin:.2em 0 .5em;text-wrap:balance}
+h1.anchored{font-size:1.72rem;margin-top:2.2em;padding-top:.7em;border-top:2px solid var(--line);
+   display:flex;align-items:center;gap:10px;scroll-margin-top:72px}
+h2{font-family:var(--sans);font-size:1.3rem;font-weight:600;line-height:1.25;margin:2.2em 0 .7em;text-wrap:balance;
+   display:flex;align-items:center;gap:10px;scroll-margin-top:72px}
+h3{font-family:var(--sans);font-size:1.06rem;font-weight:600;margin:1.9em 0 .5em;color:var(--ink);text-wrap:balance}
+.mark{flex:none;width:19px;height:19px;border:1.5px solid var(--line);border-radius:5px;background:var(--surface);
+  cursor:pointer;padding:0;position:relative}
+.mark[aria-pressed="true"]{background:var(--ok);border-color:var(--ok)}
+.mark[aria-pressed="true"]::after{content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;
+  border:solid #fff;border-width:0 2px 2px 0;transform:rotate(42deg)}
+.done .h2t{opacity:.5}
+p{margin:0 0 1.05em}
+ul,ol{margin:0 0 1.15em;padding-left:1.35em}
+li{margin:.3em 0}
+hr{border:0;border-top:1px solid var(--line);margin:2.6em 0}
+blockquote{margin:1.4em 0;padding:.85em 1.1em;background:var(--alert-soft);border-left:3px solid var(--alert);border-radius:0 8px 8px 0}
+blockquote p:last-child{margin:0}
+strong{font-weight:600}
+.lede{color:var(--muted);font-size:.95rem;font-family:var(--sans)}
+
+/* ---------- code ---------- */
+code{font-family:var(--mono);font-size:.86em;background:var(--surface-2);border:1px solid var(--line-soft);
+  border-radius:4px;padding:.08em .32em;overflow-wrap:anywhere;word-break:break-word}
+pre{position:relative;background:var(--code-bg);color:var(--code-ink);border-radius:10px;padding:14px 16px;
+  overflow-x:auto;margin:1.2em 0;font-size:.85rem;line-height:1.55}
+pre code{background:none;border:0;padding:0;color:inherit;font-size:1em}
+.copy{position:absolute;top:8px;right:8px;font-family:var(--sans);font-size:.68rem;color:var(--code-dim);
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:6px;padding:3px 7px;cursor:pointer}
+.copy:hover{color:#fff;border-color:rgba(255,255,255,.4)}
+
+/* ---------- tables ---------- */
+.tablewrap{overflow-x:auto;margin:1.3em 0;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-family:var(--sans);font-size:.87rem;line-height:1.45}
+th,td{text-align:left;padding:9px 13px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;font-size:.76rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+
+/* ---------- details ---------- */
+details{margin:1.1em 0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:2px 15px}
+details[open]{background:var(--surface-2)}
+summary{cursor:pointer;font-family:var(--sans);font-size:.9rem;font-weight:500;padding:11px 0;list-style:none;
+  display:flex;gap:9px;align-items:flex-start}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"▸";color:var(--accent);flex:none;transition:transform .15s}
+details[open] summary::before{transform:rotate(90deg)}
+details > :not(summary){font-size:.95rem}
+details > p:last-child{padding-bottom:.6em}
+
+/* ---------- field breakdown ---------- */
+.fb{margin:1.4em 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.fb-cap{font-family:var(--sans);font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+  padding:9px 14px 0}
+.fb-line{font-family:var(--mono);font-size:.8rem;line-height:2.1;padding:8px 14px 12px;overflow-x:auto;white-space:pre}
+.fld{border-radius:4px;padding:2px 3px;cursor:pointer;border-bottom:2px solid var(--line);transition:background .12s}
+.fld:hover,.fld.on{background:var(--accent-soft);border-bottom-color:var(--accent)}
+.fld.on{box-shadow:inset 0 0 0 1px var(--accent)}
+.fb-out{font-family:var(--sans);font-size:.85rem;border-top:1px solid var(--line);padding:11px 14px;
+  background:var(--surface-2);min-height:3.6em}
+.fb-out b{font-weight:600;color:var(--accent);display:block;font-size:.78rem;letter-spacing:.03em;text-transform:uppercase;margin-bottom:2px}
+.fb-hint{color:var(--muted)}
+
+/* ---------- figures ---------- */
+figure{margin:1.6em 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 16px 10px}
+figure svg{display:block;max-width:100%;height:auto;margin:0 auto;color:var(--ink)}
+figcaption{font-family:var(--sans);font-size:.78rem;color:var(--muted);margin-top:10px;text-align:center;line-height:1.45}
+
+/* ---------- to top ---------- */
+#totop{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:35;
+  width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);
+  font-size:1rem;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .2s}
+#totop.show{opacity:1;pointer-events:auto}
+
+/* ---------- mobile ---------- */
+@media (max-width:860px){
+  .layout{grid-template-columns:minmax(0,1fr);gap:0;padding-block:18px 70px}
+  #menubtn{display:inline-block}
+  .toc{position:fixed;inset:0 auto 0 0;width:min(84vw,300px);z-index:45;background:var(--surface);
+    border-right:1px solid var(--line);border-left:0;max-height:none;padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px));
+    transform:translateX(-102%);transition:transform .22s ease;overflow-y:auto}
+  .toc.open{transform:none;box-shadow:0 0 40px rgba(0,0,0,.28)}
+  .toc a{margin-left:0;padding-left:10px}
+  #scrim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:44}
+  h1{font-size:1.68rem}
+  h2{font-size:1.24rem;scroll-margin-top:64px}
+  .content{max-width:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+
+<div id="pbar"><i></i></div>
+
+<div class="topbar">
+  <button class="btn" id="menubtn" aria-label="Оглавление" aria-expanded="false">☰</button>
+  <span class="brand">Cyber Security 101 · Command Line</span>
+  <span class="spacer"></span>
+  <span id="readpct">0% прочитано</span>
+  <button class="btn" id="fsdown" aria-label="Уменьшить шрифт">A−</button>
+  <button class="btn" id="fsup" aria-label="Увеличить шрифт">A+</button>
+  <button class="btn" id="themebtn" aria-label="Сменить тему">◐</button>
+</div>
+
+<div class="layout">
+  <nav class="toc" id="toc" aria-label="Содержание">
+    <div class="toc-h">Содержание</div>
+    <a class="t1" href="#s1">Вспомни прошлое</a>
+    <a class="t1" href="#s2">1. Windows Command Line</a>
+    <a class="t2" href="#s3">Аналогия</a>
+    <a class="t2" href="#s4">Ты на смене</a>
+    <a class="t2" href="#s5">Сначала понять, где ты</a>
+    <a class="t2" href="#s6">Сеть: с кем говорит хост</a>
+    <a class="t2" href="#s7">Файлы: посмотреть, ничего не сл…</a>
+    <a class="t2" href="#s8">Процессы: кто ест CPU</a>
+    <a class="t2" href="#s9">Обслуживание: shutdown, chkdsk,…</a>
+    <a class="t2" href="#s10">Что из этого видно в логах</a>
+    <a class="t2" href="#s11">Где ошибаются новички</a>
+    <a class="t2" href="#s12">Термины</a>
+    <a class="t2" href="#s13">Связи</a>
+    <a class="t1" href="#s14">2. Windows PowerShell</a>
+    <a class="t2" href="#s15">Аналогия</a>
+    <a class="t2" href="#s16">Ты на смене</a>
+    <a class="t2" href="#s17">Как читать любую команду: Verb-…</a>
+    <a class="t2" href="#s18">Файлы</a>
+    <a class="t2" href="#s19">Конвейер: сердце PowerShell</a>
+    <a class="t2" href="#s20">Информация о системе и учётках</a>
+    <a class="t2" href="#s21">Процессы, службы, соединения, х…</a>
+    <a class="t2" href="#s22">Скрипты и удалённое выполнение</a>
+    <a class="t2" href="#s23">Что PowerShell пишет о себе</a>
+    <a class="t2" href="#s24">Где ошибаются новички</a>
+    <a class="t2" href="#s25">Термины</a>
+    <a class="t2" href="#s26">Связи</a>
+    <a class="t1" href="#s27">3. Linux Shells</a>
+    <a class="t2" href="#s28">Аналогия</a>
+    <a class="t2" href="#s29">Ты на смене</a>
+    <a class="t2" href="#s30">Базовые команды и где ты</a>
+    <a class="t2" href="#s31">Какие бывают шеллы</a>
+    <a class="t2" href="#s32">История команд: стенограмма, ко…</a>
+    <a class="t2" href="#s33">Скрипты: рутина, которую делает…</a>
+    <a class="t2" href="#s34">Поиск по логам: конвейер bash</a>
+    <a class="t2" href="#s35">Мини-SIEM: потренируйся руками</a>
+    <a class="t2" href="#s36">Где ошибаются новички</a>
+    <a class="t2" href="#s37">Термины</a>
+    <a class="t2" href="#s38">Связи</a>
+    <a class="t1" href="#s39">4. За рамками THM: знать норму</a>
+    <a class="t2" href="#s40">Норма Windows: дерево системных…</a>
+    <a class="t2" href="#s41">Норма Linux: ритм сервера</a>
+    <a class="t2" href="#s42">Твои команды глазами ATT&amp;CK</a>
+    <a class="t2" href="#s43">Сравнение трёх оболочек: где чт…</a>
+    <a class="t2" href="#s44">Как закрыть смену: тикет и Schi…</a>
+    <a class="t1" href="#s45">Вопросы с собеседований</a>
+    <a class="t1" href="#s46">Самопроверка</a>
+    <a class="t1" href="#s47">Практика</a>
+    <a class="t2" href="#s48">Задание 1. Пересчитай журнал са…</a>
+    <a class="t2" href="#s49">Задание 2. Свой скрипт для рути…</a>
+    <a class="t2" href="#s50">Задание 3. PowerShell на Mac: о…</a>
+    <a class="t2" href="#s51">Задание 4. Очередь триажа (20 м…</a>
+    <a class="t2" href="#s52">Задание 5. Отчёт по-немецки (20…</a>
+    <a class="t1" href="#s53">Шпаргалка</a>
+    <a class="t1" href="#s54">Источники</a>
+    <a class="t1" href="#s55">Отзыв</a>
+  </nav>
+  <main class="content">
+<h1>Учебник: Command Line</h1>
+<p><strong>Путь:</strong> Cyber Security 101 · модуль Command Line<br>
+<strong>Комнаты:</strong> <a href="https://tryhackme.com/room/windowscommandline">Windows Command Line</a> (45 мин) · <a href="https://tryhackme.com/room/windowspowershell">Windows PowerShell</a> (60 мин) · <a href="https://tryhackme.com/room/linuxshells">Linux Shells</a> (45 мин) [1, 2, 3]<br>
+<strong>Экзамен, под который калибровано:</strong> SEC1 (Cyber Security 101)</p>
+<!--thv:ill-cs101-cli--><figure class="thv-ill"><img src="../assets/illustrations/cs101-cli.svg" alt="Три окна терминала — cmd, PowerShell и bash — над пультом дежурного аналитика" loading="lazy" width="1200" height="520"></figure><!--/thv:ill-cs101-cli-->
+<p><strong>После учебника ты сможешь:</strong></p>
+<ul>
+<li>за пять минут снять с Windows-хоста «паспорт»: версию, имя, сеть, процессы, соединения — и через cmd, и через PowerShell;</li>
+<li>объяснить, почему PowerShell передаёт по конвейеру объекты, а не текст, и чем это помогает фильтровать;</li>
+<li>связать открытое сетевое соединение с процессом и проверить файл процесса по хэшу;</li>
+<li>выбрать нужные строки из Linux-лога связкой <code>grep | awk | sort | uniq -c</code> и написать маленький bash-скрипт для рутины;</li>
+<li>отличить нормальный ночной ритм сервера от того, что стоит эскалировать;</li>
+<li>понимать, какие из твоих же команд в ATT&amp;CK называются техниками Discovery и Execution — и почему один и тот же <code>systeminfo</code> бывает и работой админа, и разведкой.</li>
+</ul>
+<p><strong>Как читать.</strong> Учебник идёт в паре с комнатами. Сначала глава, потом комната, потом возвращаешься к «Копнуть глубже» и практике. Флагов и ответов на вопросы комнат здесь нет — есть объяснение, где их искать.</p>
+<p><strong>О рамке.</strong> Здесь только нормальная работа систем и обычные логи. Реальных образцов атак нет, а алерты, где без них не обойтись, — короткие, учебные и подписаны «учебный». Это сознательно: аналитик, который хорошо знает норму, в разы быстрее замечает то, что из неё выпадает.</p>
+<div class="ck"><div class="ck-cap">Где я в учебнике</div><div class="ck-list"><button type="button" class="ck-i" data-id="s2"><span class="ck-box" aria-hidden="true"></span><span>1. Windows Command Line</span></button><button type="button" class="ck-i" data-id="s14"><span class="ck-box" aria-hidden="true"></span><span>2. Windows PowerShell</span></button><button type="button" class="ck-i" data-id="s27"><span class="ck-box" aria-hidden="true"></span><span>3. Linux Shells</span></button><button type="button" class="ck-i" data-id="s39"><span class="ck-box" aria-hidden="true"></span><span>4. За рамками THM: знать норму</span></button></div><div class="ck-bar"><i></i></div><div class="ck-n"><span>0</span> из 4</div></div>
+<h1 id="s1" class="anchored">Вспомни прошлое</h1>
+<p>Пять вопросов по прошлым учебникам: про Windows, Linux и логи. Командная строка опирается ровно на это.</p>
+<div class="qz" data-q="7"><div class="qz-q">Ты ищешь в SIEM, кто запустил команду на Windows-хосте. Почему событие 4688 может прийти с пустой командной строкой?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="Бывает. Но не по умолчанию."><span class="qz-mark" aria-hidden="true"></span><span>Командная строка пишется только в Sysmon, в 4688 её не бывает</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. Нужна и подкатегория Audit Process Creation, и отдельная настройка «Include command line in process creation events». Без второй поле пустое."><span class="qz-mark" aria-hidden="true"></span><span>Запись командной строки в 4688 — отдельная политика, по умолчанию выключена</span></button><button type="button" class="qz-o" data-ok="0" data-why="Права запуска тут ни при чём, всё решает политика аудита."><span class="qz-mark" aria-hidden="true"></span><span>Командную строку видно только при запуске от администратора</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="8"><div class="qz-q">Где в Linux (Debian/Ubuntu) обычно лежат записи о входах по SSH и о sudo?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="Это список учётных записей, а не журнал событий."><span class="qz-mark" aria-hidden="true"></span><span>/etc/passwd</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. В семействе RHEL тот же смысл у /var/log/secure. Стандарт FHS эти имена не закрепляет, они зависят от дистрибутива."><span class="qz-mark" aria-hidden="true"></span><span>/var/log/auth.log</span></button><button type="button" class="qz-o" data-ok="0" data-why="wtmp — бинарный файл, его читают через last, а не cat."><span class="qz-mark" aria-hidden="true"></span><span>/var/log/wtmp, читается через cat</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="9"><div class="qz-q">Что значат права -rwxr-x--- у файла скрипта?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Верно. Три тройки: владелец, группа, остальные. В восьмеричной записи это 750."><span class="qz-mark" aria-hidden="true"></span><span>Владелец читает, пишет и запускает; группа читает и запускает; остальные — ничего</span></button><button type="button" class="qz-o" data-ok="0" data-why="Последняя тройка `---` — у остальных прав нет вообще."><span class="qz-mark" aria-hidden="true"></span><span>Все могут запускать, только владелец может читать</span></button><button type="button" class="qz-o" data-ok="0" data-why="SUID показывался бы буквой s вместо x у владельца."><span class="qz-mark" aria-hidden="true"></span><span>Это SUID-файл</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="10"><div class="qz-q">Почему Get-EventLog не стоит учить как основной способ читать журналы Windows?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="Нет, причина в другом."><span class="qz-mark" aria-hidden="true"></span><span>Он требует отдельной лицензии</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. Microsoft прямо рекомендует Get-WinEvent. Это пригодится в главе 2."><span class="qz-mark" aria-hidden="true"></span><span>Он на устаревшем API, не видит каналов вроде Sysmon и отсутствует в PowerShell 7</span></button><button type="button" class="qz-o" data-ok="0" data-why="Наоборот: он работает только с классическими журналами, а Security как раз среди них."><span class="qz-mark" aria-hidden="true"></span><span>Он читает только журнал Security</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="11"><div class="qz-q">Аналитик L1 видит подозрительный процесс на чужом хосте. Что из этого точно НЕ его действие по умолчанию?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="Это как раз его работа."><span class="qz-mark" aria-hidden="true"></span><span>Записать в тикет PID, путь и время</span></button><button type="button" class="qz-o" data-ok="0" data-why="Обогащение — нормальная задача L1."><span class="qz-mark" aria-hidden="true"></span><span>Сверить хэш файла с репутационной базой</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. Это решение L2 или владельца системы по runbook. L1 фиксирует, обогащает и эскалирует."><span class="qz-mark" aria-hidden="true"></span><span>Самому убить процесс или изолировать хост</span></button></div><div class="qz-why" role="status"></div></div>
+<h1 id="s2" class="anchored">Глава 1. Windows Command Line — фонарик дежурного</h1>
+<h2 id="s3">Аналогия</h2>
+<p>Представь охранника на ночном обходе склада. У него нет камер в каждом углу и нет времени открывать каждую коробку. Зато есть фонарик и журнал обхода: посветил на дверь — заперта, посветил на окно — закрыто, записал. Командная строка Windows (cmd.exe) — такой фонарик: быстрые короткие вопросы к системе и короткие ответы. Графический интерфейс — это пройтись по складу при полном свете: нагляднее, но медленнее, и через удалённую консоль на чужом сервере его часто просто нет.</p>
+<p>В комнате TryHackMe перечислены три причины любить CLI: он ест мало ресурсов, его легко автоматизировать и им удобно пользоваться удалённо [1]. Для SOC главная — третья: хосты, которые ты проверяешь, стоят в другом здании, а то и в другой стране.</p>
+<h2 id="s4">Ты на смене</h2>
+<blockquote>
+<p><strong>02:10, ночная смена, учебная фирма Pegnitz Druck GmbH (типография в Фюрте, выдуманная).</strong> В очереди тикет от мониторинга: <em>«Учебный алерт: PRN-SRV01 — загрузка CPU выше 90 % дольше 20 минут»</em>. Это сервер печати. Ночью печатать некому, и коллега с прошлой смены оставил в Schichtübergabe строчку: «PRN-SRV01 шумел и вчера». Runbook разрешает тебе запустить на хосте команды <strong>только на чтение</strong> через консоль EDR. Ничего не останавливать, ничего не удалять.</p>
+</blockquote>
+<p>Дальше вся глава — что ты набираешь в этой консоли и зачем.</p>
+<h2 id="s5">Сначала понять, где ты</h2>
+<p>Первое правило удалённой проверки: убедись, что ты на том хосте и под той учёткой. Звучит глупо, пока однажды не проверишь не тот сервер.</p>
+<pre><code class="language-bat">hostname
+whoami
+ver
+systeminfo | more
+</code></pre>
+<ul>
+<li><code>ver</code> — версия Windows одной строкой.</li>
+<li><code>systeminfo</code> — «паспорт» хоста: имя, версия и сборка ОС, время последней загрузки, установленные обновления, сетевые адаптеры. Вывод длинный, поэтому его передают в <code>more</code>, чтобы листать экранами [1, 4].</li>
+<li><code>set</code> без аргументов печатает переменные окружения. Самая важная из них — <code>Path</code>: список папок, где Windows ищет программу, если ты набрал только её имя.</li>
+</ul>
+<p>Зачем это аналитику: в <code>systeminfo</code> видно <strong>время последней загрузки</strong> (System Boot Time). Если сервер перезагружался за пять минут до алерта, «высокий CPU» может быть просто запуском служб. А список исправлений (Hotfix(s)) сразу показывает, давно ли хост обновлялся.</p>
+<p>Ещё три команды из комнаты:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Команда</th>
+<th>Что делает</th>
+<th>Где пригодится</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>driverquery</code></td>
+<td>список установленных драйверов</td>
+<td>инвентаризация; драйверы — частое место закрепления, но разбирать их — работа L2</td>
+</tr>
+<tr>
+<td><code>help</code> / <code>команда /?</code></td>
+<td>справка</td>
+<td>ключи всегда смотри здесь, а не вспоминай</td>
+</tr>
+<tr>
+<td><code>cls</code></td>
+<td>очистить экран</td>
+<td>—</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>Ctrl+C</code> прерывает команду, которая выполняется слишком долго. На чужом сервере это важно: не жди пять минут, пока <code>dir /s</code> пройдёт по всему диску.</p>
+<h2 id="s6">Сеть: с кем говорит хост</h2>
+<pre><code class="language-bat">ipconfig
+ping 10.20.0.1
+tracert 10.20.0.1
+nslookup print.pegnitz-druck.example
+nslookup print.pegnitz-druck.example 10.20.0.53
+netstat -ano
+</code></pre>
+<ul>
+<li><code>ipconfig</code> — адреса, маска, шлюз. У него есть ключ для подробного вывода (DNS-серверы, DHCP, аппаратные данные адаптера). Какой именно и что ещё он показывает — посмотри в <code>ipconfig /?</code>, это вопрос комнаты.</li>
+<li><code>ping</code> и <code>tracert</code> — «отвечает ли» и «каким путём идём». Подробно мы разбирали их в учебнике по сетям.</li>
+<li><code>nslookup имя</code> спрашивает DNS-сервер по умолчанию, а <code>nslookup имя сервер</code> — конкретный сервер [1]. Это приём для проверки: отвечает ли внутренний DNS так же, как публичный.</li>
+<li><code>netstat</code> — сетевые соединения и порты. Главное в комнате — ключи <code>-a</code> (все, включая слушающие), <code>-n</code> (адреса цифрами, без разрешения имён — быстрее и честнее), <code>-o</code> (PID процесса) и <code>-b</code> (имя исполняемого файла; нужны права администратора) [5].</li>
+</ul>
+<p>Одна строка <code>netstat -ano</code> — главный инструмент этой главы. Разберём её по полям.</p>
+<figure class="fb"><div class="fb-cap">netstat -ano · одна строка · учебная (адрес из RFC 5737) · наведи на поле</div><div class="fb-line"><span class="fld" tabindex="0" role="button" data-k="Протокол" data-d="TCP или UDP. У UDP нет состояния соединения, поэтому колонка State для него пустая.">TCP</span>    <span class="fld" tabindex="0" role="button" data-k="Локальный адрес и порт" data-d="Адрес этого хоста и порт на нём. Высокий случайный порт (49152–65535 в Windows) — признак исходящего соединения: порт выбрала сама система.">10.20.30.15:50532</span>    <span class="fld" tabindex="0" role="button" data-k="Удалённый адрес и порт" data-d="С кем говорим. 443 — HTTPS. Адрес обогащаешь: чей он (CMDB, ASN), встречался ли в логах раньше. Здесь адрес учебный, из диапазона документации RFC 5737.">198.51.100.24:443</span>    <span class="fld" tabindex="0" role="button" data-k="Состояние" data-d="ESTABLISHED — соединение установлено. LISTENING — порт ждёт входящих (тогда удалённый адрес 0.0.0.0:0). TIME_WAIT — уже закрыто, хвост после разговора.">ESTABLISHED</span>    <span class="fld" tabindex="0" role="button" data-k="PID" data-d="Идентификатор процесса-владельца — его добавляет ключ -o. Дальше: tasklist /fi &quot;pid eq 4120&quot; → имя; Get-Process -Id 4120 → путь к файлу. PID живёт до перезапуска процесса, поэтому в тикет пиши и время.">4120</span></div><div class="fb-out fb-hint">Наведи курсор или нажми на любое поле — покажу, что оно значит и зачем аналитику.</div></figure>
+<p>Связка, которую надо запомнить: <strong>netstat даёт PID → tasklist по PID даёт имя процесса → дальше путь и хэш файла</strong>. Так от «хост куда-то ходит» доходишь до «вот какой exe и что это за файл».</p>
+<details>
+<summary>Копнуть глубже: почему -n важнее, чем кажется</summary>
+
+Без `-n` netstat пытается превратить каждый адрес в имя через обратный DNS. На хосте с сотней соединений это долго. Хуже другое: обратную запись (PTR) для своего адреса настраивает владелец адресного блока, то есть имя может врать. В тикет всегда пиши адрес цифрами, а имя — отдельно, с пометкой, откуда оно взято.
+
+Тот же принцип в Linux: `ss -tunap` (замена старого netstat из пакета iproute2) с ключом `-n` [6].
+</details>
+
+<h2 id="s7">Файлы: посмотреть, ничего не сломав</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Команда</th>
+<th>Что делает</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cd</code></td>
+<td>показать или сменить текущую папку</td>
+</tr>
+<tr>
+<td><code>dir</code></td>
+<td>содержимое папки; <code>/a</code> — включая скрытые и системные, <code>/s</code> — рекурсивно</td>
+</tr>
+<tr>
+<td><code>tree</code></td>
+<td>дерево папок</td>
+</tr>
+<tr>
+<td><code>type файл</code></td>
+<td>вывести текстовый файл</td>
+</tr>
+<tr>
+<td><code>more файл</code></td>
+<td>вывести постранично</td>
+</tr>
+<tr>
+<td><code>mkdir</code> / <code>rmdir</code></td>
+<td>создать / удалить папку</td>
+</tr>
+<tr>
+<td><code>copy</code>, <code>move</code>, <code>del</code> (<code>erase</code>)</td>
+<td>копировать, переместить, удалить; работают маски <code>*</code> и <code>?</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>Из таблицы аналитику на чужом хосте нужна только верхняя половина. <code>copy</code>, <code>move</code>, <code>del</code> ты знаешь для комнаты и для своей машины. На проверяемом сервере они меняют улики: даже простой <code>copy</code> обновит время доступа у файлов.</p>
+<pre><code class="language-bat">dir /a C:\ProgramData
+dir /s /b C:\Users\*.log
+type C:\Windows\System32\drivers\etc\hosts
+</code></pre>
+<p>Последняя строка — классика первичной проверки. Файл <code>hosts</code> подменяет DNS для этого компьютера. В норме там только комментарии, а лишняя строка с адресом — повод записать её в тикет.</p>
+<h2 id="s8">Процессы: кто ест CPU</h2>
+<pre><code class="language-bat">tasklist
+tasklist /fi &quot;imagename eq spoolsv.exe&quot;
+tasklist /fi &quot;pid eq 4120&quot;
+tasklist /svc
+tasklist /v /fi &quot;memusage gt 200000&quot;
+</code></pre>
+<p><code>tasklist</code> — список процессов с PID, сессией и памятью. Ключ <code>/fi</code> фильтрует. Фильтры: <code>IMAGENAME</code>, <code>PID</code>, <code>USERNAME</code>, <code>SERVICES</code>, <code>MEMUSAGE</code> (в килобайтах) и другие; операторы <code>eq</code>, <code>ne</code>, а для чисел ещё <code>gt</code>, <code>lt</code>, <code>ge</code>, <code>le</code> [7]. <code>/svc</code> показывает, какие службы живут внутри каждого процесса. Это ответ на вечный вопрос «что за svchost номер семь».</p>
+<p><code>taskkill</code> завершает процесс по PID или по имени. В комнате ты им пользуешься на своей учебной машине. На смене запомни: <strong>убить процесс на чужом хосте — не решение L1</strong>. Это действие по runbook после согласования, и чаще его делает L2 или владелец системы. Процесс, убитый до снятия данных, уносит с собой всё, что было у него в памяти.</p>
+<blockquote>
+<p><strong>Что ты нашёл на PRN-SRV01 (сюжет).</strong> <code>systeminfo</code>: последняя загрузка в 01:58. <code>tasklist /v</code>: больше всего CPU и памяти у процесса обслуживания обновлений Windows, плюс у службы печати. <code>netstat -ano</code>: у PID этого процесса — соединения на 443 к адресу 198.51.100.24 (учебный, RFC 5737). Ставить вердикт рано: что за файл стоит за процессом и куда на самом деле идут соединения, удобнее проверить в PowerShell. Об этом глава 2.</p>
+</blockquote>
+<h2 id="s9">Обслуживание: shutdown, chkdsk, sfc</h2>
+<p>В финале комнаты три команды обслуживания [1]:</p>
+<ul>
+<li><code>chkdsk</code> — проверка файловой системы диска;</li>
+<li><code>sfc /scannow</code> — проверка целостности защищённых системных файлов с восстановлением; <code>sfc /verifyonly</code> — только проверка, без исправлений; требует прав администратора [8];</li>
+<li><code>shutdown</code> — выключение и перезагрузка. Ключи для перезагрузки и для отмены запланированного выключения есть в <code>shutdown /?</code>, это вопрос комнаты.</li>
+</ul>
+<p>Для SOC эти команды важны в обратную сторону: ты их не запускаешь, а <strong>видишь в логах</strong>. <code>shutdown</code> от неожиданной учётки ночью, <code>sfc</code> на сервере без заявки на обслуживание — строки, которые стоит связать с тикетом изменений (Change). Нашёл тикет — норма. Не нашёл — вопрос админу.</p>
+<h2 id="s10">Что из этого видно в логах</h2>
+<p>Каждая команда выше — это процесс <code>cmd.exe</code> или отдельный <code>.exe</code> (например, <code>systeminfo.exe</code>, <code>tasklist.exe</code>). Если включён аудит создания процессов с командной строкой, они появятся в событии 4688. Если стоит Sysmon — в Sysmon Event ID 1, с родительским процессом [9, 10]. Твоя собственная проверка тоже оставляет следы. Поэтому хороший аналитик пишет в тикет: «в 02:14–02:21 запускал на хосте <code>systeminfo</code>, <code>tasklist</code>, <code>netstat</code> через EDR, сессия такая-то». Тогда утренняя смена не примет тебя за постороннего.</p>
+<h2 id="s11">Где ошибаются новички</h2>
+<ul>
+<li>Пишут <code>netstat</code> без <code>-n</code> на хосте с сотней соединений и ждут минуту.</li>
+<li>Путают PID и имя: <code>tasklist /fi "pid eq spoolsv.exe"</code> ничего не найдёт, для имени нужен фильтр <code>imagename</code>.</li>
+<li>Видят <code>svchost.exe</code> в десяти экземплярах и пугаются. Это норма: внутри разные службы, проверяй через <code>tasklist /svc</code>.</li>
+<li>Запускают изменяющие команды (<code>del</code>, <code>taskkill</code>, <code>shutdown</code>) «для проверки» на чужом хосте.</li>
+<li>Не записывают в тикет свои действия на хосте.</li>
+</ul>
+<h2 id="s12">Термины</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>EN</th>
+<th>RU</th>
+<th>DE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>command prompt / command line</td>
+<td>командная строка</td>
+<td>Eingabeaufforderung / Kommandozeile</td>
+</tr>
+<tr>
+<td>command-line interface (CLI)</td>
+<td>интерфейс командной строки</td>
+<td>Befehlszeilenschnittstelle</td>
+</tr>
+<tr>
+<td>process ID (PID)</td>
+<td>идентификатор процесса</td>
+<td>Prozess-ID</td>
+</tr>
+<tr>
+<td>listening port</td>
+<td>слушающий порт</td>
+<td>lauschender Port</td>
+</tr>
+<tr>
+<td>environment variable</td>
+<td>переменная окружения</td>
+<td>Umgebungsvariable</td>
+</tr>
+<tr>
+<td>read-only check</td>
+<td>проверка только на чтение</td>
+<td>rein lesende Prüfung</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="s13">Связи</h2>
+<ul>
+<li>Назад: <a href="https://tryhackme.com/room/windowsfundamentals1xbx">Windows Fundamentals 1</a> — где что лежит в Windows; Pre Security → <a href="https://tryhackme.com/room/windowsclibasics">Windows CLI Basics</a>.</li>
+<li>Вперёд: <a href="https://tryhackme.com/room/windowsloggingforsoc">Windows Logging for SOC</a> из SOC Level 1 — откуда в SIEM берутся следы этих команд; <a href="https://tryhackme.com/room/livingoffthelandattacks">Living Off the Land Attacks</a> — когда встроенные команды используют не админы.</li>
+</ul>
+<h1 id="s14" class="anchored">Глава 2. Windows PowerShell — конвейер объектов</h1>
+<h2 id="s15">Аналогия</h2>
+<p>В cmd ответ системы — это <strong>распечатка</strong>: лист бумаги с текстом. Хочешь выбрать из неё строки — бери ножницы и режь по колонкам, надеясь, что колонки не съедут. В PowerShell ответ — <strong>стопка карточек из картотеки</strong>. У каждой карточки есть поля (имя, PID, память, путь к файлу), и ты сортируешь стопку по нужному полю, не думая о том, как она напечатана.</p>
+<p>В комнате похожая аналогия про машину: у объекта есть <strong>свойства</strong> (цвет, модель) и <strong>методы</strong> — то, что объект умеет делать (ехать, тормозить) [2]. Процесс в PowerShell — объект: у него есть свойства <code>Name</code>, <code>Id</code>, <code>CPU</code>, <code>Path</code> и методы, например <code>Kill()</code>. Этот метод на смене мы трогать не будем.</p>
+<h2 id="s16">Ты на смене</h2>
+<blockquote>
+<p><strong>02:25, продолжение.</strong> На PRN-SRV01 есть подозрительно занятый процесс и его соединения на 443. Теперь надо ответить на три вопроса: что это за файл, куда именно он ходит и не появилось ли на хосте чего-то нового (служб, учёток). В PowerShell каждый вопрос — одна строка.</p>
+</blockquote>
+<h2 id="s17">Как читать любую команду: Verb-Noun</h2>
+<p>Команды PowerShell называются <strong>cmdlet</strong> (командлет) и строятся по схеме <strong>Глагол-Существительное</strong>: <code>Get-Process</code>, <code>Get-Service</code>, <code>Set-Location</code>, <code>New-Item</code>, <code>Remove-Item</code> [2]. Глаголы стандартные, их немного: <code>Get</code> читает, <code>Set</code> меняет, <code>New</code> создаёт, <code>Remove</code> удаляет, <code>Start</code>/<code>Stop</code> запускают и останавливают.</p>
+<p>Отсюда простое правило для смены: <strong>команды на <code>Get-</code> безопасны</strong> (читают), всё остальное меняет систему и запускается только по runbook. Это не гарантия на 100 %, но как первый фильтр работает отлично.</p>
+<p>Четыре командлета, которые находят все остальные:</p>
+<pre><code class="language-powershell">Get-Command -Verb Get -Noun *Net*      # какие Get-команды есть про сеть
+Get-Help Get-Process -Examples         # примеры использования
+Get-Alias dir                          # во что превращается привычная команда
+Get-Process | Get-Member               # какие свойства и методы у объекта
+</code></pre>
+<ul>
+<li><code>Get-Command</code> ищет командлеты по глаголу и существительному.</li>
+<li><code>Get-Help ... -Examples</code> — самый быстрый способ понять незнакомый командлет: сразу готовые примеры.</li>
+<li><code>Get-Alias</code> показывает <strong>алиасы</strong> — короткие имена. Многие привычные команды cmd и Linux в PowerShell работают именно как алиасы: <code>dir</code>, <code>ls</code>, <code>cd</code>, <code>cat</code>… Что стоит за каждым, проверь сам через <code>Get-Alias</code> — часть вопросов комнаты именно об этом.</li>
+<li><code>Get-Member</code> — главный инструмент этой главы, хоть в комнате он и не выделен. Он показывает, <strong>какие поля есть у объекта</strong>. Если не знаешь, как называется свойство, не угадывай: спроси <code>Get-Member</code>.</li>
+</ul>
+<p><code>Find-Module</code> и <code>Install-Module</code> ищут и ставят модули из PowerShell Gallery [2]. На своей машине — пожалуйста. На чужом сервере установка модуля — изменение системы.</p>
+<h2 id="s18">Файлы</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Командлет</th>
+<th>Что делает</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Get-ChildItem</code></td>
+<td>содержимое папки (<code>-Recurse</code> — вглубь, <code>-Force</code> — со скрытыми, <code>-Filter *.log</code> — по маске)</td>
+</tr>
+<tr>
+<td><code>Set-Location</code></td>
+<td>перейти в папку</td>
+</tr>
+<tr>
+<td><code>New-Item</code></td>
+<td>создать файл или папку (<code>-ItemType Directory</code>)</td>
+</tr>
+<tr>
+<td><code>Copy-Item</code>, <code>Move-Item</code>, <code>Remove-Item</code></td>
+<td>копировать, переместить, удалить</td>
+</tr>
+<tr>
+<td><code>Get-Content</code></td>
+<td>прочитать файл (<code>-Tail 20</code> — последние строки, <code>-Wait</code> — следить, как <code>tail -f</code>)</td>
+</tr>
+</tbody>
+</table></div>
+<p>Главная разница с cmd: <code>Get-ChildItem</code> возвращает объекты файлов, а не строки. Поэтому вопрос «файлы, изменённые за последние сутки» решается фильтром по свойству:</p>
+<pre><code class="language-powershell">Get-ChildItem C:\ProgramData -Recurse -File -ErrorAction SilentlyContinue |
+  Where-Object LastWriteTime -gt (Get-Date).AddDays(-1) |
+  Select-Object FullName, Length, LastWriteTime
+</code></pre>
+<p><code>-ErrorAction SilentlyContinue</code> глушит ошибки «доступ запрещён» для папок, куда у тебя нет прав. Без него вывод тонет в красном.</p>
+<h2 id="s19">Конвейер: сердце PowerShell</h2>
+<p>Символ <code>|</code> передаёт результат одной команды на вход следующей. В cmd и bash по трубе течёт текст, в PowerShell — объекты. По документации Microsoft они идут <strong>по одному</strong>, и следующая команда работает с каждым по очереди [11]. Четыре командлета, которые ты будешь писать постоянно:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Командлет</th>
+<th>Что делает</th>
+<th>Пример</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Where-Object</code></td>
+<td>оставить объекты по условию</td>
+<td><code>Where-Object CPU -gt 100</code></td>
+</tr>
+<tr>
+<td><code>Sort-Object</code></td>
+<td>отсортировать</td>
+<td><code>Sort-Object CPU -Descending</code></td>
+</tr>
+<tr>
+<td><code>Select-Object</code></td>
+<td>взять нужные поля или первые N</td>
+<td><code>Select-Object -First 5 Name, Id, CPU</code></td>
+</tr>
+<tr>
+<td><code>Select-String</code></td>
+<td>искать текст (аналог grep)</td>
+<td><code>Select-String -Path *.log -Pattern 'error'</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>Операторы сравнения в <code>Where-Object</code>: <code>-eq</code> (равно), <code>-ne</code> (не равно), <code>-gt</code> / <code>-ge</code> (больше / больше или равно), <code>-lt</code> / <code>-le</code> (меньше / меньше или равно) [2]. Для текста есть ещё <code>-like</code> (маска <code>*</code>) и <code>-match</code> (регулярное выражение).</p>
+<p>Вот как стопка процессов превращается в ответ на вопрос «кто ест CPU». Нажимай на шаги:</p>
+<!--thv:pipeline--><figure class="thv" data-v="decode"><figcaption><b>Конвейер по шагам: от всех процессов к пяти подозреваемым</b><span>Учебный пример: числа и имена процессов условные, порядок шагов — как в настоящей команде</span></figcaption>
+<script type="application/json">{"input":"Get-Process  →  147 объектов-процессов (Name, Id, CPU, WorkingSet, Path …)","steps":[{"op":"Where-Object CPU -gt 60","out":"9 объектов: остались только процессы, которые потратили больше 60 секунд процессорного времени","note":"Фильтруй как можно раньше: дальше по трубе пойдёт меньше объектов. CPU здесь — секунды процессорного времени с момента запуска, а не проценты."},{"op":"Sort-Object CPU -Descending","out":"те же 9, отсортированы от самого прожорливого","note":"Сортировка не меняет объекты, только порядок."},{"op":"Select-Object -First 5 Name, Id, CPU, Path","out":"5 строк × 4 поля — это уже можно вставить в тикет","note":"Path — полный путь к exe. Его пропускают чаще всего, а он нужен для проверки хэша."},{"op":"Export-Csv triage.csv -NoTypeInformation","out":"файл triage.csv для приложения к тикету","note":"На чужом хосте файлы не пишут: вывод копируют из консоли EDR. Этот шаг — для своей машины и для практики."}]}</script></figure><!--/thv:pipeline-->
+<p>Целиком эта цепочка выглядит так:</p>
+<pre><code class="language-powershell">Get-Process | Where-Object CPU -gt 60 | Sort-Object CPU -Descending |
+  Select-Object -First 5 Name, Id, CPU, Path
+</code></pre>
+<details>
+<summary>Копнуть глубже: фильтруй у источника, а не трубой</summary>
+
+`Where-Object` получает **все** объекты и только потом выбрасывает лишние. На списке процессов это неважно. На журнале Security с миллионом событий — критично. Поэтому у многих командлетов есть свой фильтр, который работает ещё при чтении данных. Для журналов это `Get-WinEvent -FilterHashtable`, и Microsoft прямо пишет, что такой фильтр эффективнее `Where-Object` [12]:
+
+
+<pre><code class="language-powershell">Get-WinEvent -FilterHashtable @{LogName='System'; StartTime=(Get-Date).AddHours(-6)} -MaxEvents 50
+</code></pre>
+
+
+Правило на всю жизнь, хоть в PowerShell, хоть в Splunk или KQL: **сужай как можно раньше**.
+</details>
+
+<h2 id="s20">Информация о системе и учётках</h2>
+<pre><code class="language-powershell">Get-ComputerInfo | Select-Object CsName, OsName, OsVersion, OsLastBootUpTime
+Get-LocalUser
+Get-NetIPConfiguration
+Get-NetIPAddress -AddressFamily IPv4
+</code></pre>
+<p><code>Get-ComputerInfo</code> — объектный родственник <code>systeminfo</code>: тот же паспорт, но из него можно выбрать нужные поля. <code>Get-LocalUser</code> перечисляет <strong>локальные</strong> учётные записи с признаком <code>Enabled</code> и описанием (<code>Description</code>) [2].</p>
+<p>Почему <code>Get-LocalUser</code> полезен на смене: на сервере локальных учёток мало, и их список почти не меняется. Новая включённая учётка, о которой никто не знает, — то, что стоит записать и показать админу. Чтобы увидеть все поля учётки (а не только три в таблице по умолчанию), передай её в <code>Select-Object *</code> или <code>Format-List *</code>. В комнате есть задание именно на это. Как найти нужную учётку, догадаешься сам.</p>
+<h2 id="s21">Процессы, службы, соединения, хэши</h2>
+<p>Четыре командлета реального времени из комнаты [2]:</p>
+<pre><code class="language-powershell">Get-Process -Id 4120 | Select-Object Name, Id, Path, StartTime
+Get-Service | Where-Object Status -eq 'Running' | Sort-Object DisplayName
+Get-NetTCPConnection -State Established
+Get-FileHash 'C:\путь\к\файлу.exe'
+</code></pre>
+<p><strong>Get-Process</strong> — процессы как объекты. В отличие от <code>tasklist</code>, здесь сразу есть <code>Path</code> и время старта.</p>
+<p><strong>Get-Service</strong> — службы: имя, отображаемое имя, состояние. Список служб на сервере стабилен. Новая служба со странным именем — повод для вопроса.</p>
+<p><strong>Get-NetTCPConnection</strong> — объектный netstat, работает только в Windows (модуль NetTCPIP). Фильтры прямо в параметрах: <code>-State</code>, <code>-LocalPort</code>, <code>-RemoteAddress</code> [13]. У каждого объекта соединения есть свойство с PID процесса-владельца. Как оно называется, найди через <code>Get-NetTCPConnection | Get-Member</code>: это вопрос комнаты, и заодно хорошая привычка.</p>
+<p>Связка «соединение → процесс» выглядит так (подставь имя свойства, которое найдёшь сам):</p>
+<pre><code class="language-powershell">$c = Get-NetTCPConnection -State Established -RemotePort 443
+$c | ForEach-Object { Get-Process -Id $_.&lt;свойство_с_PID&gt; } | Select-Object -Unique Name, Id, Path
+</code></pre>
+<p><strong>Get-FileHash</strong> — хэш файла. По умолчанию <strong>SHA256</strong>. Допустимые алгоритмы: SHA1, SHA256, SHA384, SHA512, MD5. Microsoft отдельно предупреждает: MD5 и SHA1 годятся только для простой проверки изменений, а не для защиты от подделки [14]. Хэш — отпечаток файла: его ищут в репутационных базах и сверяют с эталоном от вендора или админа.</p>
+<blockquote>
+<p><strong>Что ты нашёл на PRN-SRV01 (сюжет).</strong> <code>Get-Process</code> показал путь занятого процесса — в <code>C:\Windows\WinSxS\…</code>. Это штатное место компонента обслуживания Windows, а не <code>C:\Users\…\AppData</code> и не <code>C:\ProgramData</code>. <code>Get-FileHash</code> дал SHA256. В репутационной базе он отмечен как файл Microsoft с действительной подписью (сюжет учебный). <code>Get-NetTCPConnection</code> показал два соединения на 443 к 198.51.100.24. В CMDB компании (учебной) это адрес внутреннего прокси обновлений. <code>Get-LocalUser</code> — те же три учётки, что в эталонном списке. <code>Get-Service</code> — новых служб нет. Остался один вопрос: почему это происходит ночью. Ответ нашёлся в календаре изменений: на эту ночь стоит окно установки обновлений, перезагрузка в 01:58 — его часть. Вердикт — <strong>benign, ожидаемая активность</strong>. Как это оформить, разберём в главе 4.</p>
+</blockquote>
+<h2 id="s22">Скрипты и удалённое выполнение</h2>
+<p>PowerShell-скрипт — файл <code>.ps1</code> с теми же командами. Запускать скрипты не даёт <strong>execution policy</strong> (политика выполнения). Про неё важно знать одну фразу из документации: она <strong>не является границей безопасности</strong>, это эшелонированная защита от случайного запуска [15]. То есть «политика стоит Restricted, значит злой скрипт не запустится» — неправильный вывод: обойти её штатно может любой пользователь. Ещё деталь: на macOS и Linux политика всегда Unrestricted и не меняется [15].</p>
+<p><code>Invoke-Command</code> выполняет блок команд на удалённом компьютере. Транспорт — служба WinRM, порты <strong>5985 (HTTP) и 5986 (HTTPS)</strong> [16]. Удалённое управление PowerShell включено по умолчанию на Windows Server 2012 и новее; на клиентских Windows его надо включать (<code>Enable-PSRemoting</code>) [17]. Синтаксис — два параметра: один принимает имя компьютера, второй — блок кода в фигурных скобках. Как именно они называются, найди в <code>Get-Help Invoke-Command -Examples</code>. Это последний вопрос комнаты.</p>
+<p>Аналитику L1 сам <code>Invoke-Command</code> нужен редко: удалённо по хостам ходят админы и L2. Но <strong>видеть его в логах</strong> надо уметь. Удалённая сессия PowerShell на целевом хосте живёт в процессе <code>wsmprovhost.exe</code>, и команды, которые в ней запускают, становятся его дочерними процессами [18, 19]. Когда в SIEM мелькает <code>wsmprovhost.exe</code>, первый вопрос: а кто из админов сейчас работает, и есть ли у этого тикет?</p>
+<h2 id="s23">Что PowerShell пишет о себе</h2>
+<p>PowerShell умеет записывать в журнал <strong>текст выполненных скриптовых блоков</strong> — событие <strong>4104</strong> (Script Block Logging). В Windows PowerShell 5.1 оно лежит в канале <code>Microsoft-Windows-PowerShell/Operational</code>, в PowerShell 7 — в <code>PowerShellCore/Operational</code>. Полная запись включается политикой (GPO, реестр или <code>powershell.config.json</code>) [20]. Для SOC это одно из самых ценных событий Windows: видно не только «запустился powershell.exe», но и что именно он выполнял.</p>
+<pre><code class="language-powershell">Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-PowerShell/Operational'; Id=4104} -MaxEvents 20
+</code></pre>
+<details>
+<summary>Копнуть глубже: Windows PowerShell 5.1 и PowerShell 7 — два разных продукта</summary>
+
+На любой Windows 10/11 и Server уже стоит **Windows PowerShell 5.1** (`powershell.exe`). **PowerShell 7** (`pwsh.exe`) ставится отдельно, кроссплатформенный, работает и на macOS и Linux [21]. Командлеты в основном одни и те же, но есть отличия: `Get-EventLog` в 7 нет [22], `Get-NetTCPConnection` нет вне Windows, журналы 4104 пишутся в разные каналы.
+
+Для тебя это хорошая новость: PowerShell 7 ставится на Mac с M1 (пакеты Arm64 есть), так что конвейер, `Where-Object`, `Sort-Object`, `Get-FileHash`, `Select-String` можно тренировать без виртуалки. Официальный способ — пакет `.pkg` со страницы релизов. Установку через Homebrew Microsoft официально не поддерживает, хотя она работает [21]. Запуск — `pwsh`.
+</details>
+
+<h2 id="s24">Где ошибаются новички</h2>
+<ul>
+<li>Угадывают имена свойств вместо <code>Get-Member</code> и получают пустой результат без ошибки.</li>
+<li>Пишут <code>Where-Object CPU &gt; 60</code>. В PowerShell <code>&gt;</code> — это <strong>перенаправление в файл</strong>: ты только что создал файл с именем <code>60</code>. Сравнение пишется <code>-gt</code>.</li>
+<li>Читают <code>CPU</code> у <code>Get-Process</code> как проценты. Это секунды процессорного времени.</li>
+<li>Считают, что execution policy защищает от вредоносных скриптов.</li>
+<li>Фильтруют огромные журналы через <code>Where-Object</code> вместо <code>-FilterHashtable</code>.</li>
+</ul>
+<h2 id="s25">Термины</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>EN</th>
+<th>RU</th>
+<th>DE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>cmdlet</td>
+<td>командлет</td>
+<td>Cmdlet</td>
+</tr>
+<tr>
+<td>object / property / method</td>
+<td>объект / свойство / метод</td>
+<td>Objekt / Eigenschaft / Methode</td>
+</tr>
+<tr>
+<td>pipeline</td>
+<td>конвейер</td>
+<td>Pipeline</td>
+</tr>
+<tr>
+<td>alias</td>
+<td>алиас, псевдоним</td>
+<td>Alias</td>
+</tr>
+<tr>
+<td>execution policy</td>
+<td>политика выполнения</td>
+<td>Ausführungsrichtlinie</td>
+</tr>
+<tr>
+<td>script block logging</td>
+<td>журналирование скриптовых блоков</td>
+<td>Skriptblockprotokollierung</td>
+</tr>
+<tr>
+<td>file hash</td>
+<td>хэш файла</td>
+<td>Dateihash, Prüfsumme</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="s26">Связи</h2>
+<ul>
+<li>Назад: глава 1 этого учебника — те же вопросы, но в cmd.</li>
+<li>Вперёд: <a href="https://tryhackme.com/room/windowsloggingforsoc">Windows Logging for SOC</a> и <a href="https://tryhackme.com/room/windowsthreatdetection1">Windows Threat Detection 1</a> — как события PowerShell выглядят в SIEM; <a href="https://tryhackme.com/room/fileandhashthreatintel">File and Hash Threat Intel</a> — что делать с хэшем дальше.</li>
+</ul>
+<h1 id="s27" class="anchored">Глава 3. Linux Shells — переводчик между тобой и ядром</h1>
+<h2 id="s28">Аналогия</h2>
+<p>Шелл — это <strong>переводчик на переговорах</strong>. Ты говоришь на человеческом («покажи файлы в этой папке»), ядро Linux понимает только системные вызовы. Шелл стоит между вами, переводит туда и обратно и заодно ведёт стенограмму: историю команд. Переводчики бывают разные (bash, zsh, fish). Один строже, другой подсказывает слова и исправляет опечатки, но переводят они одно и то же. Комната начинается ровно с этой мысли: шелл — посредник между пользователем и ОС [3].</p>
+<h2 id="s29">Ты на смене</h2>
+<blockquote>
+<p><strong>03:40.</strong> Тикет по PRN-SRV01 ушёл в ожидание подтверждения от админа. Прилетает второй: <em>«Учебный алерт: правило "слово ALERT в syslog" — lnx-files01, 04:06»</em>. Правило в SIEM ловит любую строку журнала со словом ALERT. Коллега пометил в Schichtübergabe: «срабатывает почти каждую ночь, никто не смотрел». Сегодня посмотришь ты.</p>
+<p>Для этой главы мы взяли <strong>настоящий</strong> журнал: <code>Linux_2k.log</code> из открытого датасета loghub — 2000 строк syslog с сервера <code>combo</code>, лето 2005 года [23]. В сюжете этот сервер играет роль lnx-files01. Все числа ниже посчитаны по этому файлу, и ты можешь пересчитать их у себя.</p>
+</blockquote>
+<pre><code class="language-bash">curl -sSLO https://raw.githubusercontent.com/logpai/loghub/master/Linux/Linux_2k.log
+</code></pre>
+<h2 id="s30">Базовые команды и где ты</h2>
+<p>Комната начинает с пяти команд [3]: <code>pwd</code> (где я), <code>cd</code> (перейти), <code>ls</code> (что тут), <code>cat</code> (вывести файл), <code>grep</code> (найти строки). Их ты знаешь по Linux Fundamentals. Добавим к ним то, что нужно аналитику с первой минуты на чужом хосте — та же логика, что в главе 1:</p>
+<pre><code class="language-bash">hostname; whoami; id
+uname -a
+echo $SHELL
+cat /etc/shells
+</code></pre>
+<ul>
+<li><code>echo $SHELL</code> — твой шелл по умолчанию, точнее значение переменной окружения. Шелл, в котором ты сидишь прямо сейчас, может быть другим: проверь через <code>ps -p $$</code>.</li>
+<li><code>/etc/shells</code> — список «разрешённых» шеллов полными путями. Его читает <code>chsh</code>, когда ты меняешь шелл по умолчанию [24]. Как именно меняют шелл, показано в комнате.</li>
+</ul>
+<h2 id="s31">Какие бывают шеллы</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Шелл</th>
+<th>Где встречается</th>
+<th>Что важно аналитику</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>bash</strong></td>
+<td>почти любой Linux-сервер</td>
+<td>скрипты и примеры в интернете — в основном под bash; история в <code>~/.bash_history</code></td>
+</tr>
+<tr>
+<td><strong>zsh</strong></td>
+<td>рабочие станции разработчиков, в том числе Mac</td>
+<td>своя история в <code>~/.zsh_history</code>, плагины и темы</td>
+</tr>
+<tr>
+<td><strong>fish</strong></td>
+<td>любители удобства</td>
+<td>синтаксис не совместим с bash: скрипт под bash в fish не пойдёт</td>
+</tr>
+<tr>
+<td><strong>sh</strong> (dash и др.)</td>
+<td>системные скрипты, минимальные контейнеры</td>
+<td>самый простой: многих bash-удобств нет</td>
+</tr>
+</tbody>
+</table></div>
+<p>Чем шеллы отличаются по удобству (подсветка, автодополнение, исправление опечаток), разобрано в комнате, — эту табличку оттуда не дублирую. Для смены главное другое: <strong>сервер почти всегда говорит на bash</strong>, и логи, которые ты читаешь, пишутся без оглядки на твой любимый шелл.</p>
+<h2 id="s32">История команд: стенограмма, которой нельзя слепо верить</h2>
+<p>Bash по умолчанию хранит историю в <code>~/.bash_history</code> (переменная <code>HISTFILE</code>). В памяти держится 500 команд (<code>HISTSIZE</code>), а записывается история в файл при выходе из шелла [25]. На своей машине посмотри её, а заодно эти переменные:</p>
+<pre><code class="language-bash">echo $HISTFILE $HISTSIZE $HISTCONTROL
+</code></pre>
+<p>Почему это важно на смене:</p>
+<ol>
+<li><strong>История не журнал аудита.</strong> При <code>HISTCONTROL=ignorespace</code> (или <code>ignoreboth</code>) команда, набранная с пробелом в начале, в историю не попадает [25]. Без <code>HISTTIMEFORMAT</code> у записей нет времени. А пока шелл не закрыт, команды текущей сессии в файле ещё нет.</li>
+<li><strong>В истории оседают секреты.</strong> Пароль, набранный прямо в командной строке (<code>mysql -p'…'</code>), остаётся в файле открытым текстом. В ATT&amp;CK чтение таких файлов — отдельная техника, T1552.003 Shell History, а чистка истории — T1070.003 [26, 27]. Вывод для тебя как для пользователя: пароли не пишут аргументом в командной строке.</li>
+<li><strong>Надёжный источник — системные журналы</strong> (auth.log/secure, journald, auditd), а не файл в домашней папке, который пользователь правит как хочет.</li>
+</ol>
+<h2 id="s33">Скрипты: рутина, которую делает машина</h2>
+<p>Скрипт — текстовый файл с командами, которые шелл выполняет по порядку. В комнате ты собираешь его по кирпичикам [3]: расширение <code>.sh</code>, редактор <code>nano</code>, первая строка-<strong>shebang</strong> <code>#!/bin/bash</code> (каким интерпретатором запускать), переменные, <code>echo</code> и <code>read</code>, право на запуск <code>chmod +x</code>, запуск через <code>./</code>, цикл <code>for</code>, условие <code>if/elif/else</code> и комментарии через <code>#</code>.</p>
+<p>Покажу те же кирпичики в скрипте, который реально пригодится на смене. Он даёт сводку по syslog-файлу для передачи смены:</p>
+<pre><code class="language-bash">#!/bin/bash
+# nightcheck.sh — короткая сводка по syslog-файлу для передачи смены
+# Использование: ./nightcheck.sh &lt;файл_лога&gt; [слово]
+
+log=&quot;$1&quot;
+word=&quot;${2:-ALERT}&quot;
+
+if [ -z &quot;$log&quot; ]; then
+  echo &quot;Использование: $0 &lt;файл_лога&gt; [слово]&quot;
+  exit 1
+elif [ ! -r &quot;$log&quot; ]; then
+  echo &quot;Не могу прочитать файл: $log&quot;
+  exit 2
+fi
+
+total=$(grep -c '' &quot;$log&quot;)
+echo &quot;Файл: $log, строк: $total&quot;
+
+echo &quot;--- Топ-5 программ ---&quot;
+awk '{print $5}' &quot;$log&quot; | sed -E 's/\[[0-9]+\]:?$//; s/:$//' | sort | uniq -c | sort -rn | head -5
+
+echo &quot;--- Строки со словом «$word» по часам ---&quot;
+grep -- &quot;$word&quot; &quot;$log&quot; | awk '{split($3,t,&quot;:&quot;); print t[1]&quot;:00&quot;}' | sort | uniq -c
+</code></pre>
+<p>Разбор по строкам:</p>
+<ul>
+<li><code>log="$1"</code> — <strong>переменная</strong> из первого аргумента. Пробелов вокруг <code>=</code> нет: <code>log = "$1"</code> bash поймёт как запуск команды <code>log</code>.</li>
+<li><code>"${2:-ALERT}"</code> — второй аргумент, а если его нет, то слово ALERT по умолчанию.</li>
+<li><code>if [ -z "$log" ]</code> — условие «строка пустая». <code>elif [ ! -r "$log" ]</code> — «файл не читается». Квадратные скобки — это команда <code>test</code>, поэтому пробелы внутри обязательны.</li>
+<li><code>exit 1</code>, <code>exit 2</code> — код возврата. Ноль значит «всё хорошо», остальное — ошибка. По коду возврата другие скрипты и cron понимают, что что-то пошло не так.</li>
+<li><code>$(...)</code> — подставить вывод команды в переменную.</li>
+<li><code>grep -c ''</code> считает строки, включая последнюю без перевода строки. Почему не <code>wc -l</code>, увидишь ниже.</li>
+<li><code>grep -- "$word"</code> — двойной дефис говорит grep, что дальше уже не ключи. Тогда слово, начинающееся с <code>-</code>, не сломает команду.</li>
+<li><strong>Переменные всегда в кавычках</strong> (<code>"$log"</code>): без них имя файла с пробелом развалится на два аргумента.</li>
+</ul>
+<p>Скрипт проверен на bash 5 на этом самом файле. В нём нет ничего, чего не было бы в старом bash 3.2, который стоит в macOS, а <code>sed -E</code> работает и в GNU, и в BSD [28]. Но запусти у себя на Mac: это первое задание практики.</p>
+<p>Цикл <code>for</code> нужен, когда файлов много. Например, посчитать слово <code>error</code> во всех <code>.log</code> в папке:</p>
+<pre><code class="language-bash">for f in /var/log/*.log; do
+  n=$(grep -c &quot;error&quot; &quot;$f&quot;)
+  echo &quot;$f: $n&quot;
+done
+</code></pre>
+<p>Ровно такую задачу (найти ключевое слово по всем логам папки) ты решаешь в последнем задании комнаты, только там скрипт уже написан, а тебе надо понять, что вписать в пустые кавычки. Ответы комнаты здесь не даю, но после этого разбора задание займёт пару минут.</p>
+<details>
+<summary>Копнуть глубже: read и почему пароль в скрипте — плохая идея</summary>
+
+`read` читает ввод пользователя в переменную: `read -p "Имя: " name`. Для секретов есть `read -s` — ввод не отображается на экране. В задании комнаты с «локером» скрипт сравнивает введённый PIN со значением, записанным прямо в тексте скрипта. Это учебная игрушка, и она хорошо показывает, почему в реальности так не делают: любой, кто может прочитать файл (`cat locker.sh`), видит секрет. Правильное место для секретов — менеджер секретов или хотя бы файл с правами `600`, а лучше проверка по хэшу.
+</details>
+
+<h2 id="s34">Поиск по логам: конвейер bash</h2>
+<p>Вернёмся к тикету. Сначала смотрим, как вообще выглядит строка syslog. Наведи на поля той самой строки со словом ALERT:</p>
+<figure class="fb"><div class="fb-cap">Linux_2k.log (loghub) · реальная строка syslog · наведи на поле</div><div class="fb-line"><span class="fld" tabindex="0" role="button" data-k="Время" data-d="Месяц, день, время. Года НЕТ, часового пояса НЕТ — классический syslog (RFC 3164) их не пишет. Год и пояс берёшь из контекста сервера и обязательно указываешь в тикете.">Jun 19 04:09:11</span> <span class="fld" tabindex="0" role="button" data-k="Хост" data-d="Имя сервера, который записал строку. В SIEM, куда стекаются логи сотен машин, это первый фильтр.">combo</span> <span class="fld" tabindex="0" role="button" data-k="Программа (тег)" data-d="Кто написал сообщение. Для демонов часто с PID в квадратных скобках: sshd[19939]. Именно это поле надо проверять первым, а не страшные слова в тексте.">logrotate:</span> <span class="fld" tabindex="0" role="button" data-k="Текст сообщения" data-d="Свободный текст, который сформулировал автор скрипта. ALERT здесь — не уровень тревоги, а слово в сообщении: скрипт ежедневного запуска logrotate сообщает, что ротация завершилась с кодом 1.">ALERT exited abnormally with [1]</span></div><div class="fb-out fb-hint">Наведи курсор или нажми на любое поле — покажу, что оно значит и зачем аналитику.</div></figure>
+<p>Теперь картина целиком. Сколько строк и за какой период:</p>
+<pre><code class="language-bash">grep -c '' Linux_2k.log            # 2000
+wc -l Linux_2k.log                 # 1999 — wc считает переводы строк, а у последней строки его нет
+head -1 Linux_2k.log | cut -c1-15  # Jun 14 15:16:01
+tail -1 Linux_2k.log | cut -c1-15  # Jul 27 14:42:00
+</code></pre>
+<p>Кто пишет в журнал больше всех — пятое поле, программа, без PID в квадратных скобках:</p>
+<pre><code class="language-bash">awk '{print $5}' Linux_2k.log | sed -E 's/\[[0-9]+\]:?$//; s/:$//' | sort | uniq -c | sort -rn | head
+</code></pre>
+<!--thv:linux-top--><figure class="thv" data-v="topn"><figcaption><b>Кто пишет в журнал: топ-10 программ</b><span>loghub Linux_2k.log, 2000 строк, 14.06–27.07.2005; посчитано командой выше</span></figcaption>
+<script type="application/json">{"items": [["ftpd", 916, ""], ["sshd(pam_unix)", 677, ""], ["su(pam_unix)", 172, ""], ["kernel", 76, ""], ["klogind", 46, ""], ["logrotate", 43, "warn"], ["named", 16, ""], ["cups", 12, ""], ["udev", 8, ""], ["syslogd", 7, ""]], "unit": "строк в журнале"}</script></figure><!--/thv:linux-top-->
+<p>Связка <code>sort | uniq -c | sort -rn</code> — самая частая фраза в работе аналитика на Linux. <code>uniq</code> схлопывает только <strong>соседние</strong> одинаковые строки, поэтому перед ним всегда стоит <code>sort</code>. <code>-c</code> добавляет счётчик, второй <code>sort -rn</code> сортирует по числу по убыванию.</p>
+<p>Теперь главный вопрос тикета: когда срабатывает слово ALERT и что пишется рядом?</p>
+<pre><code class="language-bash">grep -c &quot;ALERT&quot; Linux_2k.log                                    # 43
+grep &quot;ALERT&quot; Linux_2k.log | awk '{split($3,t,&quot;:&quot;); print t[1]}' | sort | uniq -c   # все 43 — в 04 часа
+grep &quot;ALERT&quot; Linux_2k.log | awk '{print $5}' | sort | uniq -c   # все 43 — от logrotate
+</code></pre>
+<p>Активность по часам за весь журнал:</p>
+<!--thv:linux-hours--><figure class="thv" data-v="hours"><figcaption><b>Строки журнала по часам суток</b><span>loghub Linux_2k.log, 2000 строк; час — из поля времени сервера (часовой пояс в логе не указан)</span></figcaption>
+<script type="application/json">{"values": [10, 60, 58, 112, 296, 31, 63, 99, 84, 104, 70, 27, 145, 101, 159, 35, 103, 16, 36, 70, 94, 33, 43, 151], "unit": "строк", "tz": "время сервера, пояс в логе не указан"}</script></figure><!--/thv:linux-hours-->
+<p>Ночной столбец в 04:00 — самый высокий: 296 строк. Подсветка ночи красным — это только напоминание «люди в это время спят», а не вердикт. Разберём, кто пишет в 04 часа:</p>
+<pre><code class="language-bash">awk '$3 ~ /^04:/ {print $5}' Linux_2k.log | sed -E 's/\[[0-9]+\]:?$//; s/:$//' | sort | uniq -c | sort -rn
+</code></pre>
+<p>Результат: <code>su(pam_unix)</code> — 172, <code>sshd(pam_unix)</code> — 60, <code>logrotate</code> — 43, <code>cups</code> — 12, <code>syslogd</code> — 6, <code>ftpd</code> — 2, <code>snmpd</code> — 1. И вот как выглядит типичная ночь, 19 июня (все 8 строк за сутки):</p>
+<pre><code class="language-text">Jun 19 04:08:55 combo su(pam_unix)[2192]: session opened for user cyrus by (uid=0)
+Jun 19 04:08:55 combo su(pam_unix)[2192]: session closed for user cyrus
+Jun 19 04:08:57 combo cups: cupsd shutdown succeeded
+Jun 19 04:09:02 combo cups: cupsd startup succeeded
+Jun 19 04:09:11 combo syslogd 1.4.1: restart.
+Jun 19 04:09:11 combo logrotate: ALERT exited abnormally with [1]
+Jun 19 04:15:18 combo su(pam_unix)[3676]: session opened for user news by (uid=0)
+Jun 19 04:15:18 combo su(pam_unix)[3676]: session closed for user news
+</code></pre>
+<p>Читаем как аналитик:</p>
+<ul>
+<li><strong>Каждую ночь около 04:0x</strong> root (<code>uid=0</code>) на секунду переключается на служебные учётки <code>cyrus</code> и <code>news</code> — по 43 раза каждая за 44 дня журнала. Секундные сессии в одно и то же время суток от root — почерк планировщика, а не человека.</li>
+<li><strong>logrotate</strong> — программа ротации логов, и по документации её «обычно запускают ежедневным заданием cron» [29]. Её запуск ровно в этом окне — ожидаемый.</li>
+<li><strong>По воскресеньям</strong> (19.06, 26.06, 3.07, 10.07, 17.07, 24.07 — все шесть дат воскресенья 2005 года) в том же окне перезапускаются <code>cupsd</code> и <code>syslogd</code>. Это похоже на еженедельную ротацию: у директивы <code>weekly</code> в logrotate день по умолчанию — воскресенье, а перезапуск служб после ротации обычно прописан в её конфиге [29]. Самого конфига у нас нет, так что это обоснованная версия, а не факт.</li>
+<li><strong>«ALERT exited abnormally with [1]»</strong> — это не сигнал системы безопасности. Так скрипт ежедневного запуска logrotate сообщает, что сама ротация завершилась с ненулевым кодом. Строку с этим текстом Red Hat разбирает в отдельной статье базы знаний как известную проблему; текст статьи доступен только с подпиской, открыт лишь заголовок [30]. Ошибка ротации — тема для админа (логи могут перестать ротироваться и забить диск), но не инцидент.</li>
+</ul>
+<p>Вердикт по тикету: <strong>false positive</strong> для правила безопасности. Слово ALERT в тексте сообщения не означает алерт. Рекомендации: исключить из правила <code>program=logrotate</code> (или искать не слово, а конкретные события) и отдельно, тикетом в эксплуатацию, сообщить админу, что ротация на сервере падает каждую ночь.</p>
+<p>Сам формат расписания cron — пять полей «минута, час, день месяца, месяц, день недели», где 0 и 7 — воскресенье [31]:</p>
+<pre><code class="language-text"># мин час день мес день_нед  команда
+  2   4   *    *   *         /usr/local/bin/nightly.sh     # каждый день в 04:02
+  22  4   *    *   0         /usr/local/bin/weekly.sh      # по воскресеньям в 04:22
+</code></pre>
+<p>Где смотреть задания на живом сервере: <code>crontab -l</code> (свои), <code>/etc/crontab</code>, папки <code>/etc/cron.d/</code>, <code>/etc/cron.daily/</code>, <code>/etc/cron.weekly/</code>, а на системах с systemd ещё <code>systemctl list-timers</code>. Новое задание cron, которого нет в эталоне, — классическое место закрепления, в ATT&amp;CK это T1053.003 [32]. Поэтому знать, какие задания на сервере <strong>нормальные</strong>, полезно ещё до того, как что-то случилось.</p>
+<h2 id="s35">Мини-SIEM: потренируйся руками</h2>
+<p>Ниже неделя того же журнала (26.06–02.07.2005, 340 строк) в виде таблицы с поиском. Это не замена grep, а способ быстро почувствовать данные.</p>
+<!--thv:linux-siem--><figure class="thv" data-v="siem"><figcaption><b>Неделя syslog в мини-SIEM</b><span>loghub Linux_2k.log, строки за 26.06–02.07.2005 без изменений</span></figcaption>
+<script type="application/json">{"cols": ["Дата", "Время", "Хост", "Программа", "PID", "Сообщение"], "rows": [["Jun 26", "04:04:17", "combo", "su(pam_unix)", "945", "session opened for user cyrus by (uid=0)"], ["Jun 26", "04:04:17", "combo", "su(pam_unix)", "945", "session closed for user cyrus"], ["Jun 26", "04:04:19", "combo", "cups", "", "cupsd shutdown succeeded"], ["Jun 26", "04:04:24", "combo", "cups", "", "cupsd startup succeeded"], ["Jun 26", "04:04:31", "combo", "syslogd", "", "1.4.1: restart."], ["Jun 26", "04:04:31", "combo", "logrotate", "", "ALERT exited abnormally with [1]"], ["Jun 26", "04:10:02", "combo", "su(pam_unix)", "1546", "session opened for user news by (uid=0)"], ["Jun 26", "04:10:04", "combo", "su(pam_unix)", "1546", "session closed for user news"], ["Jun 27", "04:02:47", "combo", "su(pam_unix)", "7031", "session opened for user cyrus by (uid=0)"], ["Jun 27", "04:02:48", "combo", "su(pam_unix)", "7031", "session closed for user cyrus"], ["Jun 27", "04:02:49", "combo", "logrotate", "", "ALERT exited abnormally with [1]"], ["Jun 27", "04:08:56", "combo", "su(pam_unix)", "8269", "session opened for user news by (uid=0)"], ["Jun 27", "04:08:57", "combo", "su(pam_unix)", "8269", "session closed for user news"], ["Jun 27", "08:05:37", "combo", "sshd(pam_unix)", "8660", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=troi.bluesky-technologies.com  user=root"], ["Jun 27", "08:05:39", "combo", "sshd(pam_unix)", "8664", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=troi.bluesky-technologies.com  user=root"], ["Jun 27", "08:05:39", "combo", "sshd(pam_unix)", "8663", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=troi.bluesky-technologies.com  user=root"], ["Jun 27", "08:05:39", "combo", "sshd(pam_unix)", "8662", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=troi.bluesky-technologies.com  user=root"], ["Jun 27", "08:05:39", "combo", "sshd(pam_unix)", "8661", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=troi.bluesky-technologies.com  user=root"], ["Jun 28", "04:03:15", "combo", "su(pam_unix)", "10735", "session opened for user cyrus by (uid=0)"], ["Jun 28", "04:03:16", "combo", "su(pam_unix)", "10735", "session closed for user cyrus"], ["Jun 28", "04:03:17", "combo", "logrotate", "", "ALERT exited abnormally with [1]"], ["Jun 28", "04:09:00", "combo", "su(pam_unix)", "11106", "session opened for user news by (uid=0)"], ["Jun 28", "04:09:01", "combo", "su(pam_unix)", "11106", "session closed for user news"], ["Jun 28", "08:10:24", "combo", "sshd(pam_unix)", "11513", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=61.53.154.93  user=root"], ["Jun 28", "08:10:24", "combo", "sshd(pam_unix)", "11517", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=61.53.154.93  user=root"], ["Jun 28", "08:10:24", "combo", "sshd(pam_unix)", "11521", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=61.53.154.93  user=root"], ["Jun 28", "08:10:24", "combo", "sshd(pam_unix)", "11510", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=61.53.154.93  user=root"], ["Jun 28", "08:10:25", "combo", "sshd(pam_unix)", "11519", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=61.53.154.93  user=root"], ["Jun 28", "08:10:26", "combo", "sshd(pam_unix)", "11514", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=61.53.154.93  user=root"], ["Jun 28", "08:10:28", "combo", "sshd(pam_unix)", "11512", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=61.53.154.93  user=root"], ["Jun 28", "08:10:29", "combo", "sshd(pam_unix)", "11509", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=61.53.154.93  user=root"], ["Jun 28", "08:10:30", "combo", "sshd(pam_unix)", "11515", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=61.53.154.93  user=root"], ["Jun 28", "20:58:46", "combo", "sshd(pam_unix)", "12665", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=62-192-102-94.dsl.easynet.nl  user=root"], ["Jun 28", "20:58:46", "combo", "sshd(pam_unix)", "12666", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=62-192-102-94.dsl.easynet.nl  user=root"], ["Jun 28", "20:58:47", "combo", "sshd(pam_unix)", "12669", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=62-192-102-94.dsl.easynet.nl  user=root"], ["Jun 28", "20:58:50", "combo", "sshd(pam_unix)", "12671", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=62-192-102-94.dsl.easynet.nl  user=root"], ["Jun 28", "20:58:52", "combo", "sshd(pam_unix)", "12673", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=62-192-102-94.dsl.easynet.nl  user=root"], ["Jun 28", "20:58:53", "combo", "sshd(pam_unix)", "12675", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=62-192-102-94.dsl.easynet.nl  user=root"], ["Jun 28", "20:58:53", "combo", "sshd(pam_unix)", "12677", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=62-192-102-94.dsl.easynet.nl  user=root"], ["Jun 28", "20:58:55", "combo", "sshd(pam_unix)", "12679", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=62-192-102-94.dsl.easynet.nl  user=root"], ["Jun 28", "20:58:55", "combo", "sshd(pam_unix)", "12681", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=62-192-102-94.dsl.easynet.nl  user=root"], ["Jun 28", "20:58:55", "combo", "sshd(pam_unix)", "12680", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=62-192-102-94.dsl.easynet.nl  user=root"], ["Jun 28", "21:42:46", "combo", "sshd(pam_unix)", "12756", "check pass; user unknown"], ["Jun 28", "21:42:46", "combo", "sshd(pam_unix)", "12756", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=211.115.206.155"], ["Jun 28", "21:42:46", "combo", "sshd(pam_unix)", "12753", "check pass; user unknown"], ["Jun 28", "21:42:46", "combo", "sshd(pam_unix)", "12753", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=211.115.206.155"], ["Jun 28", "21:42:46", "combo", "sshd(pam_unix)", "12752", "check pass; user unknown"], ["Jun 28", "21:42:46", "combo", "sshd(pam_unix)", "12752", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=211.115.206.155"], ["Jun 28", "21:42:46", "combo", "sshd(pam_unix)", "12755", "check pass; user unknown"], ["Jun 28", "21:42:46", "combo", "sshd(pam_unix)", "12755", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=211.115.206.155"], ["Jun 28", "21:42:46", "combo", "sshd(pam_unix)", "12754", "check pass; user unknown"], ["Jun 28", "21:42:46", "combo", "sshd(pam_unix)", "12754", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=211.115.206.155"], ["Jun 29", "03:22:22", "combo", "ftpd", "13262", "connection from 61.74.96.178 () at Wed Jun 29 03:22:22 2005"], ["Jun 29", "03:22:22", "combo", "ftpd", "13257", "connection from 61.74.96.178 () at Wed Jun 29 03:22:22 2005"], ["Jun 29", "03:22:22", "combo", "ftpd", "13261", "connection from 61.74.96.178 () at Wed Jun 29 03:22:22 2005"], ["Jun 29", "03:22:22", "combo", "ftpd", "13250", "connection from 61.74.96.178 () at Wed Jun 29 03:22:22 2005"], ["Jun 29", "03:22:22", "combo", "ftpd", "13252", "connection from 61.74.96.178 () at Wed Jun 29 03:22:22 2005"], ["Jun 29", "03:22:22", "combo", "ftpd", "13260", "connection from 61.74.96.178 () at Wed Jun 29 03:22:22 2005"], ["Jun 29", "03:22:22", "combo", "ftpd", "13259", "connection from 61.74.96.178 () at Wed Jun 29 03:22:22 2005"], ["Jun 29", "03:22:22", "combo", "ftpd", "13256", "connection from 61.74.96.178 () at Wed Jun 29 03:22:22 2005"], ["Jun 29", "03:22:22", "combo", "ftpd", "13258", "connection from 61.74.96.178 () at Wed Jun 29 03:22:22 2005"], ["Jun 29", "03:22:22", "combo", "ftpd", "13255", "connection from 61.74.96.178 () at Wed Jun 29 03:22:22 2005"], ["Jun 29", "03:22:22", "combo", "ftpd", "13254", "connection from 61.74.96.178 () at Wed Jun 29 03:22:22 2005"], ["Jun 29", "03:22:22", "combo", "ftpd", "13264", "connection from 61.74.96.178 () at Wed Jun 29 03:22:22 2005"], ["Jun 29", "03:22:22", "combo", "ftpd", "13251", "connection from 61.74.96.178 () at Wed Jun 29 03:22:22 2005"], ["Jun 29", "03:22:22", "combo", "ftpd", "13263", "connection from 61.74.96.178 () at Wed Jun 29 03:22:22 2005"], ["Jun 29", "03:22:22", "combo", "ftpd", "13245", "connection from 61.74.96.178 () at Wed Jun 29 03:22:22 2005"], ["Jun 29", "03:22:22", "combo", "ftpd", "13246", "connection from 61.74.96.178 () at Wed Jun 29 03:22:22 2005"], ["Jun 29", "03:22:22", "combo", "ftpd", "13244", "connection from 61.74.96.178 () at Wed Jun 29 03:22:22 2005"], ["Jun 29", "03:22:22", "combo", "ftpd", "13243", "connection from 61.74.96.178 () at Wed Jun 29 03:22:22 2005"], ["Jun 29", "03:22:22", "combo", "ftpd", "13249", "connection from 61.74.96.178 () at Wed Jun 29 03:22:22 2005"], ["Jun 29", "03:22:22", "combo", "ftpd", "13253", "connection from 61.74.96.178 () at Wed Jun 29 03:22:22 2005"], ["Jun 29", "03:22:22", "combo", "ftpd", "13247", "connection from 61.74.96.178 () at Wed Jun 29 03:22:22 2005"], ["Jun 29", "03:22:22", "combo", "ftpd", "13248", "connection from 61.74.96.178 () at Wed Jun 29 03:22:22 2005"], ["Jun 29", "03:22:23", "combo", "ftpd", "13265", "connection from 61.74.96.178 () at Wed Jun 29 03:22:23 2005"], ["Jun 29", "04:03:10", "combo", "su(pam_unix)", "13665", "session opened for user cyrus by (uid=0)"], ["Jun 29", "04:03:11", "combo", "su(pam_unix)", "13665", "session closed for user cyrus"], ["Jun 29", "04:03:12", "combo", "logrotate", "", "ALERT exited abnormally with [1]"], ["Jun 29", "04:09:29", "combo", "su(pam_unix)", "14891", "session opened for user news by (uid=0)"], ["Jun 29", "04:09:30", "combo", "su(pam_unix)", "14891", "session closed for user news"], ["Jun 29", "10:08:19", "combo", "sshd(pam_unix)", "15481", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=csnsu.nsuok.edu  user=root"], ["Jun 29", "10:08:19", "combo", "sshd(pam_unix)", "15477", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=csnsu.nsuok.edu  user=root"], ["Jun 29", "10:08:19", "combo", "sshd(pam_unix)", "15479", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=csnsu.nsuok.edu  user=root"], ["Jun 29", "10:08:19", "combo", "sshd(pam_unix)", "15478", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=csnsu.nsuok.edu  user=root"], ["Jun 29", "10:08:19", "combo", "sshd(pam_unix)", "15480", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=csnsu.nsuok.edu  user=root"], ["Jun 29", "10:08:19", "combo", "sshd(pam_unix)", "15476", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=csnsu.nsuok.edu  user=root"], ["Jun 29", "10:08:19", "combo", "sshd(pam_unix)", "15488", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=csnsu.nsuok.edu  user=root"], ["Jun 29", "10:08:20", "combo", "sshd(pam_unix)", "15490", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=csnsu.nsuok.edu  user=root"], ["Jun 29", "10:08:20", "combo", "sshd(pam_unix)", "15491", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=csnsu.nsuok.edu  user=root"], ["Jun 29", "10:08:20", "combo", "sshd(pam_unix)", "15492", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=csnsu.nsuok.edu  user=root"], ["Jun 29", "10:48:01", "combo", "ftpd", "15547", "connection from 208.62.55.75 () at Wed Jun 29 10:48:01 2005"], ["Jun 29", "10:48:01", "combo", "ftpd", "15543", "connection from 208.62.55.75 () at Wed Jun 29 10:48:01 2005"], ["Jun 29", "10:48:01", "combo", "ftpd", "15546", "connection from 208.62.55.75 () at Wed Jun 29 10:48:01 2005"], ["Jun 29", "10:48:01", "combo", "ftpd", "15542", "connection from 208.62.55.75 () at Wed Jun 29 10:48:01 2005"], ["Jun 29", "10:48:01", "combo", "ftpd", "15544", "connection from 208.62.55.75 () at Wed Jun 29 10:48:01 2005"], ["Jun 29", "10:48:01", "combo", "ftpd", "15545", "connection from 208.62.55.75 () at Wed Jun 29 10:48:01 2005"], ["Jun 29", "10:48:05", "combo", "ftpd", "15548", "connection from 208.62.55.75 () at Wed Jun 29 10:48:05 2005"], ["Jun 29", "10:48:06", "combo", "ftpd", "15549", "connection from 208.62.55.75 () at Wed Jun 29 10:48:06 2005"], ["Jun 29", "10:48:06", "combo", "ftpd", "15550", "connection from 208.62.55.75 () at Wed Jun 29 10:48:06 2005"], ["Jun 29", "10:48:06", "combo", "ftpd", "15551", "connection from 208.62.55.75 () at Wed Jun 29 10:48:06 2005"], ["Jun 29", "10:48:08", "combo", "ftpd", "15552", "connection from 208.62.55.75 () at Wed Jun 29 10:48:08 2005"], ["Jun 29", "10:48:08", "combo", "ftpd", "15553", "connection from 208.62.55.75 () at Wed Jun 29 10:48:08 2005"], ["Jun 29", "10:48:08", "combo", "ftpd", "15554", "connection from 208.62.55.75 () at Wed Jun 29 10:48:08 2005"], ["Jun 29", "10:48:10", "combo", "ftpd", "15555", "connection from 208.62.55.75 () at Wed Jun 29 10:48:10 2005"], ["Jun 29", "10:48:12", "combo", "ftpd", "15556", "connection from 208.62.55.75 () at Wed Jun 29 10:48:12 2005"], ["Jun 29", "10:48:12", "combo", "ftpd", "15557", "connection from 208.62.55.75 () at Wed Jun 29 10:48:12 2005"], ["Jun 29", "10:48:13", "combo", "ftpd", "15558", "connection from 208.62.55.75 () at Wed Jun 29 10:48:13 2005"], ["Jun 29", "10:48:15", "combo", "ftpd", "15559", "connection from 208.62.55.75 () at Wed Jun 29 10:48:15 2005"], ["Jun 29", "10:48:17", "combo", "ftpd", "15560", "connection from 208.62.55.75 () at Wed Jun 29 10:48:17 2005"], ["Jun 29", "10:48:17", "combo", "ftpd", "15561", "connection from 208.62.55.75 () at Wed Jun 29 10:48:17 2005"], ["Jun 29", "10:48:18", "combo", "ftpd", "15562", "connection from 208.62.55.75 () at Wed Jun 29 10:48:18 2005"], ["Jun 29", "10:48:20", "combo", "ftpd", "15563", "connection from 208.62.55.75 () at Wed Jun 29 10:48:20 2005"], ["Jun 29", "10:48:21", "combo", "ftpd", "15564", "connection from 208.62.55.75 () at Wed Jun 29 10:48:21 2005"], ["Jun 29", "12:11:53", "combo", "sshd(pam_unix)", "15692", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=h64-187-1-131.gtconnect.net  user=root"], ["Jun 29", "12:11:55", "combo", "sshd(pam_unix)", "15694", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=h64-187-1-131.gtconnect.net  user=root"], ["Jun 29", "12:11:57", "combo", "sshd(pam_unix)", "15696", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=h64-187-1-131.gtconnect.net  user=root"], ["Jun 29", "12:11:59", "combo", "sshd(pam_unix)", "15698", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=h64-187-1-131.gtconnect.net  user=root"], ["Jun 29", "12:11:59", "combo", "sshd(pam_unix)", "15700", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=h64-187-1-131.gtconnect.net  user=root"], ["Jun 29", "12:12:01", "combo", "sshd(pam_unix)", "15702", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=h64-187-1-131.gtconnect.net  user=root"], ["Jun 29", "12:12:02", "combo", "sshd(pam_unix)", "15704", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=h64-187-1-131.gtconnect.net  user=root"], ["Jun 29", "12:12:03", "combo", "sshd(pam_unix)", "15706", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=h64-187-1-131.gtconnect.net  user=root"], ["Jun 29", "12:12:03", "combo", "sshd(pam_unix)", "15708", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=h64-187-1-131.gtconnect.net  user=root"], ["Jun 29", "12:12:05", "combo", "sshd(pam_unix)", "15710", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=h64-187-1-131.gtconnect.net  user=root"], ["Jun 29", "12:12:05", "combo", "sshd(pam_unix)", "15712", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=h64-187-1-131.gtconnect.net  user=root"], ["Jun 29", "12:12:06", "combo", "sshd(pam_unix)", "15714", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=h64-187-1-131.gtconnect.net  user=root"], ["Jun 29", "12:12:10", "combo", "sshd(pam_unix)", "15716", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=h64-187-1-131.gtconnect.net  user=root"], ["Jun 29", "14:44:35", "combo", "ftpd", "15917", "connection from 210.223.97.117 () at Wed Jun 29 14:44:35 2005"], ["Jun 29", "14:44:35", "combo", "ftpd", "15922", "connection from 210.223.97.117 () at Wed Jun 29 14:44:35 2005"], ["Jun 29", "14:44:35", "combo", "ftpd", "15918", "connection from 210.223.97.117 () at Wed Jun 29 14:44:35 2005"], ["Jun 29", "14:44:35", "combo", "ftpd", "15919", "connection from 210.223.97.117 () at Wed Jun 29 14:44:35 2005"], ["Jun 29", "14:44:35", "combo", "ftpd", "15923", "connection from 210.223.97.117 () at Wed Jun 29 14:44:35 2005"], ["Jun 29", "14:44:35", "combo", "ftpd", "15920", "connection from 210.223.97.117 () at Wed Jun 29 14:44:35 2005"], ["Jun 29", "14:44:35", "combo", "ftpd", "15921", "connection from 210.223.97.117 () at Wed Jun 29 14:44:35 2005"], ["Jun 30", "04:03:41", "combo", "su(pam_unix)", "17407", "session opened for user cyrus by (uid=0)"], ["Jun 30", "04:03:42", "combo", "su(pam_unix)", "17407", "session closed for user cyrus"], ["Jun 30", "04:03:43", "combo", "logrotate", "", "ALERT exited abnormally with [1]"], ["Jun 30", "04:09:30", "combo", "su(pam_unix)", "17778", "session opened for user news by (uid=0)"], ["Jun 30", "04:09:31", "combo", "su(pam_unix)", "17778", "session closed for user news"], ["Jun 30", "12:48:38", "combo", "sshd(pam_unix)", "18559", "check pass; user unknown"], ["Jun 30", "12:48:38", "combo", "sshd(pam_unix)", "18559", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=biblioteka.wsi.edu.pl"], ["Jun 30", "12:48:41", "combo", "sshd(pam_unix)", "18557", "check pass; user unknown"], ["Jun 30", "12:48:41", "combo", "sshd(pam_unix)", "18557", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=biblioteka.wsi.edu.pl"], ["Jun 30", "12:48:41", "combo", "sshd(pam_unix)", "18550", "check pass; user unknown"], ["Jun 30", "12:48:41", "combo", "sshd(pam_unix)", "18550", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=biblioteka.wsi.edu.pl"], ["Jun 30", "12:48:41", "combo", "sshd(pam_unix)", "18547", "check pass; user unknown"], ["Jun 30", "12:48:41", "combo", "sshd(pam_unix)", "18547", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=biblioteka.wsi.edu.pl"], ["Jun 30", "12:48:41", "combo", "sshd(pam_unix)", "18549", "check pass; user unknown"], ["Jun 30", "12:48:41", "combo", "sshd(pam_unix)", "18549", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=biblioteka.wsi.edu.pl"], ["Jun 30", "12:48:41", "combo", "sshd(pam_unix)", "18545", "check pass; user unknown"], ["Jun 30", "12:48:41", "combo", "sshd(pam_unix)", "18545", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=biblioteka.wsi.edu.pl"], ["Jun 30", "12:48:41", "combo", "sshd(pam_unix)", "18548", "check pass; user unknown"], ["Jun 30", "12:48:41", "combo", "sshd(pam_unix)", "18548", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=biblioteka.wsi.edu.pl"], ["Jun 30", "12:48:41", "combo", "sshd(pam_unix)", "18546", "check pass; user unknown"], ["Jun 30", "12:48:41", "combo", "sshd(pam_unix)", "18546", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=biblioteka.wsi.edu.pl"], ["Jun 30", "19:03:00", "combo", "sshd(pam_unix)", "19088", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=60.30.224.116  user=root"], ["Jun 30", "19:03:00", "combo", "sshd(pam_unix)", "19094", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=60.30.224.116  user=root"], ["Jun 30", "19:03:00", "combo", "sshd(pam_unix)", "19087", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=60.30.224.116  user=root"], ["Jun 30", "19:03:01", "combo", "sshd(pam_unix)", "19093", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=60.30.224.116  user=root"], ["Jun 30", "19:03:01", "combo", "sshd(pam_unix)", "19085", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=60.30.224.116  user=root"], ["Jun 30", "19:03:03", "combo", "sshd(pam_unix)", "19091", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=60.30.224.116  user=root"], ["Jun 30", "19:03:04", "combo", "sshd(pam_unix)", "19099", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=60.30.224.116  user=root"], ["Jun 30", "19:03:04", "combo", "sshd(pam_unix)", "19101", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=60.30.224.116  user=root"], ["Jun 30", "19:03:05", "combo", "sshd(pam_unix)", "19103", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=60.30.224.116  user=root"], ["Jun 30", "19:03:07", "combo", "sshd(pam_unix)", "19097", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=60.30.224.116  user=root"], ["Jun 30", "20:16:17", "combo", "sshd(pam_unix)", "19202", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=195.129.24.210  user=root"], ["Jun 30", "20:16:17", "combo", "sshd(pam_unix)", "19203", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=195.129.24.210  user=root"], ["Jun 30", "20:16:26", "combo", "sshd(pam_unix)", "19209", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=195.129.24.210  user=root"], ["Jun 30", "20:16:26", "combo", "sshd(pam_unix)", "19208", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=195.129.24.210  user=root"], ["Jun 30", "20:16:30", "combo", "sshd(pam_unix)", "19222", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=195.129.24.210  user=root"], ["Jun 30", "20:53:04", "combo", "klogind", "19272", "Authentication failed from 163.27.187.39 (163.27.187.39): Permission denied in replay cache code"], ["Jun 30", "20:53:04", "combo", "klogind", "19272", "Kerberos authentication failed"], ["Jun 30", "20:53:04", "combo", "klogind", "19287", "Authentication failed from 163.27.187.39 (163.27.187.39): Permission denied in replay cache code"], ["Jun 30", "20:53:04", "combo", "klogind", "19287", "Kerberos authentication failed"], ["Jun 30", "20:53:04", "combo", "klogind", "19286", "Authentication failed from 163.27.187.39 (163.27.187.39): Permission denied in replay cache code"], ["Jun 30", "20:53:04", "combo", "klogind", "19286", "Kerberos authentication failed"], ["Jun 30", "20:53:04", "combo", "klogind", "19271", "Authentication failed from 163.27.187.39 (163.27.187.39): Permission denied in replay cache code"], ["Jun 30", "20:53:04", "combo", "klogind", "19271", "Kerberos authentication failed"], ["Jun 30", "20:53:04", "combo", "klogind", "19270", "Authentication failed from 163.27.187.39 (163.27.187.39): Permission denied in replay cache code"], ["Jun 30", "20:53:04", "combo", "klogind", "19270", "Kerberos authentication failed"], ["Jun 30", "20:53:04", "combo", "klogind", "19269", "Authentication failed from 163.27.187.39 (163.27.187.39): Permission denied in replay cache code"], ["Jun 30", "20:53:04", "combo", "klogind", "19269", "Kerberos authentication failed"], ["Jun 30", "20:53:04", "combo", "klogind", "19268", "Authentication failed from 163.27.187.39 (163.27.187.39): Permission denied in replay cache code"], ["Jun 30", "20:53:04", "combo", "klogind", "19288", "Authentication failed from 163.27.187.39 (163.27.187.39): Permission denied in replay cache code"], ["Jun 30", "20:53:04", "combo", "klogind", "19274", "Authentication failed from 163.27.187.39 (163.27.187.39): Software caused connection abort"], ["Jun 30", "20:53:04", "combo", "klogind", "19268", "Kerberos authentication failed"], ["Jun 30", "20:53:04", "combo", "klogind", "19288", "Kerberos authentication failed"], ["Jun 30", "20:53:04", "combo", "klogind", "19274", "Kerberos authentication failed"], ["Jun 30", "20:53:06", "combo", "klogind", "19266", "Authentication failed from 163.27.187.39 (163.27.187.39): Software caused connection abort"], ["Jun 30", "20:53:06", "combo", "klogind", "19266", "Kerberos authentication failed"], ["Jun 30", "20:53:06", "combo", "klogind", "19267", "Authentication failed from 163.27.187.39 (163.27.187.39): Software caused connection abort"], ["Jun 30", "20:53:06", "combo", "klogind", "19267", "Kerberos authentication failed"], ["Jun 30", "20:53:06", "combo", "klogind", "19278", "Authentication failed from 163.27.187.39 (163.27.187.39): Software caused connection abort"], ["Jun 30", "20:53:06", "combo", "klogind", "19278", "Kerberos authentication failed"], ["Jun 30", "20:53:06", "combo", "klogind", "19273", "Authentication failed from 163.27.187.39 (163.27.187.39): Software caused connection abort"], ["Jun 30", "20:53:06", "combo", "klogind", "19273", "Kerberos authentication failed"], ["Jun 30", "20:53:06", "combo", "klogind", "19276", "Authentication failed from 163.27.187.39 (163.27.187.39): Software caused connection abort"], ["Jun 30", "20:53:06", "combo", "klogind", "19276", "Kerberos authentication failed"], ["Jun 30", "20:53:06", "combo", "klogind", "19275", "Authentication failed from 163.27.187.39 (163.27.187.39): Software caused connection abort"], ["Jun 30", "20:53:06", "combo", "klogind", "19275", "Kerberos authentication failed"], ["Jun 30", "20:53:06", "combo", "klogind", "19277", "Authentication failed from 163.27.187.39 (163.27.187.39): Software caused connection abort"], ["Jun 30", "20:53:06", "combo", "klogind", "19277", "Kerberos authentication failed"], ["Jun 30", "20:53:06", "combo", "klogind", "19279", "Authentication failed from 163.27.187.39 (163.27.187.39): Software caused connection abort"], ["Jun 30", "20:53:06", "combo", "klogind", "19279", "Kerberos authentication failed"], ["Jun 30", "20:53:06", "combo", "klogind", "19280", "Authentication failed from 163.27.187.39 (163.27.187.39): Software caused connection abort"], ["Jun 30", "20:53:06", "combo", "klogind", "19281", "Authentication failed from 163.27.187.39 (163.27.187.39): Software caused connection abort"], ["Jun 30", "20:53:06", "combo", "klogind", "19282", "Authentication failed from 163.27.187.39 (163.27.187.39): Software caused connection abort"], ["Jun 30", "20:53:06", "combo", "klogind", "19280", "Kerberos authentication failed"], ["Jun 30", "20:53:06", "combo", "klogind", "19283", "Authentication failed from 163.27.187.39 (163.27.187.39): Software caused connection abort"], ["Jun 30", "20:53:06", "combo", "klogind", "19281", "Kerberos authentication failed"], ["Jun 30", "20:53:06", "combo", "klogind", "19285", "Authentication failed from 163.27.187.39 (163.27.187.39): Software caused connection abort"], ["Jun 30", "20:53:06", "combo", "klogind", "19284", "Authentication failed from 163.27.187.39 (163.27.187.39): Software caused connection abort"], ["Jun 30", "20:53:06", "combo", "klogind", "19282", "Kerberos authentication failed"], ["Jun 30", "20:53:06", "combo", "klogind", "19283", "Kerberos authentication failed"], ["Jun 30", "20:53:06", "combo", "klogind", "19285", "Kerberos authentication failed"], ["Jun 30", "20:53:06", "combo", "klogind", "19284", "Kerberos authentication failed"], ["Jun 30", "22:16:32", "combo", "sshd(pam_unix)", "19432", "session opened for user test by (uid=509)"], ["Jun 30", "22:16:32", "combo", "sshd(pam_unix)", "19431", "session opened for user test by (uid=509)"], ["Jun 30", "22:16:32", "combo", "sshd(pam_unix)", "19433", "session opened for user test by (uid=509)"], ["Jun 30", "22:16:32", "combo", "sshd(pam_unix)", "19434", "session opened for user test by (uid=509)"], ["Jun 30", "22:16:32", "combo", "sshd(pam_unix)", "19435", "session opened for user test by (uid=509)"], ["Jun 30", "22:16:32", "combo", "sshd(pam_unix)", "19436", "session opened for user test by (uid=509)"], ["Jun 30", "22:16:32", "combo", "sshd(pam_unix)", "19438", "session opened for user test by (uid=509)"], ["Jun 30", "22:16:32", "combo", "sshd(pam_unix)", "19437", "session opened for user test by (uid=509)"], ["Jun 30", "22:16:32", "combo", "sshd(pam_unix)", "19432", "session closed for user test"], ["Jun 30", "22:16:32", "combo", "sshd(pam_unix)", "19431", "session closed for user test"], ["Jun 30", "22:16:32", "combo", "sshd(pam_unix)", "19439", "session opened for user test by (uid=509)"], ["Jun 30", "22:16:32", "combo", "sshd(pam_unix)", "19440", "session opened for user test by (uid=509)"], ["Jun 30", "22:16:32", "combo", "sshd(pam_unix)", "19434", "session closed for user test"], ["Jun 30", "22:16:32", "combo", "sshd(pam_unix)", "19435", "session closed for user test"], ["Jun 30", "22:16:33", "combo", "sshd(pam_unix)", "19433", "session closed for user test"], ["Jun 30", "22:16:33", "combo", "sshd(pam_unix)", "19436", "session closed for user test"], ["Jun 30", "22:16:33", "combo", "sshd(pam_unix)", "19437", "session closed for user test"], ["Jun 30", "22:16:33", "combo", "sshd(pam_unix)", "19438", "session closed for user test"], ["Jun 30", "22:16:33", "combo", "sshd(pam_unix)", "19439", "session closed for user test"], ["Jun 30", "22:16:33", "combo", "sshd(pam_unix)", "19440", "session closed for user test"], ["Jul 1", "00:21:28", "combo", "sshd(pam_unix)", "19630", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=60.30.224.116  user=root"], ["Jul 1", "00:21:28", "combo", "sshd(pam_unix)", "19628", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=60.30.224.116  user=root"], ["Jul 1", "00:21:30", "combo", "sshd(pam_unix)", "19640", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=60.30.224.116  user=root"], ["Jul 1", "00:21:30", "combo", "sshd(pam_unix)", "19642", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=60.30.224.116  user=root"], ["Jul 1", "00:21:30", "combo", "sshd(pam_unix)", "19632", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=60.30.224.116  user=root"], ["Jul 1", "00:21:31", "combo", "sshd(pam_unix)", "19643", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=60.30.224.116  user=root"], ["Jul 1", "00:21:31", "combo", "sshd(pam_unix)", "19631", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=60.30.224.116  user=root"], ["Jul 1", "00:21:32", "combo", "sshd(pam_unix)", "19636", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=60.30.224.116  user=root"], ["Jul 1", "00:21:32", "combo", "sshd(pam_unix)", "19645", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=60.30.224.116  user=root"], ["Jul 1", "00:21:35", "combo", "sshd(pam_unix)", "19637", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=60.30.224.116  user=root"], ["Jul 1", "04:05:17", "combo", "su(pam_unix)", "20298", "session opened for user cyrus by (uid=0)"], ["Jul 1", "04:05:18", "combo", "su(pam_unix)", "20298", "session closed for user cyrus"], ["Jul 1", "04:05:19", "combo", "logrotate", "", "ALERT exited abnormally with [1]"], ["Jul 1", "04:11:35", "combo", "su(pam_unix)", "21530", "session opened for user news by (uid=0)"], ["Jul 1", "04:11:36", "combo", "su(pam_unix)", "21530", "session closed for user news"], ["Jul 1", "05:02:26", "combo", "sshd(pam_unix)", "21689", "session opened for user test by (uid=509)"], ["Jul 1", "05:02:26", "combo", "sshd(pam_unix)", "21689", "session closed for user test"], ["Jul 1", "05:02:26", "combo", "sshd(pam_unix)", "21691", "session opened for user test by (uid=509)"], ["Jul 1", "05:02:26", "combo", "sshd(pam_unix)", "21691", "session closed for user test"], ["Jul 1", "05:02:26", "combo", "sshd(pam_unix)", "21692", "session opened for user test by (uid=509)"], ["Jul 1", "05:02:26", "combo", "sshd(pam_unix)", "21692", "session closed for user test"], ["Jul 1", "05:02:27", "combo", "sshd(pam_unix)", "21693", "session opened for user test by (uid=509)"], ["Jul 1", "05:02:27", "combo", "sshd(pam_unix)", "21693", "session closed for user test"], ["Jul 1", "07:57:30", "combo", "ftpd", "21952", "connection from 202.82.200.188 () at Fri Jul  1 07:57:30 2005"], ["Jul 1", "07:57:30", "combo", "ftpd", "21951", "connection from 202.82.200.188 () at Fri Jul  1 07:57:30 2005"], ["Jul 1", "07:57:30", "combo", "ftpd", "21957", "connection from 202.82.200.188 () at Fri Jul  1 07:57:30 2005"], ["Jul 1", "07:57:30", "combo", "ftpd", "21953", "connection from 202.82.200.188 () at Fri Jul  1 07:57:30 2005"], ["Jul 1", "07:57:30", "combo", "ftpd", "21954", "connection from 202.82.200.188 () at Fri Jul  1 07:57:30 2005"], ["Jul 1", "07:57:30", "combo", "ftpd", "21955", "connection from 202.82.200.188 () at Fri Jul  1 07:57:30 2005"], ["Jul 1", "07:57:30", "combo", "ftpd", "21950", "connection from 202.82.200.188 () at Fri Jul  1 07:57:30 2005"], ["Jul 1", "07:57:30", "combo", "ftpd", "21956", "connection from 202.82.200.188 () at Fri Jul  1 07:57:30 2005"], ["Jul 1", "07:57:30", "combo", "ftpd", "21958", "connection from 202.82.200.188 () at Fri Jul  1 07:57:30 2005"], ["Jul 1", "07:57:30", "combo", "ftpd", "21945", "connection from 202.82.200.188 () at Fri Jul  1 07:57:30 2005"], ["Jul 1", "07:57:30", "combo", "ftpd", "21959", "connection from 202.82.200.188 () at Fri Jul  1 07:57:30 2005"], ["Jul 1", "07:57:30", "combo", "ftpd", "21940", "connection from 202.82.200.188 () at Fri Jul  1 07:57:30 2005"], ["Jul 1", "07:57:30", "combo", "ftpd", "21941", "connection from 202.82.200.188 () at Fri Jul  1 07:57:30 2005"], ["Jul 1", "07:57:30", "combo", "ftpd", "21946", "connection from 202.82.200.188 () at Fri Jul  1 07:57:30 2005"], ["Jul 1", "07:57:30", "combo", "ftpd", "21937", "connection from 202.82.200.188 () at Fri Jul  1 07:57:30 2005"], ["Jul 1", "07:57:30", "combo", "ftpd", "21943", "connection from 202.82.200.188 () at Fri Jul  1 07:57:30 2005"], ["Jul 1", "07:57:30", "combo", "ftpd", "21944", "connection from 202.82.200.188 () at Fri Jul  1 07:57:30 2005"], ["Jul 1", "07:57:30", "combo", "ftpd", "21948", "connection from 202.82.200.188 () at Fri Jul  1 07:57:30 2005"], ["Jul 1", "07:57:30", "combo", "ftpd", "21947", "connection from 202.82.200.188 () at Fri Jul  1 07:57:30 2005"], ["Jul 1", "07:57:30", "combo", "ftpd", "21942", "connection from 202.82.200.188 () at Fri Jul  1 07:57:30 2005"], ["Jul 1", "07:57:30", "combo", "ftpd", "21938", "connection from 202.82.200.188 () at Fri Jul  1 07:57:30 2005"], ["Jul 1", "07:57:30", "combo", "ftpd", "21949", "connection from 202.82.200.188 () at Fri Jul  1 07:57:30 2005"], ["Jul 1", "07:57:30", "combo", "ftpd", "21939", "connection from 202.82.200.188 () at Fri Jul  1 07:57:30 2005"], ["Jul 1", "09:14:43", "combo", "sshd(pam_unix)", "22099", "session opened for user test by (uid=509)"], ["Jul 1", "09:14:43", "combo", "sshd(pam_unix)", "22104", "session opened for user test by (uid=509)"], ["Jul 1", "09:14:43", "combo", "sshd(pam_unix)", "22104", "session closed for user test"], ["Jul 1", "09:14:43", "combo", "sshd(pam_unix)", "22106", "session opened for user test by (uid=509)"], ["Jul 1", "09:14:44", "combo", "sshd(pam_unix)", "22099", "session closed for user test"], ["Jul 1", "09:14:44", "combo", "sshd(pam_unix)", "22112", "session opened for user test by (uid=509)"], ["Jul 1", "09:14:44", "combo", "sshd(pam_unix)", "22106", "session closed for user test"], ["Jul 1", "09:14:44", "combo", "sshd(pam_unix)", "22112", "session closed for user test"], ["Jul 1", "10:56:41", "combo", "sshd(pam_unix)", "22272", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=195.129.24.210  user=root"], ["Jul 1", "10:56:41", "combo", "sshd(pam_unix)", "22269", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=195.129.24.210  user=root"], ["Jul 1", "10:56:41", "combo", "sshd(pam_unix)", "22277", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=195.129.24.210  user=root"], ["Jul 1", "10:56:42", "combo", "sshd(pam_unix)", "22271", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=195.129.24.210  user=root"], ["Jul 1", "10:56:42", "combo", "sshd(pam_unix)", "22273", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=195.129.24.210  user=root"], ["Jul 1", "10:56:42", "combo", "sshd(pam_unix)", "22270", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=195.129.24.210  user=root"], ["Jul 1", "10:56:43", "combo", "sshd(pam_unix)", "22268", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=195.129.24.210  user=root"], ["Jul 1", "10:56:43", "combo", "sshd(pam_unix)", "22274", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=195.129.24.210  user=root"], ["Jul 1", "10:56:44", "combo", "sshd(pam_unix)", "22276", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=195.129.24.210  user=root"], ["Jul 1", "10:56:44", "combo", "sshd(pam_unix)", "22275", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=195.129.24.210  user=root"], ["Jul 2", "01:41:32", "combo", "sshd(pam_unix)", "23533", "session opened for user test by (uid=509)"], ["Jul 2", "01:41:32", "combo", "sshd(pam_unix)", "23534", "session opened for user test by (uid=509)"], ["Jul 2", "01:41:32", "combo", "sshd(pam_unix)", "23535", "session opened for user test by (uid=509)"], ["Jul 2", "01:41:32", "combo", "sshd(pam_unix)", "23536", "session opened for user test by (uid=509)"], ["Jul 2", "01:41:32", "combo", "sshd(pam_unix)", "23533", "session closed for user test"], ["Jul 2", "01:41:32", "combo", "sshd(pam_unix)", "23534", "session closed for user test"], ["Jul 2", "01:41:32", "combo", "sshd(pam_unix)", "23535", "session closed for user test"], ["Jul 2", "01:41:32", "combo", "sshd(pam_unix)", "23536", "session closed for user test"], ["Jul 2", "01:41:33", "combo", "sshd(pam_unix)", "23544", "session opened for user test by (uid=509)"], ["Jul 2", "01:41:33", "combo", "sshd(pam_unix)", "23544", "session closed for user test"], ["Jul 2", "01:41:33", "combo", "sshd(pam_unix)", "23545", "session opened for user test by (uid=509)"], ["Jul 2", "01:41:33", "combo", "sshd(pam_unix)", "23546", "session opened for user test by (uid=509)"], ["Jul 2", "01:41:33", "combo", "sshd(pam_unix)", "23547", "session opened for user test by (uid=509)"], ["Jul 2", "01:41:33", "combo", "sshd(pam_unix)", "23545", "session closed for user test"], ["Jul 2", "01:41:33", "combo", "sshd(pam_unix)", "23546", "session closed for user test"], ["Jul 2", "01:41:33", "combo", "sshd(pam_unix)", "23547", "session closed for user test"], ["Jul 2", "04:04:02", "combo", "su(pam_unix)", "24117", "session opened for user cyrus by (uid=0)"], ["Jul 2", "04:04:02", "combo", "su(pam_unix)", "24117", "session closed for user cyrus"], ["Jul 2", "04:04:03", "combo", "logrotate", "", "ALERT exited abnormally with [1]"], ["Jul 2", "04:09:53", "combo", "su(pam_unix)", "24511", "session opened for user news by (uid=0)"], ["Jul 2", "04:09:54", "combo", "su(pam_unix)", "24511", "session closed for user news"], ["Jul 2", "04:15:33", "combo", "sshd(pam_unix)", "24588", "check pass; user unknown"], ["Jul 2", "04:15:33", "combo", "sshd(pam_unix)", "24588", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=zummit.com"], ["Jul 2", "04:15:33", "combo", "sshd(pam_unix)", "24587", "check pass; user unknown"], ["Jul 2", "04:15:33", "combo", "sshd(pam_unix)", "24587", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=zummit.com"], ["Jul 2", "04:15:33", "combo", "sshd(pam_unix)", "24590", "check pass; user unknown"], ["Jul 2", "04:15:33", "combo", "sshd(pam_unix)", "24590", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=zummit.com"], ["Jul 2", "04:15:43", "combo", "sshd(pam_unix)", "24573", "check pass; user unknown"], ["Jul 2", "04:15:43", "combo", "sshd(pam_unix)", "24573", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=zummit.com"], ["Jul 2", "04:15:43", "combo", "sshd(pam_unix)", "24574", "check pass; user unknown"], ["Jul 2", "04:15:43", "combo", "sshd(pam_unix)", "24574", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=zummit.com"], ["Jul 2", "04:15:43", "combo", "sshd(pam_unix)", "24576", "check pass; user unknown"], ["Jul 2", "04:15:43", "combo", "sshd(pam_unix)", "24576", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=zummit.com"], ["Jul 2", "04:15:43", "combo", "sshd(pam_unix)", "24578", "check pass; user unknown"], ["Jul 2", "04:15:43", "combo", "sshd(pam_unix)", "24578", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=zummit.com"], ["Jul 2", "04:15:43", "combo", "sshd(pam_unix)", "24579", "check pass; user unknown"], ["Jul 2", "04:15:43", "combo", "sshd(pam_unix)", "24579", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=zummit.com"], ["Jul 2", "04:15:43", "combo", "sshd(pam_unix)", "24581", "check pass; user unknown"], ["Jul 2", "04:15:43", "combo", "sshd(pam_unix)", "24581", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=zummit.com"], ["Jul 2", "04:15:43", "combo", "sshd(pam_unix)", "24583", "check pass; user unknown"], ["Jul 2", "04:15:43", "combo", "sshd(pam_unix)", "24583", "authentication failure; logname= uid=0 euid=0 tty=NODEVssh ruser= rhost=zummit.com"]], "filter": [0, 3], "placeholder": "поиск: слово, учётка, адрес…", "tasks": ["выбери программу su(pam_unix) — в какое время суток она пишет?", "найди слово ALERT — сколько строк и от какой программы?", "выбери logrotate и сравни даты с днями недели"]}</script></figure><!--/thv:linux-siem-->
+<h2 id="s36">Где ошибаются новички</h2>
+<ul>
+<li>Ставят <code>uniq -c</code> без <code>sort</code> перед ним и получают неверные счётчики.</li>
+<li>Верят <code>wc -l</code> до последней строки: в файле без финального перевода строки он покажет на одну меньше.</li>
+<li>Считают слово ALERT, ERROR или FAILED в тексте лога вердиктом. Это текст, который написал программист; смысл даёт программа, контекст и регулярность.</li>
+<li>Берут <code>$11</code> для адреса в syslog: номер поля плавает. Надёжнее искать по якорю или по <code>NF</code>.</li>
+<li>Пишут <code>a = 5</code> в bash, забывают кавычки вокруг переменных и пробелы внутри <code>[ ]</code>.</li>
+<li>Доверяют <code>~/.bash_history</code> как журналу аудита.</li>
+<li>Копируют GNU-команды на Mac: <code>sed -i</code> без суффикса, <code>grep -P</code> и <code>date -d</code> в macOS не работают [28].</li>
+</ul>
+<h2 id="s37">Термины</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>EN</th>
+<th>RU</th>
+<th>DE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>shell</td>
+<td>командная оболочка, шелл</td>
+<td>Shell, Kommandozeileninterpreter</td>
+</tr>
+<tr>
+<td>shebang</td>
+<td>шебанг (первая строка <code>#!</code>)</td>
+<td>Shebang</td>
+</tr>
+<tr>
+<td>exit code</td>
+<td>код возврата</td>
+<td>Rückgabewert, Exit-Code</td>
+</tr>
+<tr>
+<td>log rotation</td>
+<td>ротация журналов</td>
+<td>Logrotation</td>
+</tr>
+<tr>
+<td>scheduled job (cron)</td>
+<td>задание по расписанию</td>
+<td>geplanter Auftrag, Cronjob</td>
+</tr>
+<tr>
+<td>command history</td>
+<td>история команд</td>
+<td>Befehlsverlauf</td>
+</tr>
+<tr>
+<td>false positive</td>
+<td>ложное срабатывание</td>
+<td>Fehlalarm, False Positive</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="s38">Связи</h2>
+<ul>
+<li>Назад: <a href="https://tryhackme.com/room/linuxfundamentalspart1">Linux Fundamentals Part 1</a>, <a href="https://tryhackme.com/room/linuxfundamentalspart2">Part 2</a>, <a href="https://tryhackme.com/room/linuxfundamentalspart3">Part 3</a> — права, процессы, cron; на полке — учебник «Linux Fundamentals».</li>
+<li>Вперёд: <a href="https://tryhackme.com/room/linuxloggingforsoc">Linux Logging for SOC</a> и <a href="https://tryhackme.com/room/linuxthreatdetection1">Linux Threat Detection 1</a> из SOC Level 1; <a href="https://tryhackme.com/room/logsfundamentals">Logs Fundamentals</a> из этого же пути.</li>
+</ul>
+<h1 id="s39" class="anchored">Глава 4. За рамками THM: знать норму</h1>
+<p>Комнаты учат команды. На смене от тебя ждут другого: глянув на вывод, за секунды сказать, <strong>нормально это или нет</strong>. Для этого надо знать, как выглядит здоровая система. Эта глава — про норму в Windows и Linux, а ещё про то, как те же самые команды выглядят в ATT&amp;CK и как закрыть смену.</p>
+<h2 id="s40">Норма Windows: дерево системных процессов</h2>
+<p>У Windows есть небольшой набор системных процессов, которые всегда запускаются одинаково: тот же путь, тот же родитель, то же число экземпляров, та же учётка. Эту норму SANS свёл в постер «Hunt Evil» [33]. Ниже — его основа в виде дерева. Нажимай на узлы.</p>
+<!--thv:win-ptree--><figure class="thv" data-v="ptree"><figcaption><b>Нормальное дерево системных процессов Windows</b><span>По постеру SANS «Hunt Evil» (2018): родители, пути, число экземпляров, учётки. Вымышленных данных нет, это справочная норма</span></figcaption>
+<script type="application/json">{"root":{"n":"System","u":"Local System","note":"один, PID 4, не exe-файл","cmd":"Ядро. Родителя нет, появляется при загрузке.","c":[{"n":"smss.exe","u":"Local System","note":"один «главный» + по копии на сессию","cmd":"%SystemRoot%\\System32\\smss.exe — Session Manager. Для каждой сессии запускает свою копию, а та, запустив процессы ниже, сразу завершается.","c":[{"n":"csrss.exe","u":"Local System","note":"два и больше","cmd":"%SystemRoot%\\System32\\csrss.exe. Родитель — копия smss.exe, которая уже завершилась. Поэтому в живом списке родителя у csrss «нет», и это норма."},{"n":"wininit.exe","u":"Local System","note":"ровно один","cmd":"%SystemRoot%\\System32\\wininit.exe. Родитель — завершившаяся копия smss.exe.","c":[{"n":"services.exe","u":"Local System","note":"ровно один","cmd":"%SystemRoot%\\System32\\services.exe — диспетчер служб. Родитель — wininit.exe.","c":[{"n":"svchost.exe","u":"SYSTEM / LOCAL SERVICE / NETWORK SERVICE, иногда пользователь","note":"много, обычно не меньше 10","cmd":"%SystemRoot%\\System32\\svchost.exe -k <группа>. Родитель — services.exe (чаще всего). svchost не из System32 или с другим родителем — повод присмотреться.","c":[{"n":"RuntimeBroker.exe","u":"пользователь","note":"один или больше","cmd":"%SystemRoot%\\System32\\RuntimeBroker.exe, родитель — svchost.exe."},{"n":"taskhostw.exe","u":"пользователь или служебная учётка","note":"один или больше","cmd":"%SystemRoot%\\System32\\taskhostw.exe, родитель — svchost.exe."}]}]},{"n":"lsass.exe","u":"Local System","note":"ровно один","cmd":"%SystemRoot%\\System32\\lsass.exe — проверка паролей и токенов. Родитель — wininit.exe. Второй lsass или lsass с другим родителем — сразу эскалация."},{"n":"lsaiso.exe","u":"Local System","note":"ноль или один","cmd":"Есть только при включённом Credential Guard. Родитель — wininit.exe."}]},{"n":"winlogon.exe","u":"Local System","note":"один или больше (по сессии)","cmd":"%SystemRoot%\\System32\\winlogon.exe. Родитель — завершившаяся копия smss.exe.","c":[{"n":"userinit.exe","u":"пользователь","note":"живёт секунды","cmd":"Запускает оболочку пользователя и завершается. Поэтому у explorer в списке тоже «нет» родителя.","c":[{"n":"explorer.exe","u":"вошедший пользователь","note":"один или больше на пользователя","cmd":"%SystemRoot%\\explorer.exe — обрати внимание: НЕ System32. Стартует при интерактивном входе пользователя."}]}]}]}]}}</script></figure><!--/thv:win-ptree-->
+<p>Как этим пользоваться на смене, на примере вопросов к выводу <code>Get-Process</code> или к дереву в EDR:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Признак</th>
+<th>Норма</th>
+<th>Если не так — что записать в тикет</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Число экземпляров</td>
+<td><code>lsass.exe</code>, <code>services.exe</code>, <code>wininit.exe</code> — ровно по одному</td>
+<td>«два процесса lsass.exe, PID …»</td>
+</tr>
+<tr>
+<td>Путь</td>
+<td>всё из <code>C:\Windows\System32\</code>, кроме <code>explorer.exe</code> (<code>C:\Windows\</code>)</td>
+<td>путь целиком, хэш</td>
+</tr>
+<tr>
+<td>Родитель</td>
+<td><code>svchost.exe</code> ← <code>services.exe</code>; <code>lsass.exe</code> ← <code>wininit.exe</code></td>
+<td>имя и PID родителя</td>
+</tr>
+<tr>
+<td>Учётка</td>
+<td>системные процессы — от SYSTEM или служебных учёток</td>
+<td>имя учётки</td>
+</tr>
+<tr>
+<td>Имя</td>
+<td>ровно <code>svchost.exe</code></td>
+<td>похожие имена (<code>scvhost.exe</code>, <code>svch0st.exe</code>) — опечатки не бывают случайными</td>
+</tr>
+</tbody>
+</table></div>
+<p>Ещё одна норма, которая пригодится вместе с главами 1 и 2: на сервере <strong>не бывает</strong> «просто так» <code>cmd.exe</code> или <code>powershell.exe</code> с родителем <code>w3wp.exe</code> (веб-сервер IIS) или с родителем-программой Office. Сам по себе запуск командной строки не преступление: её запускают админы, установщики и задания планировщика. Значение имеет <strong>кто родитель</strong>.</p>
+<h2 id="s41">Норма Linux: ритм сервера</h2>
+<p>На Linux «норма» — это прежде всего <strong>ритм</strong>: что происходит каждую ночь, каждую неделю, при каждой загрузке. Глава 3 показала его на реальном журнале:</p>
+<ul>
+<li>ежедневно около 04:00 — короткие сессии <code>su</code> от root к служебным учёткам, запуск logrotate;</li>
+<li>по воскресеньям в том же окне — перезапуск <code>cupsd</code> и <code>syslogd</code>;</li>
+<li>при загрузке — десятки строк <code>kernel</code> подряд (в нашем журнале — утро 27.07, 76 строк ядра).</li>
+</ul>
+<p>Вывод для смены: <strong>сначала построй ритм, потом ищи выбросы</strong>. Тот же вопрос можно задать к любому событию: «а вчера в это время было то же?» Если было и вчера, и неделю назад, это почти наверняка расписание. Дальше ищи его в <code>/etc/cron*</code> или <code>systemctl list-timers</code> и записывай в тикет, где нашёл. Выброс — то, чего в ритме нет: сессия root в 15:42 в среду, новое задание cron, процесс из <code>/tmp</code> или <code>/dev/shm</code>, вход по SSH с адреса, которого не было за месяц.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Норма</th>
+<th>Выпадает из нормы — проверить</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>задания в <code>/etc/cron.daily/</code> от пакетов, которые знает админ</td>
+<td>новое задание в <code>/etc/cron.d/</code> или у пользователя, без тикета</td>
+</tr>
+<tr>
+<td>вход по SSH админа из VPN-диапазона в рабочее время</td>
+<td>вход по SSH с нового внешнего адреса ночью</td>
+</tr>
+<tr>
+<td><code>su</code>/<code>sudo</code> от root к служебным учёткам по расписанию</td>
+<td><code>sudo</code> от учётки, которая раньше им не пользовалась</td>
+</tr>
+<tr>
+<td>демоны из <code>/usr/sbin</code>, <code>/usr/bin</code></td>
+<td>исполняемый файл в <code>/tmp</code>, <code>/dev/shm</code>, скрытой папке в <code>$HOME</code></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="s42">Твои команды глазами ATT&amp;CK</h2>
+<p>Почти каждая команда из этого учебника есть в матрице MITRE ATT&amp;CK как техника. Чаще всего — в тактике <strong>Discovery</strong> (разведка изнутри): атакующий, попавший на хост, задаёт системе те же вопросы, что и ты. Поэтому детектирование здесь строится не на самой команде, а на <strong>контексте</strong>: кто, откуда, сколько команд подряд, кто родитель. ID сверены с ATT&amp;CK Enterprise v20.0 [34, 35, 36, 37, 38, 39, 40, 41, 42, 43]. Нажимай на этапы ленты:</p>
+<figure class="kc"><div class="kc-cap">Твои команды в ATT&amp;CK — нажми на этап</div><div class="kc-tabs"><button type="button" class="kc-t on" data-i="0"><span class="kc-n">1</span>Паспорт системы</button><button type="button" class="kc-t" data-i="1"><span class="kc-n">2</span>Процессы</button><button type="button" class="kc-t" data-i="2"><span class="kc-n">3</span>Сеть и соединения</button><button type="button" class="kc-t" data-i="3"><span class="kc-n">4</span>Службы</button><button type="button" class="kc-t" data-i="4"><span class="kc-n">5</span>Учётки</button><button type="button" class="kc-t" data-i="5"><span class="kc-n">6</span>Интерпретаторы</button><button type="button" class="kc-t" data-i="6"><span class="kc-n">7</span>Удалённо</button><button type="button" class="kc-t" data-i="7"><span class="kc-n">8</span>Расписание</button></div><div class="kc-panes"><div class="kc-p on" data-i="0"><div class="kc-what">systeminfo, ver, Get-ComputerInfo, uname -a — узнать ОС, имя, обновления</div><div class="kc-row"><b>Техника</b>T1082 System Information Discovery</div><div class="kc-row"><b>Тактика</b>Discovery TA0007</div><div class="kc-row"><b>Где видно</b>4688 / Sysmon 1 с systeminfo.exe; 4104 с Get-ComputerInfo. Норма — админ или helpdesk по тикету; выброс — серия таких команд подряд от необычного родителя</div></div><div class="kc-p" data-i="1"><div class="kc-what">tasklist, Get-Process, ps — какие процессы запущены</div><div class="kc-row"><b>Техника</b>T1057 Process Discovery</div><div class="kc-row"><b>Тактика</b>Discovery TA0007</div><div class="kc-row"><b>Где видно</b>4688 / Sysmon 1 с tasklist.exe; на Linux — auditd execve, если настроен. Сами по себе такие запуски — фон</div></div><div class="kc-p" data-i="2"><div class="kc-what">ipconfig, netstat -ano, Get-NetTCPConnection, ss — адреса и соединения</div><div class="kc-row"><b>Техника</b>T1016 System Network Configuration Discovery · T1049 System Network Connections Discovery</div><div class="kc-row"><b>Тактика</b>Discovery TA0007</div><div class="kc-row"><b>Где видно</b>4688 / Sysmon 1 с ipconfig.exe, netstat.exe. Смотри, кто родитель: explorer → cmd (человек) или офисная программа → cmd (повод эскалировать)</div></div><div class="kc-p" data-i="3"><div class="kc-what">tasklist /svc, Get-Service, systemctl — какие службы есть</div><div class="kc-row"><b>Техника</b>T1007 System Service Discovery</div><div class="kc-row"><b>Тактика</b>Discovery TA0007</div><div class="kc-row"><b>Где видно</b>4688 / Sysmon 1, 4104. Чтение списка служб — норма для мониторинга; новая служба — уже другое событие (7045 в журнале System)</div></div><div class="kc-p" data-i="4"><div class="kc-what">whoami, Get-LocalUser, id, cat /etc/passwd — кто я и кто ещё есть</div><div class="kc-row"><b>Техника</b>T1033 System Owner/User Discovery · T1087.001 Local Account</div><div class="kc-row"><b>Тактика</b>Discovery TA0007</div><div class="kc-row"><b>Где видно</b>whoami.exe в 4688 / Sysmon 1. whoami от служебной учётки веб-сервера — классический повод для эскалации</div></div><div class="kc-p" data-i="5"><div class="kc-what">cmd.exe, powershell.exe / pwsh.exe, bash — сами оболочки и скрипты</div><div class="kc-row"><b>Техника</b>T1059.003 Windows Command Shell · T1059.001 PowerShell · T1059.004 Unix Shell</div><div class="kc-row"><b>Тактика</b>Execution TA0002</div><div class="kc-row"><b>Где видно</b>Родитель процесса оболочки (Sysmon 1 ParentImage), 4104 для текста PowerShell-скриптов. Оболочка от explorer или планировщика — обычно норма</div></div><div class="kc-p" data-i="6"><div class="kc-what">Invoke-Command, Enter-PSSession по WinRM 5985/5986</div><div class="kc-row"><b>Техника</b>T1021.006 Windows Remote Management</div><div class="kc-row"><b>Тактика</b>Lateral Movement TA0008</div><div class="kc-row"><b>Где видно</b>На целевом хосте — процесс wsmprovhost.exe и его дочерние процессы, сетевой вход. Норма — админ с тикетом; выброс — рабочая станция управляет рабочей станцией</div></div><div class="kc-p" data-i="7"><div class="kc-what">cron, /etc/cron.d, crontab -l, systemctl list-timers</div><div class="kc-row"><b>Техника</b>T1053.003 Cron</div><div class="kc-row"><b>Тактика</b>Execution · Persistence · Privilege Escalation</div><div class="kc-row"><b>Где видно</b>Новые файлы в /etc/cron*, записи CRON в syslog/journald. Норма — задания пакетов и админов; выброс — задание без тикета, запуск из /tmp или /dev/shm</div></div></div><figcaption>Тактики и ID сверены с ATT&amp;CK Enterprise v20.0 (13.10.2026). Это не сценарий атаки, а справочник: те же команды, что делает админ, и чем отличается контекст. Event ID на страницах ATT&amp;CK нет — колонка «Где видно» составлена по документации Microsoft и man-страницам.</figcaption></figure>
+<p>Пример учебного алерта, который ты встретишь в SOC Level 1 в разных вариантах:</p>
+<div class="tr" data-t="28"><div class="tr-cap">Триаж — поставь вердикт</div><div class="tr-alert">Учебный алерт. «Discovery burst» — хост WS-BUCH07 (рабочая станция бухгалтерии), учётка m.keller. За 40 секунд: whoami, hostname, ipconfig, systeminfo, tasklist, netstat -ano. Родительский процесс — cmd.exe, его родитель — explorer.exe. Время 10:12, рабочий день.</div><div class="tr-btns"><button type="button" class="tr-b" data-k="TP">Подтверждено</button><button type="button" class="tr-b" data-k="FP">Ложное срабатывание</button><button type="button" class="tr-b" data-k="DIG">Нужно копать</button></div><div class="tr-out" data-k="TP"><b>Подтверждено</b>Подтвердить атаку по одному этому алерту нельзя: родитель explorer.exe — это человек за клавиатурой, не макрос и не веб-сервер. Вердикт TP без контекста — поспешный.</div><div class="tr-out" data-k="FP"><b>Ложное срабатывание</b>Возможно, но закрывать сразу не стоит. Типичная легитимная причина — сотрудник ИТ или helpdesk диагностирует сеть по телефону («наберите ipconfig и продиктуйте»). Это проверяется одним вопросом.</div><div class="tr-out" data-k="DIG"><b>Нужно копать</b>Правильный выбор. Проверить: есть ли открытый тикет helpdesk на этот хост или пользователя в это время; кто реально залогинен (учётка пользователя или админа); что было на хосте за минуты до этого (письмо, загрузка файла, запуск чего-то из Downloads). Нашёлся тикет helpdesk — закрыть как benign со ссылкой на него. Не нашёлся, и перед этим был запуск файла из почты — эскалировать в L2 с таймлайном.</div></div>
+<h2 id="s43">Сравнение трёх оболочек: где что видно</h2>
+<!--thv:cli-matrix--><figure class="thv" data-v="matrix"><figcaption><b>Задачи смены и три оболочки</b><span>Сводка по главам 1–3: насколько удобно решать задачу встроенными средствами оболочки</span></figcaption>
+<script type="application/json">{"cols":["cmd","PowerShell","bash"],"rows":[{"name":"Паспорт системы (версия, загрузка, имя)","v":[2,2,2]},{"name":"Процессы с путём к файлу","v":[1,2,2]},{"name":"Соединение → процесс","v":[2,2,2]},{"name":"Службы и что в них","v":[1,2,2]},{"name":"Хэш файла","v":[1,2,2]},{"name":"Фильтр по полю, а не по тексту","v":[0,2,1]},{"name":"Журналы Windows (EVTX)","v":[1,2,0]},{"name":"Текстовые логи","v":[1,2,2]},{"name":"Скрипт для рутины","v":[1,2,2]}]}</script></figure><!--/thv:cli-matrix-->
+<p>Пояснения к «частично»: в cmd путь к файлу процесса штатно не виден в <code>tasklist</code>, хэш считает <code>certutil -hashfile</code>, журналы читает <code>wevtutil</code>, текст ищет <code>findstr</code>. Всё это есть, но неудобно. В bash фильтр по полю — это <code>awk</code>: мощно, но ты сам отвечаешь за то, что номер колонки не уехал.</p>
+<h2 id="s44">Как закрыть смену: тикет и Schichtübergabe</h2>
+<p>Ты разобрал два тикета. Оба — не инциденты. Именно такие тикеты и составляют большую часть смены, и закрыть их надо так, чтобы утром никто не переделывал твою работу.</p>
+<p><strong>Тикет PRN-SRV01 (закрываешь как benign / ожидаемая активность):</strong></p>
+<ul>
+<li>что сработало: правило нагрузки CPU, 02:10 (время сервера, CET/CEST — укажи явно);</li>
+<li>что проверено: <code>systeminfo</code> (загрузка в 01:58), процессы и пути, SHA256 файла (подписан Microsoft), соединения (адрес из CMDB — прокси обновлений), локальные учётки и службы (без изменений);</li>
+<li>чем подтверждено: окно обслуживания в календаре изменений, номер Change;</li>
+<li>твои действия на хосте: какие команды, с какого по какое время, через что запускал;</li>
+<li>рекомендация: подавлять это правило на время согласованных окон обслуживания.</li>
+</ul>
+<p><strong>Тикет lnx-files01 (закрываешь как false positive + задача в эксплуатацию):</strong></p>
+<ul>
+<li>правило срабатывает на слово ALERT в тексте logrotate, 43 раза за 44 дня, всегда около 04:00;</li>
+<li>предложение по тюнингу правила — исключить <code>program=logrotate</code>;</li>
+<li>отдельная задача админу: ротация логов падает каждую ночь, риск переполнения диска.</li>
+</ul>
+<p><strong>Schichtübergabe</strong> (передача смены) — коротко, по-немецки, потому что утренняя смена может быть немецкоязычной:</p>
+<blockquote>
+<p>PRN-SRV01: CPU-Alarm 02:10 – erwartete Aktivität (Wartungsfenster, Change liegt vor), geschlossen. lnx-files01: Regel „ALERT im Syslog" ist ein Fehlalarm (logrotate, jede Nacht ca. 04:00), Tuning-Vorschlag im Ticket, Betrieb informiert. Keine offenen Eskalationen.</p>
+</blockquote>
+<p>Две немецкие рамки, которые касаются именно командной строки:</p>
+<ul>
+<li><strong>Betriebsrat.</strong> Логирование PowerShell (4104) и командных строк (4688) записывает, что делал конкретный сотрудник. Технические средства, пригодные для контроля поведения или работы сотрудников, по § 87 Abs. 1 Nr. 6 BetrVG требуют согласия производственного совета [44]. Поэтому в немецкой фирме «просто включить полное логирование» часто означает сначала договориться с Betriebsrat. Аналитику это знать полезно: иногда данных нет не по ошибке, а по соглашению.</li>
+<li><strong>Сроки.</strong> Если бы проверка показала настоящий инцидент на объекте под NIS-2, у компании были бы сроки уведомления BSI: первое сообщение за 24 часа, уведомление за 72 часа, итоговый отчёт через месяц [45]. При утечке персональных данных по DSGVO — 72 часа надзорному органу [46]. L1 сам никого не уведомляет, но аккуратный таймлайн с часовым поясом в твоём тикете — то, из чего потом пишут эти уведомления.</li>
+</ul>
+<details>
+<summary>Копнуть глубже: почему норма — самый недооценённый навык L1</summary>
+
+Детектирующие правила в SIEM пишут под атаки, а срабатывают они в основном на норму: обновления, бэкапы, админов, скрипты мониторинга. Аналитик, который знает, что `su` к `news` каждую ночь в 04:0x — это расписание, закрывает такой тикет за пять минут и с обоснованием. Аналитик, который не знает, либо эскалирует шум (и L2 перестаёт ему доверять), либо закрывает «на глаз» (и однажды закроет настоящее). Поэтому на собеседовании на вопрос «как ты отличишь ложное срабатывание» лучший ответ начинается со слов «сравню с нормой для этого хоста».
+</details>
+
+<h1 id="s45" class="anchored">Вопросы с собеседований</h1>
+<p>Отвечай вслух, по-английски или по-немецки: в Германии первое интервью на SOC L1 часто идёт на немецком, техническое — на английском. Под каждым вопросом — разбор и добивающий вопрос, которым интервьюер проверяет, что ответ не заучен.</p>
+<details>
+<summary>1. EN: «How would you find out which process is behind a suspicious outbound connection on a Windows host?»</summary>
+
+**Хороший ответ:** «`netstat -ano` gives me the PID for the connection, then `tasklist /fi "pid eq …"` gives the process name. In PowerShell I'd use `Get-NetTCPConnection` and pass the PID to `Get-Process` to get the full path. Then I hash the file with `Get-FileHash` and check it against reputation sources. I wouldn't kill the process myself — I'd document and escalate according to the runbook.»
+
+**Добивающий:** «Why `-n`?» — без разрешения имён быстрее, и PTR-запись может врать.
+</details>
+
+<details>
+<summary>2. EN: «What is the main difference between cmd and PowerShell for an analyst?»</summary>
+
+**Ответ:** cmd возвращает текст, PowerShell — объекты со свойствами. Значит, фильтровать и сортировать можно по полям (`Where-Object`, `Sort-Object`), а не резать текст. Плюс PowerShell умеет читать журналы событий (`Get-WinEvent`) и сам пишет полезные логи (4104).
+
+**Добивающий:** «Is the execution policy a security control?» — нет, по документации Microsoft это не граница безопасности, а защита от случайного запуска.
+</details>
+
+<details>
+<summary>3. DE: «Was machen Sie, wenn ein Alarm nachts jede Nacht zur gleichen Uhrzeit auslöst?»</summary>
+
+**Ответ:** «Ich prüfe zuerst, ob es ein wiederkehrendes Muster ist – gleiche Uhrzeit, gleiches Programm, gleicher Benutzer. Dann suche ich die Ursache, zum Beispiel einen Cronjob oder ein Wartungsfenster. Wenn es erwartete Aktivität ist, dokumentiere ich das im Ticket und schlage ein Tuning der Regel vor.»
+
+**Добивающий:** «Und wenn Sie den Cronjob nicht finden?» — тогда это уже не «известный шум», а вопрос к админу, и закрывать нельзя.
+</details>
+
+<details>
+<summary>4. DE: «Können Sie im Schichtdienst arbeiten, auch nachts und am Wochenende?» (Schichtdienst)</summary>
+
+**Ответ — честно и конкретно:** «Ja, ich bin bereit, im Schichtdienst zu arbeiten, auch nachts und am Wochenende. Mir ist bewusst, dass das Planung braucht – Schlaf, feste Routinen. Wichtig ist mir eine saubere Schichtübergabe, damit nichts verloren geht.» Если к собеседованию уже будет опыт сменной работы (охрана, поздние смены), назови его: это сильный аргумент. Не обещай «всегда и сколько угодно» — спрашивают, понимаешь ли ты, что это такое.
+
+**Добивающий:** «Wie sieht für Sie eine gute Schichtübergabe aus?» — открытые тикеты, что эскалировано и кому, что ждёт ответа, кратко и письменно.
+</details>
+
+<details>
+<summary>5. DE: «Sie sind Quereinsteiger. Warum sollten wir Sie nehmen?» (Quereinsteiger)</summary>
+
+**Ответ:** «Ich bringe Erfahrung aus der Webentwicklung mit – ich verstehe, wie Webanwendungen und HTTP funktionieren, und kann Skripte lesen und schreiben. Seit Monaten lerne ich systematisch mit TryHackMe, zuletzt Kommandozeile unter Windows und Linux, und kann zeigen, wie ich Logs auswerte.» Покажи конкретику: скрипт `nightcheck.sh`, разбор журнала.
+
+**Добивающий:** «Was war das Schwierigste beim Lernen?» — назови реальную вещь и как её преодолел.
+</details>
+
+<details>
+<summary>6. EN: «What do you do if you're stuck on an alert and don't know what it means?» («если застрял»)</summary>
+
+**Ответ:** «I timebox it — say 15–20 minutes. I check the runbook and internal knowledge base, look at the raw event and the documentation for the event ID or tool. If I still can't decide, I escalate with what I've already checked, so the next person doesn't start from zero. Not knowing is fine; sitting on an alert silently is not.»
+
+**Добивающий:** «What exactly would you write in the escalation?» — что сработало, что проверил, что нашёл, почему не смог решить, какой следующий шаг предлагаешь.
+</details>
+
+<details>
+<summary>7. EN: «A user forwards a suspicious email with an attachment. What are your first steps?» (подозрительное письмо)</summary>
+
+**Ответ:** «I don't open the attachment on my workstation. I check the headers — sender, return path, SPF/DKIM/DMARC results — and the links and attachment hash against reputation sources. Then I search whether other users got the same email and whether anyone clicked or opened it. Depending on the result I close it as benign or escalate and request removal from all mailboxes.»
+
+**Добивающий:** «How would you see on the endpoint that someone opened the attachment?» — по дочерним процессам почтового или офисного клиента: Office, запускающий `cmd.exe` или `powershell.exe`, — сразу эскалация (глава 4, дерево процессов).
+</details>
+
+<details>
+<summary>8. EN: «Give me an example of a false positive you'd expect.» (false positive)</summary>
+
+**Ответ — из этого учебника:** «A rule matching the word "ALERT" in syslog fired every night on a Linux server. The lines came from logrotate at around 4 AM — the daily rotation job reporting its own error. Security-wise it's a false positive; I'd suggest excluding logrotate from the rule and open a separate ticket for the admins, because a failing log rotation can fill the disk.»
+
+**Добивающий:** «How did you prove it's a schedule?» — одно и то же время 43 ночи из 44, одна программа, root, плюс logrotate по документации запускается ежедневным cron.
+</details>
+
+<details>
+<summary>9. DE: «Was ist der Unterschied zwischen `Get-EventLog` und `Get-WinEvent`?»</summary>
+
+**Ответ:** «`Get-EventLog` nutzt eine veraltete API, sieht nur klassische Protokolle und fehlt in PowerShell 7. `Get-WinEvent` liest alle Kanäle, auch Sysmon und PowerShell Operational, und kann mit `-FilterHashtable` schon an der Quelle filtern.»
+</details>
+
+<h1 id="s46" class="anchored">Самопроверка</h1>
+<div class="qz" data-q="12"><div class="qz-q">Что делает ключ -o у netstat?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="Нет, направление тут ни при чём."><span class="qz-mark" aria-hidden="true"></span><span>Показывает только исходящие соединения</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. Дальше по PID ищешь процесс через tasklist."><span class="qz-mark" aria-hidden="true"></span><span>Добавляет PID процесса-владельца</span></button><button type="button" class="qz-o" data-ok="0" data-why="В файл выводят перенаправлением `&gt;`, а не ключом."><span class="qz-mark" aria-hidden="true"></span><span>Выводит результат в файл</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="13"><div class="qz-q">Почему 10 экземпляров svchost.exe на сервере — не повод для тревоги?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. По постеру Hunt Evil обычно не меньше десяти. Проверять надо путь и родителя, а не количество."><span class="qz-mark" aria-hidden="true"></span><span>svchost — хост для служб; каждая копия держит свою группу служб, их обычно много</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет, это норма Windows."><span class="qz-mark" aria-hidden="true"></span><span>Это всегда признак заражения</span></button><button type="button" class="qz-o" data-ok="0" data-why="Родитель svchost — services.exe, это системный процесс."><span class="qz-mark" aria-hidden="true"></span><span>svchost — пользовательская программа, их запускает каждый пользователь</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="14"><div class="qz-q">Где в норме лежит explorer.exe?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="Почти все системные процессы лежат там, но explorer — исключение."><span class="qz-mark" aria-hidden="true"></span><span>C:\Windows\System32\explorer.exe</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. Explorer в System32 — повод проверить файл."><span class="qz-mark" aria-hidden="true"></span><span>C:\Windows\explorer.exe</span></button><button type="button" class="qz-o" data-ok="0" data-why="Такого штатного пути нет."><span class="qz-mark" aria-hidden="true"></span><span>C:\Program Files\Windows\explorer.exe</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="15"><div class="qz-q">Командлет начинается с Get-. Что это говорит аналитику?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Глаголы Set, New, Remove, Stop меняют систему. Это хороший первый фильтр, но не гарантия."><span class="qz-mark" aria-hidden="true"></span><span>Скорее всего он только читает данные и безопасен для проверки</span></button><button type="button" class="qz-o" data-ok="0" data-why="Права зависят от того, что именно читается, а не от глагола."><span class="qz-mark" aria-hidden="true"></span><span>Он требует прав администратора</span></button><button type="button" class="qz-o" data-ok="0" data-why="Многие Get-командлеты умеют работать с удалённым хостом."><span class="qz-mark" aria-hidden="true"></span><span>Он работает только локально</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="16"><div class="qz-q">Ты написал Where-Object CPU &gt; 60. Что произошло?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="В PowerShell &gt; — не сравнение."><span class="qz-mark" aria-hidden="true"></span><span>Отфильтровались процессы с CPU больше 60</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. `&gt;` — перенаправление. Сравнение пишется -gt."><span class="qz-mark" aria-hidden="true"></span><span>Вывод ушёл в файл с именем 60</span></button><button type="button" class="qz-o" data-ok="0" data-why="Ошибки не будет, и это самое коварное."><span class="qz-mark" aria-hidden="true"></span><span>Ошибка синтаксиса</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="17"><div class="qz-q">Как узнать имя свойства объекта, если не помнишь его?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="Get-Help расскажет про командлет, а не про свойства результата."><span class="qz-mark" aria-hidden="true"></span><span>Get-Help объект</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. Get-Member перечисляет свойства и методы. Это лучший способ не угадывать."><span class="qz-mark" aria-hidden="true"></span><span>Передать объект в Get-Member</span></button><button type="button" class="qz-o" data-ok="0" data-why="Он про короткие имена команд."><span class="qz-mark" aria-hidden="true"></span><span>Get-Alias</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="18"><div class="qz-q">Execution policy стоит Restricted. Что из этого верно?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="По документации это не граница безопасности: её обходят штатными средствами."><span class="qz-mark" aria-hidden="true"></span><span>Вредоносный скрипт на этом хосте запуститься не может</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да, «defense in depth», не «security boundary»."><span class="qz-mark" aria-hidden="true"></span><span>Это защита от случайного запуска, а не барьер для злоумышленника</span></button><button type="button" class="qz-o" data-ok="0" data-why="На macOS и Linux политика всегда Unrestricted."><span class="qz-mark" aria-hidden="true"></span><span>На macOS можно поставить такую же политику</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="19"><div class="qz-q">Какое событие показывает текст выполненного PowerShell-кода?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="4688 — создание процесса. Командную строку оно покажет, но не содержимое скрипта."><span class="qz-mark" aria-hidden="true"></span><span>4688</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да, Script Block Logging, канал PowerShell Operational. Включается политикой."><span class="qz-mark" aria-hidden="true"></span><span>4104</span></button><button type="button" class="qz-o" data-ok="0" data-why="Это вход в систему."><span class="qz-mark" aria-hidden="true"></span><span>4624</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="20"><div class="qz-q">Какие порты по умолчанию у WinRM (на нём работает Invoke-Command)?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="22 — это SSH. PowerShell умеет работать и через него, но по умолчанию в Windows используется WinRM."><span class="qz-mark" aria-hidden="true"></span><span>22 и 443</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да, начиная с WinRM 2.0."><span class="qz-mark" aria-hidden="true"></span><span>5985 (HTTP) и 5986 (HTTPS)</span></button><button type="button" class="qz-o" data-ok="0" data-why="Это RDP."><span class="qz-mark" aria-hidden="true"></span><span>3389</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="21"><div class="qz-q">Зачем в bash-конвейере sort стоит перед uniq -c?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="Дело не в красоте."><span class="qz-mark" aria-hidden="true"></span><span>Чтобы результат был красивее</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. Без сортировки одна и та же строка посчитается несколько раз по кусочкам."><span class="qz-mark" aria-hidden="true"></span><span>uniq схлопывает только соседние одинаковые строки</span></button><button type="button" class="qz-o" data-ok="0" data-why="Работает, но считает неправильно."><span class="qz-mark" aria-hidden="true"></span><span>uniq не работает без sort</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="22"><div class="qz-q">В Linux_2k.log 2000 строк, а wc -l показывает 1999. Почему?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Поэтому в скрипте для подсчёта строк стоит grep -c &#x27;&#x27;."><span class="qz-mark" aria-hidden="true"></span><span>У последней строки нет символа перевода строки, а wc -l считает именно их</span></button><button type="button" class="qz-o" data-ok="0" data-why="Пустая строка всё равно содержит перевод строки и была бы посчитана."><span class="qz-mark" aria-hidden="true"></span><span>Одна строка пустая</span></button><button type="button" class="qz-o" data-ok="0" data-why="Умеет."><span class="qz-mark" aria-hidden="true"></span><span>wc не умеет файлы больше 1 МБ</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="23"><div class="qz-q">Строка «logrotate: ALERT exited abnormally with [1]» каждую ночь в 04:0x. Что это?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="Слово в тексте сообщения — не вердикт."><span class="qz-mark" aria-hidden="true"></span><span>Признак атаки, раз в тексте ALERT</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. Регулярность, программа и документация logrotate это подтверждают."><span class="qz-mark" aria-hidden="true"></span><span>Отчёт ежедневного задания ротации логов о собственной ошибке — FP для безопасности, задача для админа</span></button><button type="button" class="qz-o" data-ok="0" data-why="Перезагрузку видно по десяткам строк kernel, а не по logrotate."><span class="qz-mark" aria-hidden="true"></span><span>Перезагрузка сервера</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="24"><div class="qz-q">Почему ~/.bash_history — плохая улика?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="Владелец читает свою историю спокойно."><span class="qz-mark" aria-hidden="true"></span><span>Её нельзя прочитать без root</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. Надёжнее системные журналы: auth.log, journald, auditd."><span class="qz-mark" aria-hidden="true"></span><span>Пользователь её правит, команды с пробелом в начале могут не записываться, а без HISTTIMEFORMAT нет времени</span></button><button type="button" class="qz-o" data-ok="0" data-why="У bash она своя, по умолчанию ~/.bash_history."><span class="qz-mark" aria-hidden="true"></span><span>Она пишется только в zsh</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="25"><div class="qz-q">Что значит строка cron «22 4 * * 0 /usr/local/bin/weekly.sh»?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="Первое поле — минуты, второе — часы."><span class="qz-mark" aria-hidden="true"></span><span>Каждый день в 22:04</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. 0 и 7 в последнем поле — воскресенье."><span class="qz-mark" aria-hidden="true"></span><span>По воскресеньям в 04:22</span></button><button type="button" class="qz-o" data-ok="0" data-why="Третье и четвёртое поля здесь — звёздочки."><span class="qz-mark" aria-hidden="true"></span><span>22 апреля в полночь</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="26"><div class="qz-q">systeminfo, tasklist и netstat от пользователя бухгалтерии за 40 секунд. Правильный первый шаг?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="Без контекста это поспешно: так делает и helpdesk по телефону."><span class="qz-mark" aria-hidden="true"></span><span>Сразу эскалировать как атаку</span></button><button type="button" class="qz-o" data-ok="0" data-why="Обычные команды в необычном контексте и есть то, что ищут."><span class="qz-mark" aria-hidden="true"></span><span>Закрыть как FP: это обычные команды</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. Контекст решает, норма это или Discovery (T1082, T1057, T1049)."><span class="qz-mark" aria-hidden="true"></span><span>Проверить родителя, тикеты helpdesk и что было на хосте до этого</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="27"><div class="qz-q">Почему в Германии полное логирование командных строк сотрудников может требовать согласия Betriebsrat?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Иногда данных в SIEM нет не по ошибке, а по соглашению."><span class="qz-mark" aria-hidden="true"></span><span>Это техническое средство, пригодное для контроля поведения работников, — § 87 Abs. 1 Nr. 6 BetrVG</span></button><button type="button" class="qz-o" data-ok="0" data-why="DSGVO регулирует обработку персональных данных, но право соучастия даёт BetrVG."><span class="qz-mark" aria-hidden="true"></span><span>Так требует DSGVO в любой фирме</span></button><button type="button" class="qz-o" data-ok="0" data-why="§ 87 BetrVG касается предприятий с Betriebsrat."><span class="qz-mark" aria-hidden="true"></span><span>Только для государственных учреждений</span></button></div><div class="qz-why" role="status"></div></div>
+<h1 id="s47" class="anchored">Практика</h1>
+<p>Всё делается на Mac с M1, без виртуалок. Данные настоящие, числа можно проверить.</p>
+<h2 id="s48">Задание 1. Пересчитай журнал сам (20 мин)</h2>
+<p>Скачай <code>Linux_2k.log</code> (команда в главе 3) и без подсказок получи:</p>
+<ol>
+<li>число строк двумя способами и объясни разницу;</li>
+<li>топ-5 программ;</li>
+<li>сколько раз за журнал запускался <code>cupsd</code>;</li>
+<li>в какой час чаще всего пишет <code>ftpd</code>;</li>
+<li>сколько раз открывалась сессия <code>su</code> для каждой учётки.</li>
+</ol>
+<details>
+<summary>Ответы для самопроверки</summary>
+
+1. `grep -c ''` → 2000, `wc -l` → 1999 (нет финального перевода строки).
+2. ftpd 916, sshd(pam_unix) 677, su(pam_unix) 172, kernel 76, klogind 46.
+3. 6 раз (`grep -c "cupsd startup"`), все по воскресеньям около 04:0x–04:20.
+4. В 23 часа — 110 строк (`grep ftpd … | awk '{split($3,t,":"); print t[1]}' | sort | uniq -c | sort -rn`).
+5. cyrus — 43, news — 43 (`grep "su(pam_unix)" | grep "session opened" | grep -o "for user [a-z]*" | sort | uniq -c`). Без `session opened` получится по 86: каждая сессия даёт строку открытия и строку закрытия.
+</details>
+
+<h2 id="s49">Задание 2. Свой скрипт для рутины (30 мин)</h2>
+<ol>
+<li>Сохрани <code>nightcheck.sh</code> из главы 3, сделай исполняемым, запусти на <code>Linux_2k.log</code>. На Mac должно получиться то же, что в учебнике.</li>
+<li>Добавь четвёртый блок: «сессии su по учёткам» (ожидаемо cyrus 43, news 43).</li>
+<li>Добавь третий необязательный аргумент — час (например, <code>04</code>). Тогда скрипт показывает строки только за этот час. Подсказка: <code>awk -v h="$3" '...'</code>.</li>
+<li>Запусти скрипт без аргументов и с несуществующим файлом. Проверь коды возврата через <code>echo $?</code>.</li>
+</ol>
+<h2 id="s50">Задание 3. PowerShell на Mac: объекты вместо текста (40 мин)</h2>
+<p>Поставь PowerShell 7 (пакет <code>.pkg</code> со страницы релизов, раздел «Копнуть глубже» в главе 2) и запусти <code>pwsh</code>.</p>
+<pre><code class="language-powershell">Get-Process | Sort-Object CPU -Descending | Select-Object -First 5 Name, Id, CPU
+Get-Process | Get-Member -MemberType Property | Select-Object -First 15 Name
+Get-ChildItem ~/Downloads -File | Where-Object Length -gt 10MB | Sort-Object Length -Descending
+</code></pre>
+<p>Потом то же, что в задании 1, но объектами. Рядом с журналом в loghub лежит его разбор на поля — <code>Linux_2k.log_structured.csv</code>:</p>
+<pre><code class="language-powershell">Invoke-WebRequest https://raw.githubusercontent.com/logpai/loghub/master/Linux/Linux_2k.log_structured.csv -OutFile linux.csv
+Import-Csv linux.csv | Group-Object Component | Sort-Object Count -Descending | Select-Object -First 5 Count, Name
+</code></pre>
+<p>Ожидаемо — те же 916 / 677 / 172 / 76 / 46, что дал <code>awk</code>. Сравни, насколько проще, когда поля уже названы. И последнее: посчитай хэш любого файла двумя способами — <code>Get-FileHash файл</code> в pwsh и <code>shasum -a 256 файл</code> в обычном терминале. Хэш совпадёт, разница только в регистре букв.</p>
+<h2 id="s51">Задание 4. Очередь триажа (20 мин)</h2>
+<p>Четыре учебных алерта. Поставь вердикт и только потом открывай разбор.</p>
+<div class="tr" data-t="29"><div class="tr-cap">Триаж — поставь вердикт</div><div class="tr-alert">Учебный алерт. «Новая служба» — FS-SRV02, служба «Veeam Backup Transport» установлена в 22:05, учётка svc-backup. В календаре изменений на этот вечер — обновление агента резервного копирования.</div><div class="tr-btns"><button type="button" class="tr-b" data-k="TP">Подтверждено</button><button type="button" class="tr-b" data-k="FP">Ложное срабатывание</button><button type="button" class="tr-b" data-k="DIG">Нужно копать</button></div><div class="tr-out" data-k="TP"><b>Подтверждено</b>Нет оснований: имя, учётка и время совпадают с плановым изменением.</div><div class="tr-out" data-k="FP"><b>Ложное срабатывание</b>Да, это ожидаемая активность (benign). Закрыть со ссылкой на номер Change. Для полноты проверить путь исполняемого файла службы: он должен лежать в папке продукта в Program Files.</div><div class="tr-out" data-k="DIG"><b>Нужно копать</b>Можно копнуть, если путь файла службы странный (Temp, ProgramData, папка пользователя) или учётка не та, что в Change. При совпадении — не нужно.</div></div>
+<div class="tr" data-t="30"><div class="tr-cap">Триаж — поставь вердикт</div><div class="tr-alert">Учебный алерт. На DC01 обнаружен процесс lsass.exe с путём C:\Windows\Temp\lsass.exe, родитель — cmd.exe.</div><div class="tr-btns"><button type="button" class="tr-b" data-k="TP">Подтверждено</button><button type="button" class="tr-b" data-k="FP">Ложное срабатывание</button><button type="button" class="tr-b" data-k="DIG">Нужно копать</button></div><div class="tr-out" data-k="TP"><b>Подтверждено</b>Правильно: это грубое нарушение нормы. Настоящий lsass.exe один, лежит в System32, родитель — wininit.exe. Немедленная эскалация в L2 по высокому приоритету: хост, путь, PID, родитель, хэш. Сам ничего не убиваешь и не удаляешь.</div><div class="tr-out" data-k="FP"><b>Ложное срабатывание</b>Нет. Ни одна легитимная программа не кладёт lsass.exe в Temp.</div><div class="tr-out" data-k="DIG"><b>Нужно копать</b>Копать здесь — значит терять время. Сначала эскалация, потом дополнительные проверки.</div></div>
+<div class="tr" data-t="31"><div class="tr-cap">Триаж — поставь вердикт</div><div class="tr-alert">Учебный алерт. Правило «выход PowerShell в интернет» — WS-IT03, учётка adm-weber, Get-NetTCPConnection в EDR показывает pwsh.exe → 203.0.113.50:443. Тикетов на этого пользователя нет.</div><div class="tr-btns"><button type="button" class="tr-b" data-k="TP">Подтверждено</button><button type="button" class="tr-b" data-k="FP">Ложное срабатывание</button><button type="button" class="tr-b" data-k="DIG">Нужно копать</button></div><div class="tr-out" data-k="TP"><b>Подтверждено</b>Рано. Админ с PowerShell в интернете — обычное дело (модули, обновления).</div><div class="tr-out" data-k="FP"><b>Ложное срабатывание</b>Тоже рано: тикета нет, адрес неизвестен.</div><div class="tr-out" data-k="DIG"><b>Нужно копать</b>Да. Обогатить 203.0.113.50 (чей адрес, встречался ли раньше в логах компании), посмотреть событие 4104 — какую команду выполнял pwsh, и спросить у команды ИТ, работает ли adm-weber сейчас. Install-Module из PowerShell Gallery — закрыть как benign. Непонятная загрузка и запуск — эскалировать.</div></div>
+<div class="tr" data-t="32"><div class="tr-cap">Триаж — поставь вердикт</div><div class="tr-alert">Учебный алерт. Linux-сервер app-lnx04: новое задание в /etc/cron.d/ с именем sysupdate, запускает /dev/shm/.u каждые 5 минут, создано в 15:42, тикетов нет.</div><div class="tr-btns"><button type="button" class="tr-b" data-k="TP">Подтверждено</button><button type="button" class="tr-b" data-k="FP">Ложное срабатывание</button><button type="button" class="tr-b" data-k="DIG">Нужно копать</button></div><div class="tr-out" data-k="TP"><b>Подтверждено</b>Да, это эскалация. Сразу три признака вне нормы: задание без тикета, исполняемый файл в /dev/shm (память, не диск), скрытое имя с точкой. Передай L2: путь задания, его содержимое, время создания, хэш файла, если он ещё есть. В ATT&amp;CK это закрепление через T1053.003.</div><div class="tr-out" data-k="FP"><b>Ложное срабатывание</b>Нет: легитимные пакеты не кладут бинарники в /dev/shm.</div><div class="tr-out" data-k="DIG"><b>Нужно копать</b>Детали добирает L2. Твоя задача — быстро и полно эскалировать.</div></div>
+<h2 id="s52">Задание 5. Отчёт по-немецки (20 мин)</h2>
+<p>Напиши короткий отчёт по тикету lnx-files01 по схеме <strong>Was → Wann (с часовым поясом) → Woher → Auswirkung → Empfehlung</strong>. Пять–семь предложений.</p>
+<details>
+<summary>Образец</summary>
+
+**Was:** Die SIEM-Regel „ALERT im Syslog" hat auf lnx-files01 ausgelöst. Die Meldung stammt von logrotate: „ALERT exited abnormally with [1]".
+**Wann:** Täglich zwischen 04:04 und 04:20 Uhr Serverzeit (Zeitzone im Log nicht angegeben, laut CMDB MEZ/MESZ), 43-mal in 44 Tagen.
+**Woher:** Lokaler Prozess logrotate, gestartet durch den täglichen Cronjob unter root. Keine externe Quelle.
+**Auswirkung:** Kein Sicherheitsvorfall (False Positive). Betrieblich: Die Logrotation schlägt jede Nacht fehl – Risiko, dass sich das Dateisystem füllt.
+**Empfehlung:** Regel-Tuning (logrotate ausschließen bzw. nach konkreten Ereignissen suchen); Ticket an den Betrieb zur Prüfung der Logrotation.
+</details>
+
+<h1 id="s53" class="anchored">Шпаргалка</h1>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Задача</th>
+<th>cmd</th>
+<th>PowerShell</th>
+<th>bash</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Где я, кто я</td>
+<td><code>hostname</code>, <code>whoami</code></td>
+<td><code>$env:COMPUTERNAME</code>, <code>whoami</code></td>
+<td><code>hostname</code>, <code>whoami</code>, <code>id</code></td>
+</tr>
+<tr>
+<td>Паспорт системы</td>
+<td><code>systeminfo \| more</code></td>
+<td><code>Get-ComputerInfo</code></td>
+<td><code>uname -a</code>, <code>cat /etc/os-release</code></td>
+</tr>
+<tr>
+<td>Сеть и адреса</td>
+<td><code>ipconfig</code></td>
+<td><code>Get-NetIPConfiguration</code></td>
+<td><code>ip a</code></td>
+</tr>
+<tr>
+<td>Соединения + PID</td>
+<td><code>netstat -ano</code></td>
+<td><code>Get-NetTCPConnection</code> + <code>Get-Member</code></td>
+<td><code>ss -tunap</code></td>
+</tr>
+<tr>
+<td>Процессы</td>
+<td><code>tasklist /v</code>, <code>/fi</code></td>
+<td><code>Get-Process</code></td>
+<td><code>ps aux</code></td>
+</tr>
+<tr>
+<td>Службы</td>
+<td><code>tasklist /svc</code></td>
+<td><code>Get-Service</code></td>
+<td><code>systemctl list-units --type=service</code></td>
+</tr>
+<tr>
+<td>Файлы в папке</td>
+<td><code>dir /a</code></td>
+<td><code>Get-ChildItem -Force</code></td>
+<td><code>ls -la</code></td>
+</tr>
+<tr>
+<td>Показать файл</td>
+<td><code>type</code></td>
+<td>найди через <code>Get-Alias type</code></td>
+<td><code>cat</code>, <code>less</code></td>
+</tr>
+<tr>
+<td>Найти текст</td>
+<td><code>findstr</code></td>
+<td><code>Select-String</code></td>
+<td><code>grep</code></td>
+</tr>
+<tr>
+<td>Хэш файла</td>
+<td><code>certutil -hashfile f SHA256</code></td>
+<td><code>Get-FileHash</code></td>
+<td><code>sha256sum</code> / на Mac <code>shasum -a 256</code></td>
+</tr>
+<tr>
+<td>Журналы</td>
+<td><code>wevtutil qe</code></td>
+<td><code>Get-WinEvent -FilterHashtable</code></td>
+<td><code>journalctl</code>, <code>/var/log/*</code></td>
+</tr>
+<tr>
+<td>Справка</td>
+<td><code>команда /?</code>, <code>help</code></td>
+<td><code>Get-Help … -Examples</code></td>
+<td><code>man</code>, <code>--help</code></td>
+</tr>
+<tr>
+<td>Посчитать по полю</td>
+<td>—</td>
+<td><code>Group-Object</code></td>
+<td><code>sort \| uniq -c \| sort -rn</code></td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Правила смены:</strong> только чтение · <code>-n</code> у netstat · фильтруй у источника · свойство не угадывай, а спрашивай <code>Get-Member</code> · переменные bash в кавычках · <code>sort</code> перед <code>uniq</code> · слово в логе не вердикт · сначала ритм, потом выбросы · свои команды на хосте записывай в тикет · убить, удалить, изолировать — не L1.</p>
+<p><strong>Норма Windows:</strong> lsass, services, wininit — по одному; всё в System32, explorer — в <code>C:\Windows</code>; svchost ← services, lsass ← wininit.</p>
+<hr />
+<h1 id="s54" class="anchored">Источники</h1>
+<p>Все ссылки проверены при сборке учебника. Где факт не удалось подтвердить первоисточником, это отмечено прямо в тексте.</p>
+<ol>
+<li>TryHackMe, Windows Command Line (windowscommandline), 45 мин — https://tryhackme.com/room/windowscommandline (проверено 28.10.2026)</li>
+<li>TryHackMe, Windows PowerShell (windowspowershell), 60 мин — https://tryhackme.com/room/windowspowershell (проверено 28.10.2026)</li>
+<li>TryHackMe, Linux Shells (linuxshells), 45 мин — https://tryhackme.com/room/linuxshells (проверено 28.10.2026)</li>
+<li>Microsoft Learn, справочник команд Windows — https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/windows-commands (проверено 17.09.2026)</li>
+<li>Microsoft Learn, команда netstat (параметр -b показывает исполняемый файл соединения) — https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/netstat (проверено 17.09.2026)</li>
+<li>man 8 ss — утилита из пакета iproute2 («investigate sockets») — https://man7.org/linux/man-pages/man8/ss.8.html (проверено 17.09.2026)</li>
+<li>Microsoft Learn, команда tasklist (фильтры /fi и операторы eq, ne, gt, lt, ge, le) — https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/tasklist (проверено 28.10.2026)</li>
+<li>Microsoft Learn, команда sfc (/scannow, /verifyonly; нужны права администратора) — https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/sfc (проверено 28.10.2026)</li>
+<li>Microsoft Learn, Event 4688 и Audit Process Creation — https://learn.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4688 (проверено 16.09.2026)</li>
+<li>Microsoft Sysinternals, Sysmon — https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon (проверено 16.09.2026)</li>
+<li>Microsoft Learn, about_Pipelines («objects sent down the pipeline are delivered one at a time») — https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_pipelines (проверено 28.10.2026)</li>
+<li>Microsoft Learn, Get-WinEvent (и предупреждение о Get-EventLog) — https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.diagnostics/get-winevent (проверено 16.09.2026)</li>
+<li>Microsoft Learn, Get-NetTCPConnection (модуль NetTCPIP) — https://learn.microsoft.com/en-us/powershell/module/nettcpip/get-nettcpconnection (проверено 28.10.2026)</li>
+<li>Microsoft Learn, Get-FileHash (по умолчанию SHA256) — https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/get-filehash (проверено 28.10.2026)</li>
+<li>Microsoft Learn, about_Execution_Policies («isn't a security boundary, it's defense in depth») — https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies (проверено 28.10.2026)</li>
+<li>Microsoft Learn, Installation and configuration for Windows Remote Management — порты 5985 (HTTP) и 5986 (HTTPS) — https://learn.microsoft.com/en-us/windows/win32/winrm/installation-and-configuration-for-windows-remote-management (проверено 28.10.2026)</li>
+<li>Microsoft Learn, about_Remote_Requirements — удалённое управление PowerShell включено по умолчанию на Windows Server 2012+ — https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_remote_requirements (проверено 28.10.2026)</li>
+<li>MITRE CAR-2014-11-004, Remote PowerShell Sessions (процесс wsmprovhost.exe на целевом хосте) — https://car.mitre.org/analytics/CAR-2014-11-004/ (проверено 28.10.2026)</li>
+<li>MITRE ATT&amp;CK T1021.006, Remote Services: Windows Remote Management — https://attack.mitre.org/techniques/T1021/006/ (проверено 28.10.2026)</li>
+<li>Microsoft Learn, about_Logging_Windows — Script Block Logging, событие 4104 — https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_logging_windows (проверено 28.10.2026)</li>
+<li>Microsoft Learn, Installing PowerShell on macOS (пакеты Arm64; Homebrew официально не поддерживается) — https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-macos (проверено 28.10.2026)</li>
+<li>Microsoft Learn, Get-EventLog — предупреждение об устаревшем Win32 API и рекомендация Get-WinEvent — https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/get-eventlog (проверено 27.09.2026)</li>
+<li>loghub (logpai), публичные логи реальных систем — https://github.com/logpai/loghub (проверено 16.09.2026)</li>
+<li>man 5 shells — /etc/shells (man7.org) — https://man7.org/linux/man-pages/man5/shells.5.html (проверено 28.10.2026)</li>
+<li>GNU Bash Reference Manual, Bash Variables (HISTFILE, HISTSIZE, HISTCONTROL, HISTTIMEFORMAT) — https://www.gnu.org/software/bash/manual/html_node/Bash-Variables.html (проверено 28.10.2026)</li>
+<li>MITRE ATT&amp;CK T1552.003, Unsecured Credentials: Shell History — https://attack.mitre.org/techniques/T1552/003/ (проверено 28.10.2026)</li>
+<li>MITRE ATT&amp;CK T1070.003, Indicator Removal: Clear Command History (тактика Stealth) — https://attack.mitre.org/techniques/T1070/003/ (проверено 28.10.2026)</li>
+<li>Apple Open Source, man-страницы text_cmds (sed, grep, cut) и shell_cmds (date) — https://raw.githubusercontent.com/apple-oss-distributions/text_cmds/main/sed/sed.1 (проверено 16.09.2026)</li>
+<li>man 8 logrotate — «Normally, logrotate is run as a daily cron job» (man7.org) — https://man7.org/linux/man-pages/man8/logrotate.8.html (проверено 28.10.2026)</li>
+<li>Red Hat Customer Portal, статья 39006 «I am getting 'logrotate: ALERT exited abnormally with [1]' messages in logs…» (виден только заголовок, текст за логином) — https://access.redhat.com/solutions/39006 (проверено 28.10.2026)</li>
+<li>man 5 crontab — формат расписания cron (man7.org) — https://man7.org/linux/man-pages/man5/crontab.5.html (проверено 28.10.2026)</li>
+<li>MITRE ATT&amp;CK T1053.003, Scheduled Task/Job: Cron — https://attack.mitre.org/techniques/T1053/003/ (проверено 28.10.2026)</li>
+<li>SANS DFIR, постер «Hunt Evil» (PDF 2018; страница постера обновлена 10.06.2024) — https://www.sans.org/posters/hunt-evil (проверено 28.10.2026)</li>
+<li>MITRE ATT&amp;CK Enterprise v20.0 (13.10.2026) — сверка ID по выжимке STIX в репозитории thm-polka — https://github.com/mitre-attack/attack-stix-data (проверено 28.10.2026)</li>
+<li>MITRE ATT&amp;CK T1082, System Information Discovery — https://attack.mitre.org/techniques/T1082/ (проверено 28.10.2026)</li>
+<li>MITRE ATT&amp;CK T1057, Process Discovery — https://attack.mitre.org/techniques/T1057/ (проверено 28.10.2026)</li>
+<li>MITRE ATT&amp;CK T1016, System Network Configuration Discovery — https://attack.mitre.org/techniques/T1016/ (проверено 28.09.2026)</li>
+<li>MITRE ATT&amp;CK T1049, System Network Connections Discovery — https://attack.mitre.org/techniques/T1049/ (проверено 28.09.2026)</li>
+<li>MITRE ATT&amp;CK T1007, System Service Discovery — https://attack.mitre.org/techniques/T1007/ (проверено 28.10.2026)</li>
+<li>MITRE ATT&amp;CK T1033, System Owner/User Discovery — https://attack.mitre.org/techniques/T1033/ (проверено 28.10.2026)</li>
+<li>MITRE ATT&amp;CK T1059.003, Windows Command Shell — https://attack.mitre.org/techniques/T1059/003/ (проверено 28.10.2026)</li>
+<li>MITRE ATT&amp;CK T1059.001, PowerShell — https://attack.mitre.org/techniques/T1059/001/ (проверено 28.10.2026)</li>
+<li>MITRE ATT&amp;CK T1059.004, Unix Shell — https://attack.mitre.org/techniques/T1059/004/ (проверено 28.10.2026)</li>
+<li>BetrVG § 87 — права Betriebsrat на соучастие, в т.ч. Abs. 1 Nr. 6 (технические средства контроля) — https://www.gesetze-im-internet.de/betrvg/__87.html (проверено 17.09.2026)</li>
+<li>BSI, пресс-релиз «Cybersicherheitsrecht: NIS-2-Umsetzungsgesetz ab morgen in Kraft», 05.12.2025 — https://www.bsi.bund.de/DE/Service-Navi/Presse/Pressemitteilungen/Presse2025/251205_NIS-2-Umsetzungsgesetz_in_Kraft.html (проверено 16.09.2026)</li>
+<li>DSGVO, ст. 33 — уведомление надзорного органа о нарушении защиты данных (72 часа) — https://dsgvo-gesetz.de/art-33-dsgvo/ (проверено 17.09.2026)</li>
+</ol>
+<h1 id="s55" class="anchored">Отзыв</h1>
+<p>Три вопроса, ответь в чате одной-двумя строками на каждый:</p>
+<ol>
+<li>Что зашло больше всего и что хочется видеть чаще?</li>
+<li>Что было лишним, скучным или слишком очевидным?</li>
+<li>Где пришлось перечитывать по два раза — сложная тема или неудачное объяснение?</li>
+</ol>
+<p>И четвёртый, про этот учебник: хватило ли «нормы» вместо разборов атак, или для SOC L1 хочется хотя бы учебных примеров того, как выглядит отклонение?</p>
+  </main>
+</div>
+
+<button id="totop" aria-label="Наверх">↑</button>
+
+<script>
+(function(){
+  "use strict";
+  var LS={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},
+          set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+
+  /* theme */
+  var root=document.documentElement;
+  var saved=LS.get("thm-theme");
+  if(saved==="dark"||saved==="light")root.setAttribute("data-theme",saved);
+  document.getElementById("themebtn").addEventListener("click",function(){
+    var isDark=root.getAttribute("data-theme")==="dark"||
+      (!root.hasAttribute("data-theme")&&window.matchMedia("(prefers-color-scheme: dark)").matches);
+    var next=isDark?"light":"dark";
+    root.setAttribute("data-theme",next);LS.set("thm-theme",next);
+  });
+
+  /* font size */
+  var fs=parseInt(LS.get("thm-fs")||"17",10);
+  if(isNaN(fs))fs=17;
+  function applyFs(){root.style.setProperty("--fs",fs+"px");LS.set("thm-fs",String(fs));}
+  applyFs();
+  document.getElementById("fsup").addEventListener("click",function(){fs=Math.min(fs+1,23);applyFs();});
+  document.getElementById("fsdown").addEventListener("click",function(){fs=Math.max(fs-1,14);applyFs();});
+
+  /* copy buttons */
+  Array.prototype.forEach.call(document.querySelectorAll("pre"),function(pre){
+    var b=document.createElement("button");
+    b.className="copy";b.type="button";b.textContent="копировать";
+    b.addEventListener("click",function(){
+      var t=pre.querySelector("code")?pre.querySelector("code").innerText:pre.innerText;
+      if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){
+        b.textContent="скопировано";setTimeout(function(){b.textContent="копировать";},1400);
+      });}
+    });
+    pre.appendChild(b);
+  });
+
+  /* field breakdown */
+  Array.prototype.forEach.call(document.querySelectorAll(".fb"),function(fb){
+    var out=fb.querySelector(".fb-out");
+    var def=out.innerHTML;
+    function show(el){
+      Array.prototype.forEach.call(fb.querySelectorAll(".fld"),function(f){f.classList.remove("on");});
+      el.classList.add("on");
+      out.innerHTML="<b>"+el.getAttribute("data-k")+"</b>"+el.getAttribute("data-d");
+    }
+    fb.addEventListener("mouseover",function(e){var t=e.target.closest(".fld");if(t)show(t);});
+    fb.addEventListener("focusin",function(e){var t=e.target.closest(".fld");if(t)show(t);});
+    fb.addEventListener("click",function(e){var t=e.target.closest(".fld");if(t)show(t);});
+    fb.addEventListener("mouseleave",function(){
+      if(!fb.contains(document.activeElement)){
+        Array.prototype.forEach.call(fb.querySelectorAll(".fld"),function(f){f.classList.remove("on");});
+        out.innerHTML=def;
+      }
+    });
+  });
+
+  /* read marks */
+  var heads=Array.prototype.slice.call(document.querySelectorAll("main h2, main h1.anchored"));
+  var doneSet={};
+  try{doneSet=JSON.parse(LS.get("thm-done-01")||"{}")||{};}catch(e){doneSet={};}
+  function pct(){
+    var n=0;for(var i=0;i<heads.length;i++){if(doneSet[heads[i].id])n++;}
+    var p=heads.length?Math.round(n*100/heads.length):0;
+    document.getElementById("readpct").textContent=p+"% прочитано";
+  }
+  heads.forEach(function(h){
+    var txt=h.innerHTML;
+    h.innerHTML="";
+    var b=document.createElement("button");
+    b.className="mark";b.type="button";
+    b.setAttribute("aria-label","Отметить раздел прочитанным");
+    b.setAttribute("aria-pressed",doneSet[h.id]?"true":"false");
+    if(doneSet[h.id])h.classList.add("done");
+    var s=document.createElement("span");s.className="h2t";s.innerHTML=txt;
+    h.appendChild(b);h.appendChild(s);
+    b.addEventListener("click",function(){
+      if(doneSet[h.id]){delete doneSet[h.id];b.setAttribute("aria-pressed","false");h.classList.remove("done");}
+      else{doneSet[h.id]=1;b.setAttribute("aria-pressed","true");h.classList.add("done");}
+      LS.set("thm-done-01",JSON.stringify(doneSet));pct();
+    });
+  });
+  pct();
+
+  /* toc drawer */
+  var toc=document.getElementById("toc"),mb=document.getElementById("menubtn"),scrim=null;
+  function closeDrawer(){toc.classList.remove("open");mb.setAttribute("aria-expanded","false");
+    if(scrim){scrim.remove();scrim=null;}}
+  mb.addEventListener("click",function(){
+    if(toc.classList.contains("open")){closeDrawer();return;}
+    toc.classList.add("open");mb.setAttribute("aria-expanded","true");
+    scrim=document.createElement("div");scrim.id="scrim";
+    scrim.addEventListener("click",closeDrawer);document.body.appendChild(scrim);
+  });
+  toc.addEventListener("click",function(e){if(e.target.tagName==="A")closeDrawer();});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")closeDrawer();});
+
+  /* progress + active toc + to top */
+  var links=Array.prototype.slice.call(toc.querySelectorAll("a"));
+  var bar=document.querySelector("#pbar i"),top=document.getElementById("totop");
+  top.addEventListener("click",function(){window.scrollTo({top:0,behavior:"smooth"});});
+  var ticking=false;
+  function onScroll(){
+    if(ticking)return;ticking=true;
+    window.requestAnimationFrame(function(){
+      var h=document.documentElement.scrollHeight-window.innerHeight;
+      var p=h>0?Math.min(100,Math.max(0,window.scrollY*100/h)):0;
+      bar.style.width=p+"%";
+      top.classList.toggle("show",window.scrollY>600);
+      var cur=null;
+      for(var i=0;i<heads.length;i++){if(heads[i].getBoundingClientRect().top<120)cur=heads[i].id;}
+      links.forEach(function(a){a.classList.toggle("on",a.getAttribute("href")==="#"+cur);});
+      ticking=false;
+    });
+  }
+  window.addEventListener("scroll",onScroll,{passive:true});
+  window.addEventListener("resize",onScroll);
+  onScroll();
+})();
+</script>
+
+<style>
+.qz{margin:1.3em 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 15px}
+.qz-q{font-weight:600;margin-bottom:11px;line-height:1.5}
+.qz-opts{display:flex;flex-direction:column;gap:7px}
+.qz-o{display:flex;gap:9px;align-items:flex-start;text-align:left;font:inherit;font-size:.93rem;
+  color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:9px 11px;cursor:pointer}
+.qz-o:hover{border-color:var(--accent)}
+.qz-mark{flex:none;width:17px;height:17px;border:1.5px solid var(--line);border-radius:50%;margin-top:2px}
+.qz-o.ok .qz-mark{border-color:#1c8a4a;background:#1c8a4a}
+.qz-o.no .qz-mark{border-color:#c2432f;background:#c2432f}
+.qz-o.ok{border-color:#1c8a4a}.qz-o.no{border-color:#c2432f}
+.qz-o[disabled]{cursor:default;opacity:.95}
+.qz-why{display:none;margin-top:11px;padding-top:11px;border-top:1px solid var(--line);font-size:.9rem;line-height:1.55}
+.qz-why.show{display:block}
+.qz-why b{display:block;font-size:.76rem;letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px}
+.qz-why.good b{color:#1c8a4a}.qz-why.bad b{color:#c2432f}
+.tr{margin:1.4em 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.tr-cap{font-family:var(--sans);font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+  padding:9px 14px;border-bottom:1px solid var(--line)}
+.tr-alert{padding:12px 14px;font-family:var(--mono);font-size:.82rem;line-height:1.7}
+.tr-btns{display:flex;flex-wrap:wrap;gap:8px;padding:0 14px 13px}
+.tr-b{font:inherit;font-size:.87rem;color:inherit;background:var(--bg);border:1px solid var(--line);
+  border-radius:8px;padding:8px 13px;cursor:pointer}
+.tr-b:hover{border-color:var(--accent);color:var(--accent)}
+.tr-b.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
+.tr-out{display:none;border-top:1px solid var(--line);padding:12px 14px;font-size:.9rem;line-height:1.6}
+.tr-out.on{display:block}
+.tr-out b{display:block;font-size:.76rem;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.ck{margin:1.5em 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:13px 15px 15px}
+.ck-cap{font-family:var(--sans);font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.ck-list{display:flex;flex-direction:column;gap:3px}
+.ck-i{display:flex;gap:9px;align-items:center;text-align:left;font:inherit;font-size:.9rem;color:inherit;
+  background:none;border:0;padding:5px 2px;cursor:pointer;border-radius:6px}
+.ck-i:hover{color:var(--accent)}
+.ck-box{flex:none;width:15px;height:15px;border:1.5px solid var(--line);border-radius:4px;position:relative}
+.ck-i.on .ck-box{border-color:var(--accent);background:var(--accent)}
+.ck-i.on .ck-box::after{content:"";position:absolute;left:4px;top:1px;width:4px;height:8px;
+  border:solid #fff;border-width:0 1.8px 1.8px 0;transform:rotate(42deg)}
+.ck-i.on span:last-child{opacity:.55;text-decoration:line-through}
+.ck-bar{height:4px;background:var(--line);border-radius:3px;margin:11px 0 6px;overflow:hidden}
+.ck-bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .18s}
+.ck-n{font-family:var(--sans);font-size:.75rem;color:var(--muted)}
+.kc{margin:1.5em 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.kc-cap{font-family:var(--sans);font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+  padding:9px 14px;border-bottom:1px solid var(--line)}
+.kc-tabs{display:flex;overflow-x:auto;gap:6px;padding:11px 14px;border-bottom:1px solid var(--line)}
+.kc-t{flex:none;display:flex;align-items:center;gap:6px;font:inherit;font-size:.82rem;color:inherit;
+  background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:6px 12px;cursor:pointer;white-space:nowrap}
+.kc-t:hover{border-color:var(--accent);color:var(--accent)}
+.kc-t.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
+.kc-t .kc-n{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;
+  background:var(--line);color:var(--fg);font-size:.68rem;font-weight:600}
+.kc-t.on .kc-n{background:var(--accent);color:#fff}
+.kc-p{display:none;padding:13px 15px}
+.kc-p.on{display:block}
+.kc-what{font-size:.94rem;line-height:1.55;margin-bottom:10px}
+.kc-row{display:flex;gap:10px;font-size:.87rem;line-height:1.5;padding:5px 0;border-top:1px solid var(--line)}
+.kc-row b{flex:none;width:96px;font-size:.73rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);
+  font-weight:600;padding-top:2px}
+.kc figcaption{text-align:left;padding:0 15px 13px;margin-top:2px}
+@media (max-width:560px){.kc-row{flex-direction:column;gap:2px}.kc-row b{width:auto}}
+</style>
+
+<script>
+(function(){
+  // квизы
+  Array.prototype.forEach.call(document.querySelectorAll(".qz"), function(qz){
+    var why = qz.querySelector(".qz-why"), done = false;
+    Array.prototype.forEach.call(qz.querySelectorAll(".qz-o"), function(b){
+      b.addEventListener("click", function(){
+        if (done) return; done = true;
+        var ok = b.getAttribute("data-ok") === "1";
+        b.classList.add(ok ? "ok" : "no");
+        if (!ok) {
+          var right = qz.querySelector('.qz-o[data-ok="1"]');
+          if (right) right.classList.add("ok");
+        }
+        Array.prototype.forEach.call(qz.querySelectorAll(".qz-o"), function(x){ x.disabled = true; });
+        why.className = "qz-why show " + (ok ? "good" : "bad");
+        why.innerHTML = "<b>" + (ok ? "Верно" : "Не то") + "</b>" + b.getAttribute("data-why");
+      });
+    });
+  });
+  // триаж
+  Array.prototype.forEach.call(document.querySelectorAll(".tr"), function(tr){
+    Array.prototype.forEach.call(tr.querySelectorAll(".tr-b"), function(b){
+      b.addEventListener("click", function(){
+        var k = b.getAttribute("data-k");
+        Array.prototype.forEach.call(tr.querySelectorAll(".tr-b"), function(x){ x.classList.toggle("on", x === b); });
+        Array.prototype.forEach.call(tr.querySelectorAll(".tr-out"), function(o){
+          o.classList.toggle("on", o.getAttribute("data-k") === k);
+        });
+      });
+    });
+  });
+  // чеклист глав — состояние в переменной, без localStorage
+  Array.prototype.forEach.call(document.querySelectorAll(".ck"), function(ck){
+    var items = ck.querySelectorAll(".ck-i"), bar = ck.querySelector(".ck-bar i"),
+        num = ck.querySelector(".ck-n span"), state = {};
+    function paint(){
+      var n = 0; for (var k in state) if (state[k]) n++;
+      bar.style.width = (items.length ? (n / items.length * 100) : 0) + "%";
+      num.textContent = n;
+    }
+    Array.prototype.forEach.call(items, function(it){
+      it.addEventListener("click", function(ev){
+        var id = it.getAttribute("data-id");
+        if (ev.target.classList.contains("ck-box")) {
+          state[id] = !state[id]; it.classList.toggle("on", !!state[id]); paint(); return;
+        }
+        state[id] = !state[id]; it.classList.toggle("on", !!state[id]); paint();
+        var t = document.getElementById(id);
+        if (t && state[id]) t.scrollIntoView({behavior:"smooth", block:"start"});
+      });
+    });
+    paint();
+  });
+  // лента этапов
+  Array.prototype.forEach.call(document.querySelectorAll(".kc"), function(kc){
+    Array.prototype.forEach.call(kc.querySelectorAll(".kc-t"), function(t){
+      t.addEventListener("click", function(){
+        var i = t.getAttribute("data-i");
+        Array.prototype.forEach.call(kc.querySelectorAll(".kc-t"), function(x){ x.classList.toggle("on", x === t); });
+        Array.prototype.forEach.call(kc.querySelectorAll(".kc-p"), function(p){
+          p.classList.toggle("on", p.getAttribute("data-i") === i);
+        });
+      });
+    });
+  });
+})();
+</script>
+<!--thm-reader:start--><link rel="manifest" href="../manifest.webmanifest"><meta name="theme-color" content="#16212e"><script src="../assets/reader.js" defer></script><script>if('serviceWorker' in navigator)navigator.serviceWorker.register('../sw.js').catch(function(){});</script><!--thm-reader:end-->

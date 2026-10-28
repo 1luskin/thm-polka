@@ -103,6 +103,20 @@
   ]
  },
  {
+  "id": "cs101-cli",
+  "title": "Command Line",
+  "url": "books/cs101-cli.html",
+  "path": "02 Cyber Security 101",
+  "order": 4,
+  "rooms": "Windows Command Line, Windows PowerShell, Linux Shells",
+  "added": "2026-10-28",
+  "thm": [
+   "windowscommandline",
+   "windowspowershell",
+   "linuxshells"
+  ]
+ },
+ {
   "id": "x-offensive-intro",
   "title": "Offensive Security Intro",
   "url": "books/x-offensive-intro.html",

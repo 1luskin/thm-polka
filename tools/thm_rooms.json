@@ -34,5 +34,8 @@
  "windowsfundamentals1xbx": {"t": "Windows Fundamentals 1", "min": 30},
  "windowsfundamentals2x0x": {"t": "Windows Fundamentals 2", "min": 30},
  "windowsfundamentals3xzx": {"t": "Windows Fundamentals 3", "min": 30},
- "winadbasics": {"t": "Active Directory Basics", "min": null}
+ "winadbasics": {"t": "Active Directory Basics", "min": null},
+ "windowscommandline": {"t": "Windows Command Line", "min": 45},
+ "windowspowershell": {"t": "Windows PowerShell", "min": 60},
+ "linuxshells": {"t": "Linux Shells", "min": 45}
 }

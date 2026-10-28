@@ -133,6 +133,25 @@ def offensive():
     return frame("".join(b), 17)
 
 
-for name, fn in [("cs101-linux", linux), ("ps-06-web", web), ("ps-05-network", network), ("cs101-windows-ad", ad), ("cs101-01", cs101), ("ps-01-04", presec), ("x-offensive-intro", offensive)]:
+def cli():
+    b = []
+    wins = [(50, "cmd.exe", ["C:\\> systeminfo | more", "C:\\> netstat -ano", "C:\\> tasklist /svc"], "#5aa9e6"),
+            (430, "PowerShell", ["PS> Get-Process |", "    Sort-Object CPU -Desc |", "    Select -First 5"], GILT),
+            (810, "bash", ["$ grep ALERT syslog |", "  awk '{print $5}' |", "  sort | uniq -c"], GOOD)]
+    for x, title, lines, col in wins:
+        b.append(plate(x, 60, 340, 220, "#0c131b", "#2a3a4c", 14))
+        b.append(f'<rect x="{x}" y="60" width="340" height="36" rx="14" fill="#1a2634"/>')
+        b += [f'<circle cx="{x + 22 + i * 18}" cy="78" r="5" fill="{c}" opacity=".8"/>' for i, c in enumerate([BAD, GILT, GOOD])]
+        b.append(text(x + 170, 84, title, 17, MUT, "middle", mono=True, weight=500))
+        for i, ln in enumerate(lines):
+            b.append(text(x + 20, 135 + i * 34, ln, 18, col, mono=True, weight=500))
+        b.append(f'<line x1="{x + 170}" y1="285" x2="{600 + (x - 430) * 0.25:.0f}" y2="372" stroke="{col}" stroke-width="2.5" opacity=".6" marker-end="url(#ag)"/>')
+    b += [plate(500, 375, 200, 120), icon("analyst", 560, 385, 80, INK), text(600, 485, "ночная смена", 16, MUT, "middle")]
+    b += [icon("server", 190, 360, 90, MUT), text(235, 470, "PRN-SRV01", 16, MUT, "middle", mono=True, weight=500),
+          icon("server", 920, 360, 90, MUT), text(965, 470, "lnx-files01", 16, MUT, "middle", mono=True, weight=500)]
+    return frame("".join(b), 23)
+
+
+for name, fn in [("cs101-cli", cli), ("cs101-linux", linux), ("ps-06-web", web), ("ps-05-network", network), ("cs101-windows-ad", ad), ("cs101-01", cs101), ("ps-01-04", presec), ("x-offensive-intro", offensive)]:
     (OUT / f"{name}.svg").write_text(fn(), encoding="utf8")
     print(name, (OUT / f"{name}.svg").stat().st_size, "байт")
