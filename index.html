@@ -407,8 +407,9 @@ function hm(m){const h=Math.floor(m/60),r=m%60;return h?(r?`${h} ч ${r} мин`
 function times(b){
   const t=TM[b.id]; if(!t)return "";
   let thm="";
+  if(!t.rooms&&t.skip)thm=` <span class="thm-t">(комнаты на THM можно пропустить)</span>`;
   if(t.rooms){const n=`${t.rooms} ${TP.plural(t.rooms,"комната","комнаты","комнат")}`;
-    thm=t.thm?` <span class="thm-t" title="${t.unknown?`Сумма оценок THM; у ${t.unknown} ${TP.plural(t.unknown,"комнаты","комнат","комнат")} THM время не пишет`:"Сумма оценок времени со страниц комнат THM"}">(на THM ~${hm(t.thm)}${t.unknown?"+":""} · ${n})</span>`:` <span class="thm-t">(${n} на THM)</span>`}
+    thm=t.thm?` <span class="thm-t" title="${t.unknown?`Сумма оценок THM; у ${t.unknown} ${TP.plural(t.unknown,"комнаты","комнат","комнат")} THM время не пишет`:"Сумма оценок времени со страниц комнат THM"}">(на THM ~${hm(t.thm)}${t.unknown?"+":""} · ${n}${t.skip?`, ещё ${t.skip} можно пропустить`:""})</span>`:` <span class="thm-t">(${n} на THM)</span>`}
   return `<span class="meta times">📖 ~${hm(t.read)} чтения${thm}</span>`;
 }
 function card(b){

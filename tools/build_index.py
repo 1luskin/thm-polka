@@ -139,10 +139,12 @@ for b in books:
     chapters[b["id"]] = chapters_of(soup)
     root, secs = sections(soup)
     words = sum(len(s["text"].split()) for s in secs)
-    mins = [THM_ROOMS.get(r, {}).get("min") for r in b.get("thm", [])]
+    skip = set(b.get("thm_skip", []))  # комнаты, которые учебник советует пропустить: их время не считаем
+    mins = [THM_ROOMS.get(r, {}).get("min") for r in b.get("thm", []) if r not in skip]
     times[b["id"]] = {"words": words, "read": max(5, round(words / READ_WPM / 5) * 5),
                       "thm": sum(m for m in mins if m), "rooms": len(mins),
-                      "unknown": sum(1 for m in mins if not m)}
+                      "unknown": sum(1 for m in mins if not m),
+                      "skip": len([r for r in b.get("thm", []) if r in skip])}
     for s in secs:
         ref = {"book": b["id"], "sec": s["id"], "title": s["title"]}
         search.append({"b": b["id"], "s": s["id"], "t": s["title"], "x": s["text"][:20000]})
