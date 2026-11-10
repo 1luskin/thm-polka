@@ -85,7 +85,8 @@
    "linuxfundamentalspart1",
    "linuxfundamentalspart2",
    "linuxfundamentalspart3"
-  ]
+  ],
+  "thm_skip": []
  },
  {
   "id": "cs101-windows-ad",
