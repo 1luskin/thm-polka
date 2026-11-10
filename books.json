@@ -118,7 +118,8 @@
    "windowscommandline",
    "windowspowershell",
    "linuxshells"
-  ]
+  ],
+  "thm_skip": []
  },
  {
   "id": "x-offensive-intro",
