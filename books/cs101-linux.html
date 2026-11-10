@@ -362,7 +362,7 @@ find /tmp -mmin -60              # что менялось в /tmp за посл
 <p>Где ошибаются новички: на маке пишут <code>find -name "*.log"</code> без пути, как иногда можно в Linux, и получают ошибку. В BSD-версии find на маке путь обязателен [6, 7]. Пиши путь всегда, хоть <code>.</code> — тогда команда работает везде.</p>
 <h2 id="s11">Операторы: &amp;, &amp;&amp;, &gt;, &gt;&gt;, |</h2>
 <p>Зачем: из маленьких команд собирают одну большую. Так за одну строку получается «топ атакующих IP».</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Оператор</th>
@@ -403,7 +403,7 @@ find /tmp -mmin -60              # что менялось в /tmp за посл
 <td>твой главный инструмент на каждой смене</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Пайп — главное [3]. Вот «топ атакующих» из четырёх команд:</p>
 <pre><code class="language-bash">grep &quot;Failed password&quot; OpenSSH_2k.log | grep -oE &quot;from [0-9.]+&quot; | sort | uniq -c | sort -rn | head -3
 </code></pre>
@@ -460,7 +460,7 @@ grep -c &quot;Accepted&quot; OpenSSH_2k.log                   # 1 удачный
 <li><em>«Es gab genau einen erfolgreichen Login, den prüfe ich gerade.»</em> — Был ровно один удачный вход, я его сейчас проверяю.</li>
 </ul>
 <h2 id="s15">Термины</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>EN</th>
@@ -500,7 +500,7 @@ grep -c &quot;Accepted&quot; OpenSSH_2k.log                   # 1 удачный
 <td>Protokolldatei / Logdatei</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="s16">Выжимка</h2>
 <ul>
 <li>Linux — ядро, дистрибутивов много; от дистрибутива зависит, где лог входов: <code>auth.log</code> или <code>secure</code>.</li>
@@ -602,7 +602,7 @@ www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
 <li><em>«Bitte bestätigen Sie, ob dieser Login von Ihnen erwartet war.»</em> — Пожалуйста, подтвердите, ожидали ли вы этот вход.</li>
 </ul>
 <h2 id="s27">Термины</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>EN</th>
@@ -637,7 +637,7 @@ www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
 <td>Anmeldeverlauf</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="s28">Выжимка</h2>
 <ul>
 <li>Строки одного SSH-подключения связаны номером процесса sshd: <code>grep "sshd\[PID\]"</code>.</li>
@@ -675,7 +675,7 @@ man ls         # полное руководство, выход — q
 <p>Где ошибаются новички: пропускают скрытые файлы. Атакующие любят прятать файлы с точкой в начале имени (<code>/tmp/.sys/</code>), а <code>ls</code> без <code>-a</code> их не показывает.</p>
 <h2 id="s34">Файлы: touch, mkdir, cp, mv, rm, file</h2>
 <p>Зачем: на смене ты файлы не трогаешь, но атакующий делает именно это. Эти команды надо узнавать в истории команд и в логах EDR.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Команда</th>
@@ -715,7 +715,7 @@ man ls         # полное руководство, выход — q
 <td>это делаешь ты, когда находишь странный файл</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><code>file</code> — самая полезная для SOC. Расширение врёт, содержимое — нет:</p>
 <pre><code class="language-text">$ file invoice.pdf
 invoice.pdf: ELF 64-bit LSB executable, x86-64
@@ -748,7 +748,7 @@ shasum -a 256 kworker              # то же на маке
 <h2 id="s37">Права цифрами: 755, 644, 777</h2>
 <p>Зачем: в командах атакующих и в скриптах права почти всегда пишут цифрами. <code>chmod 777</code> надо узнавать с первого взгляда.</p>
 <p>Каждое право — число: <code>r</code> = 4, <code>w</code> = 2, <code>x</code> = 1. Права одной тройки — сумма. Три цифры — хозяин, группа, остальные [10]:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Цифры</th>
@@ -789,7 +789,7 @@ shasum -a 256 kworker              # то же на маке
 <td><code>passwd</code>, <code>sudo</code>; у файла в <code>/tmp</code> — тревога</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Пример: <code>7</code> = 4 + 2 + 1 = <code>rwx</code>, <code>5</code> = 4 + 1 = <code>r-x</code>.</p>
 <p>В истории атакующего это выглядит так (учебный пример):</p>
 <pre><code class="language-text">chmod 777 /tmp/.sys/kworker
@@ -800,7 +800,7 @@ chmod 4755 /tmp/.cache/upd
 
 <h2 id="s38">Карта каталогов</h2>
 <p>Зачем: по пути файла часто сразу видно, норма это или нет.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Каталог</th>
@@ -840,7 +840,7 @@ chmod 4755 /tmp/.cache/upd
 <td>новый незнакомый файл тут подозрителен</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Расположение каталогов описывает стандарт FHS [13].</p>
 <h2 id="s39">История команд: .bash_history</h2>
 <p>Зачем: это дневник того, что набирали в терминале. Иногда в нём видно всю атаку по шагам.</p>
@@ -862,7 +862,7 @@ chmod 4755 /tmp/.cache/upd
 <li><em>«Den SHA-256-Hash habe ich ins Ticket geschrieben.»</em> — Хэш SHA-256 я записал в тикет.</li>
 </ul>
 <h2 id="s41">Термины</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>EN</th>
@@ -897,7 +897,7 @@ chmod 4755 /tmp/.cache/upd
 <td>Befehlsverlauf</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="s42">Выжимка</h2>
 <ul>
 <li><code>ls -la</code> показывает и скрытые файлы, и права.</li>
@@ -948,7 +948,7 @@ scp user@10.10.10.10:/var/log/auth.log .         # забрать с серве�
 <p>Документация Python прямо пишет, что этот сервер не для продакшена [16]. Если на сервере клиента вдруг слушает порт 8000 и раздаёт каталог — это чаще инструмент атакующего или забытая админская временная штука. В обоих случаях — в тикет.</p>
 <p>Где ошибаются новички: видят <code>scp</code> в логе и пугаются. Админы копируют файлы так каждый день. Смотри, кто, откуда и что именно.</p>
 <h2 id="s50">Термины</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>EN</th>
@@ -973,7 +973,7 @@ scp user@10.10.10.10:/var/log/auth.log .         # забрать с серве�
 <td>Texteditor</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="s51">Выжимка</h2>
 <ul>
 <li>На чужом сервере читай через <code>less</code>, а не через редактор. Из vim без сохранения: <code>Esc</code>, <code>:q!</code>.</li>
@@ -1088,7 +1088,7 @@ ls /etc/cron.d/ /etc/cron.daily/
 cat /etc/crontab
 </code></pre>
 <p>Норма и тревога рядом:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Норма</th>
@@ -1109,7 +1109,7 @@ cat /etc/crontab
 <td>задание появилось в ту же ночь, что и подозрительный вход</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Обе тревожные строки — учебные, адрес из RFC 5737.</p>
 <h2 id="s62">Пакеты: apt</h2>
 <p>Зачем: установка программ тоже оставляет след. Если в ночь инцидента кто-то ставил пакеты — это важно для таймлайна.</p>
@@ -1128,7 +1128,7 @@ End-Date: 2025-12-10  03:14:09
 <p>Учебный пример: кто, когда и что поставил. Сканер и netcat в три часа ночи — не обновление, а подготовка к следующему шагу. Сравни время установки со временем подозрительного входа.</p>
 <h2 id="s63">Логи: /var/log</h2>
 <p>Зачем: это главный источник для тебя. Всё, что выше, ты в итоге подтверждаешь логами.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Файл</th>
@@ -1168,7 +1168,7 @@ End-Date: 2025-12-10  03:14:09
 <td>Debian, Ubuntu</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Строка access.log выглядит так [24]:</p>
 <pre><code class="language-text">203.0.113.66 - - [10/Dec/2025:11:20:01 +0100] &quot;GET /index.php?cmd=id HTTP/1.1&quot; 200 512 &quot;-&quot; &quot;curl/8.5.0&quot;
 </code></pre>
@@ -1180,7 +1180,7 @@ End-Date: 2025-12-10  03:14:09
 <p>Где ошибаются новички: не находят <code>auth.log</code> и пишут «логов нет». Проверь <code>journalctl</code> [26].</p>
 <details>
 <summary>Копнуть глубже: что, если логи кто-то почистил</summary>
-<p>Атакующий может стереть или обрезать логи, чтобы спрятать следы. Это техника T1070.002 [4]. Признаки: лог внезапно начинается с середины дня, в нём дыра в несколько часов, размер файла резко упал.</p>
+<p>Атакующий может стереть или обрезать логи, чтобы спрятать следы. Это техника T1685.006 [4] (до v20 — T1070.002). Признаки: лог внезапно начинается с середины дня, в нём дыра в несколько часов, размер файла резко упал.</p>
 <p>Поэтому в нормальной компании логи сразу уходят в SIEM. Стереть копию на сервере можно, а в SIEM они уже лежат. Если в SIEM есть события, а на сервере их нет — это само по себе находка.</p>
 </details>
 <h2 id="s64">Кто защищает сервер сам: UFW и fail2ban</h2>
@@ -1205,7 +1205,7 @@ sha256sum /путь/к/находке           # отпечаток файла 
 <!--thv:chain-linux--><figure class="thv" data-v="chain" id="thv-chain-linux"><figcaption><b>Где остановилась атака в нашем тикете</b><span>Учебный сквозной сюжет учебника, этапы по MITRE ATT&amp;CK v20.</span></figcaption><script type="application/json">{"stages":[{"name":"Reconnaissance","ru":"разведка","state":"done","note":"Сканеры находят открытый порт 22 — это фон любого сервера в интернете."},{"name":"Credential Access","ru":"подбор пароля","state":"done","note":"Сотни Failed password с нескольких адресов: брутфорс (T1110)."},{"name":"Initial Access","ru":"вход","state":"cur","note":"Наш случай: удачный вход один, но он не связан с перебором. Подтверждённого входа атакующего нет."},{"name":"Execution","ru":"запуск","state":"","note":"Если бы вход был: запуск файла из /tmp, как в учебном примере главы 4. Здесь L1 эскалирует на L2."},{"name":"Persistence","ru":"закрепление","state":"","note":"Следующий шаг атакующего: cron, systemd-юнит или ключ в authorized_keys."},{"name":"Impact","ru":"ущерб","state":"","note":"Майнер, рассылка спама, плацдарм для атак на других. До этого не должно дойти."}]}</script></figure><!--/thv:chain-linux-->
 <h2 id="s66">Карта MITRE ATT&amp;CK по учебнику</h2>
 <p>Всё, что было в учебнике, в терминах ATT&amp;CK. ID сверены с ATT&amp;CK Enterprise v20.0 [17]. Обрати внимание: в v20 тактики Defense Evasion больше нет, вместо неё Stealth (TA0005) и Defense Impairment (TA0112). На собеседованиях и в старых статьях ещё говорят по-старому.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Что видишь</th>
@@ -1289,19 +1289,19 @@ sha256sum /путь/к/находке           # отпечаток файла 
 </tr>
 <tr>
 <td>Стёртые логи</td>
-<td>T1070.002 Clear Linux or Mac System Logs [4]</td>
-<td>Stealth</td>
+<td>T1685.006 Clear Linux or Mac System Logs [4] (раньше T1070.002)</td>
+<td>Defense Impairment</td>
 <td>дыры в логе, расхождение с SIEM</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="s67">Как сказать на смене</h2>
 <ul>
 <li><em>«Auf dem Host läuft ein Prozess aus /tmp, der sich als Kernel-Thread tarnt.»</em> — На хосте работает процесс из /tmp, который маскируется под поток ядра.</li>
 <li><em>«Ich habe einen verdächtigen Cronjob gefunden und eskaliere an L2.»</em> — Я нашёл подозрительное задание cron и эскалирую на L2.</li>
 </ul>
 <h2 id="s68">Термины</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>EN</th>
@@ -1341,7 +1341,7 @@ sha256sum /путь/к/находке           # отпечаток файла 
 <td>Normalzustand / Baseline</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="s69">Выжимка</h2>
 <ul>
 <li>Сначала норма: PID 1 — systemd, потоки ядра в <code>[скобках]</code>, sshd слушает от root, службы под своими учётками.</li>
@@ -1517,7 +1517,7 @@ $ ls -la /var/tmp/.x/
 cat ssh_triage_report.txt
 </code></pre>
 <h1 id="s81" class="anchored">Шпаргалка на один экран</h1>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Задача</th>
@@ -1606,13 +1606,13 @@ cat ssh_triage_report.txt
 <td>процесс или файл в <code>/tmp</code>, <code>kworker</code> без скобок, <code>curl … | sh</code>, SUID в <code>/tmp</code></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h1 id="s82" class="anchored">Источники</h1>
 <ol>
 <li>loghub (LogPAI) — наборы реальных логов OpenSSH_2k.log и Linux_2k.log; Zhu et al., ISSRE 2023 — https://github.com/logpai/loghub (проверено 10.11.2026: файлы скачаны, числа посчитаны скриптом)</li>
 <li>TryHackMe — Linux Fundamentals Part 1 — https://tryhackme.com/room/linuxfundamentalspart1 (проверено 23.09.2026)</li>
 <li>bash(1) — списки команд, перенаправления, пайпы, job control — https://man7.org/linux/man-pages/man1/bash.1.html (справочная ссылка)</li>
-<li>MITRE ATT&amp;CK T1070.002 Clear Linux or Mac System Logs — https://attack.mitre.org/techniques/T1070/002/ (сверено с v20.0, 10.11.2026)</li>
+<li>MITRE ATT&amp;CK T1685.006 Clear Linux or Mac System Logs (в v20 заменила отозванную T1070.002) — https://attack.mitre.org/techniques/T1685/006/ (сверено с v20.0, 10.11.2026)</li>
 <li>explainshell.com — разбор команд по man-страницам — https://explainshell.com/ (справочная ссылка)</li>
 <li>find(1), FreeBSD — BSD-версия, как на macOS — https://man.freebsd.org/cgi/man.cgi?find(1) (справочная ссылка)</li>
 <li>find(1), GNU — https://man7.org/linux/man-pages/man1/find.1.html (справочная ссылка)</li>

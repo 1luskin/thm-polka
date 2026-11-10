@@ -90,17 +90,20 @@
  },
  {
   "id": "cs101-windows-ad",
-  "title": "Windows и Active Directory для SOC L1",
+  "title": "Windows и Active Directory",
   "url": "books/cs101-windows-ad.html",
   "path": "02 Cyber Security 101",
   "order": 3,
-  "rooms": "",
+  "rooms": "Windows Fundamentals 1–3, Active Directory Basics",
   "added": "2026-09-27",
   "thm": [
    "windowsfundamentals1xbx",
    "windowsfundamentals2x0x",
    "windowsfundamentals3xzx",
    "winadbasics"
+  ],
+  "thm_skip": [
+   "windowsfundamentals3xzx"
   ]
  },
  {
