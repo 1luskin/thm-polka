@@ -113,7 +113,7 @@
   "path": "02 Cyber Security 101",
   "order": 4,
   "rooms": "Windows Command Line, Windows PowerShell, Linux Shells",
-  "added": "2026-10-28",
+  "added": "2026-11-13",
   "thm": [
    "windowscommandline",
    "windowspowershell",

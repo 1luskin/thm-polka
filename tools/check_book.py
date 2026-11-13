@@ -68,7 +68,7 @@ BOOK = [
     ("разбор строки ≥1", 'class="fb' in main),
     ("thv 3–6", 3 <= len(re.findall(r'<figure class="thv"', main)) <= 6),
     ("нет раздела Источники", "Источники" not in heads),
-    ("нет ссылок [n]", not re.search(r"\[\d+(?:,\s*\d+)*\]", text(main))),
+    ("нет ссылок [n]", not re.search(r"(?<!\S)\[\d+(?:,\s*\d+)*\]", text(re.sub(r"<(pre|code)[^>]*>.*?</\1>", " ", main, flags=re.S)))),
     ("все таблицы в tablewrap", main.count("<table") == main.count('<div class="tablewrap"><table')),
 ]
 print()
