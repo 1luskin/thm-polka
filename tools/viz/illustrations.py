@@ -152,6 +152,35 @@ def cli():
     return frame("".join(b), 23)
 
 
-for name, fn in [("cs101-cli", cli), ("cs101-linux", linux), ("ps-06-web", web), ("ps-05-network", network), ("cs101-windows-ad", ad), ("cs101-01", cs101), ("ps-01-04", presec), ("x-offensive-intro", offensive)]:
+def netsoc():
+    # внешний гость → скан → открытый FTP → перебор → утечка, слева направо
+    b = [icon("attacker", 50, 190, 120, BAD), text(110, 335, "203.0.113.45", 17, BAD, "middle", mono=True, weight=500),
+         text(110, 360, "снаружи", 16, MUT, "middle")]
+    # firewall/шлюз в середине, сервер справа
+    b += [icon("firewall", 470, 90, 80, MUT), text(510, 185, "NAT / шлюз", 15, MUT, "middle", mono=True, weight=500)]
+    b += [plate(470, 230, 240, 240, "#18263a", "#2c4058", 18), icon("server", 520, 265, 150, INK),
+          text(590, 452, "FUE-FTP01", 20, INK, "middle", mono=True, weight=500)]
+    # веер скана: много линий в сервер
+    r = random.Random(5)
+    for i in range(14):
+        y = 250 + i * 15 + r.randint(-3, 3)
+        b.append(f'<line x1="180" y1="{255 + r.randint(-6,6)}" x2="465" y2="{y}" stroke="{BAD}" stroke-width="1.6" opacity=".4"/>')
+    b.append(text(320, 225, "скан портов", 16, BAD, "middle", weight=600))
+    # открытые порты-двери на сервере
+    for i, p in enumerate(["21", "22", "80", "443"]):
+        b.append(text(720, 275 + i * 42, p, 18, GOOD, "start", mono=True, weight=600))
+        b.append(text(748, 275 + i * 42, "open", 14, MUT, "start", mono=True, weight=500))
+    # поток утечки наружу (файлы уходят вправо)
+    b += [plate(820, 230, 330, 240, "#0c131b", "#2a3a4c", 14)]
+    log = [("USER kunde_mueller", MUT), ("PASS kunde123", MUT), ("530 Login incorrect", BAD),
+           ("PASS Sommer2026!", MUT), ("230 Login successful", GOOD), ("RETR Auftrag_4711.pdf", BAD),
+           ("RETR Preisliste_2027.csv", BAD)]
+    for i, (s, c) in enumerate(log):
+        b.append(text(842, 270 + i * 28, s, 15, c, mono=True, weight=500))
+    b += [text(600, 70, "скан → открытый FTP → перебор → утечка", 26, INK, "middle", weight=700)]
+    return frame("".join(b), 29)
+
+
+for name, fn in [("cs101-networking", netsoc), ("cs101-cli", cli), ("cs101-linux", linux), ("ps-06-web", web), ("ps-05-network", network), ("cs101-windows-ad", ad), ("cs101-01", cs101), ("ps-01-04", presec), ("x-offensive-intro", offensive)]:
     (OUT / f"{name}.svg").write_text(fn(), encoding="utf8")
     print(name, (OUT / f"{name}.svg").stat().st_size, "байт")

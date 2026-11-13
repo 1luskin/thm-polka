@@ -122,6 +122,25 @@
   "thm_skip": []
  },
  {
+  "id": "cs101-networking",
+  "title": "Networking",
+  "url": "books/cs101-networking.html",
+  "path": "02 Cyber Security 101",
+  "order": 5,
+  "rooms": "Networking Concepts, Networking Essentials, Core Protocols, Secure Protocols, Wireshark, Tcpdump, Nmap",
+  "thm": [
+   "networkingconcepts",
+   "networkingessentials",
+   "networkingcoreprotocols",
+   "networkingsecureprotocols",
+   "wiresharkthebasics",
+   "tcpdump",
+   "nmap"
+  ],
+  "thm_skip": [],
+  "added": "2026-11-13"
+ },
+ {
   "id": "x-offensive-intro",
   "title": "Offensive Security Intro",
   "url": "books/x-offensive-intro.html",

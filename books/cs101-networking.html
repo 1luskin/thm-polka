@@ -1,0 +1,2066 @@
+<title>Учебник: Networking</title><!--thm-og:start--><meta name="description" content="Cyber Security 101 · Networking Concepts, Networking Essentials, Core Protocols, Secure Protocols, Wireshark, Tcpdump, Nmap"><meta property="og:type" content="website"><meta property="og:site_name" content="THM Полка"><meta property="og:locale" content="ru_RU"><meta property="og:title" content="Учебник: Networking"><meta property="og:description" content="Cyber Security 101 · Networking Concepts, Networking Essentials, Core Protocols, Secure Protocols, Wireshark, Tcpdump, Nmap"><meta property="og:url" content="https://1luskin.github.io/thm-polka/books/cs101-networking.html"><meta property="og:image" content="https://1luskin.github.io/thm-polka/assets/og/cs101-networking.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><link rel="icon" href="/thm-polka/assets/favicon.svg" type="image/svg+xml"><link rel="icon" href="/thm-polka/favicon.ico" sizes="32x32"><link rel="apple-touch-icon" href="/thm-polka/assets/apple-touch-icon.png"><!--thm-og:end-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#eef1f5; --surface:#ffffff; --surface-2:#f6f8fa;
+  --ink:#111a22; --muted:#5b6b7b; --line:#d5dde5; --line-soft:#e4eaf0;
+  --accent:#1a5fa8; --accent-soft:#e3edf8;
+  --alert:#a85e0e; --alert-soft:#f9eedd;
+  --ok:#0f7551; --ok-soft:#e2f2eb;
+  --code-bg:#101a24; --code-ink:#dbe6f0; --code-dim:#8aa0b4;
+  --fs:17px; --maxw:none;
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d141b; --surface:#141d26; --surface-2:#19232e;
+    --ink:#e4ecf3; --muted:#93a5b6; --line:#25323f; --line-soft:#1e2933;
+    --accent:#6ba8f5; --accent-soft:#16283c;
+    --alert:#e0a555; --alert-soft:#2c2417;
+    --ok:#52c095; --ok-soft:#13291f;
+    --code-bg:#080e14; --code-ink:#d7e3ef; --code-dim:#7f95a9;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d141b; --surface:#141d26; --surface-2:#19232e;
+  --ink:#e4ecf3; --muted:#93a5b6; --line:#25323f; --line-soft:#1e2933;
+  --accent:#6ba8f5; --accent-soft:#16283c;
+  --alert:#e0a555; --alert-soft:#2c2417;
+  --ok:#52c095; --ok-soft:#13291f;
+  --code-bg:#080e14; --code-ink:#d7e3ef; --code-dim:#7f95a9;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:var(--fs);line-height:1.68;-webkit-text-size-adjust:100%}
+a{color:var(--accent);text-underline-offset:2px;overflow-wrap:anywhere}
+li,p,td,th{overflow-wrap:break-word}
+a:focus-visible,button:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+
+/* ---------- progress + topbar ---------- */
+#pbar{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;height:3px;background:transparent;z-index:40}
+#pbar i{display:block;height:100%;width:0;background:var(--accent);transition:width .12s linear}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;display:flex;align-items:center;gap:10px;
+  background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);padding:8px 16px;font-family:var(--sans)}
+.topbar .brand{font-size:.82rem;font-weight:600;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto}
+.topbar .spacer{flex:1}
+.btn{font-family:var(--sans);font-size:.78rem;font-weight:500;color:var(--ink);background:var(--surface-2);
+  border:1px solid var(--line);border-radius:7px;padding:5px 9px;cursor:pointer;line-height:1.2}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+#readpct{font-family:var(--sans);font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+#menubtn{display:none}
+
+/* ---------- layout ---------- */
+.layout{display:grid;grid-template-columns:262px minmax(0,1fr);gap:34px;align-items:start;
+  max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:26px 80px}
+.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 58px);max-height:calc(100vh - 92px);overflow-y:auto;
+  font-family:var(--sans);font-size:.83rem;line-height:1.35;border-left:2px solid var(--line-soft);padding-left:14px}
+.toc .toc-h{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.toc a{display:block;color:var(--muted);text-decoration:none;padding:4px 0;border-left:2px solid transparent;margin-left:-16px;padding-left:14px}
+.toc a.t1{color:var(--ink);font-weight:600;margin-top:12px;font-size:.84rem}
+.toc a.t2{padding-left:26px;font-size:.8rem}
+.toc a:hover{color:var(--accent)}
+.toc a.on{color:var(--accent);border-left-color:var(--accent);font-weight:600}
+.content{min-width:0;max-width:70ch}
+
+/* ---------- typography ---------- */
+h1{font-family:var(--sans);font-size:2.05rem;line-height:1.15;font-weight:600;letter-spacing:-.015em;margin:.2em 0 .5em;text-wrap:balance}
+h1.anchored{font-size:1.72rem;margin-top:2.2em;padding-top:.7em;border-top:2px solid var(--line);
+   display:flex;align-items:center;gap:10px;scroll-margin-top:72px}
+h2{font-family:var(--sans);font-size:1.3rem;font-weight:600;line-height:1.25;margin:2.2em 0 .7em;text-wrap:balance;
+   display:flex;align-items:center;gap:10px;scroll-margin-top:72px}
+h3{font-family:var(--sans);font-size:1.06rem;font-weight:600;margin:1.9em 0 .5em;color:var(--ink);text-wrap:balance}
+.mark{flex:none;width:19px;height:19px;border:1.5px solid var(--line);border-radius:5px;background:var(--surface);
+  cursor:pointer;padding:0;position:relative}
+.mark[aria-pressed="true"]{background:var(--ok);border-color:var(--ok)}
+.mark[aria-pressed="true"]::after{content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;
+  border:solid #fff;border-width:0 2px 2px 0;transform:rotate(42deg)}
+.done .h2t{opacity:.5}
+p{margin:0 0 1.05em}
+ul,ol{margin:0 0 1.15em;padding-left:1.35em}
+li{margin:.3em 0}
+hr{border:0;border-top:1px solid var(--line);margin:2.6em 0}
+blockquote{margin:1.4em 0;padding:.85em 1.1em;background:var(--alert-soft);border-left:3px solid var(--alert);border-radius:0 8px 8px 0}
+blockquote p:last-child{margin:0}
+strong{font-weight:600}
+.lede{color:var(--muted);font-size:.95rem;font-family:var(--sans)}
+
+/* ---------- code ---------- */
+code{font-family:var(--mono);font-size:.86em;background:var(--surface-2);border:1px solid var(--line-soft);
+  border-radius:4px;padding:.08em .32em;overflow-wrap:anywhere;word-break:break-word}
+pre{position:relative;background:var(--code-bg);color:var(--code-ink);border-radius:10px;padding:14px 16px;
+  overflow-x:auto;margin:1.2em 0;font-size:.85rem;line-height:1.55}
+pre code{background:none;border:0;padding:0;color:inherit;font-size:1em}
+.copy{position:absolute;top:8px;right:8px;font-family:var(--sans);font-size:.68rem;color:var(--code-dim);
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:6px;padding:3px 7px;cursor:pointer}
+.copy:hover{color:#fff;border-color:rgba(255,255,255,.4)}
+
+/* ---------- tables ---------- */
+.tablewrap{overflow-x:auto;margin:1.3em 0;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-family:var(--sans);font-size:.87rem;line-height:1.45}
+th,td{text-align:left;padding:9px 13px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;font-size:.76rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+
+/* ---------- details ---------- */
+details{margin:1.1em 0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:2px 15px}
+details[open]{background:var(--surface-2)}
+summary{cursor:pointer;font-family:var(--sans);font-size:.9rem;font-weight:500;padding:11px 0;list-style:none;
+  display:flex;gap:9px;align-items:flex-start}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"▸";color:var(--accent);flex:none;transition:transform .15s}
+details[open] summary::before{transform:rotate(90deg)}
+details > :not(summary){font-size:.95rem}
+details > p:last-child{padding-bottom:.6em}
+
+/* ---------- field breakdown ---------- */
+.fb{margin:1.4em 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.fb-cap{font-family:var(--sans);font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+  padding:9px 14px 0}
+.fb-line{font-family:var(--mono);font-size:.8rem;line-height:2.1;padding:8px 14px 12px;overflow-x:auto;white-space:pre}
+.fld{border-radius:4px;padding:2px 3px;cursor:pointer;border-bottom:2px solid var(--line);transition:background .12s}
+.fld:hover,.fld.on{background:var(--accent-soft);border-bottom-color:var(--accent)}
+.fld.on{box-shadow:inset 0 0 0 1px var(--accent)}
+.fb-out{font-family:var(--sans);font-size:.85rem;border-top:1px solid var(--line);padding:11px 14px;
+  background:var(--surface-2);min-height:3.6em}
+.fb-out b{font-weight:600;color:var(--accent);display:block;font-size:.78rem;letter-spacing:.03em;text-transform:uppercase;margin-bottom:2px}
+.fb-hint{color:var(--muted)}
+
+/* ---------- figures ---------- */
+figure{margin:1.6em 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 16px 10px}
+figure svg{display:block;max-width:100%;height:auto;margin:0 auto;color:var(--ink)}
+figcaption{font-family:var(--sans);font-size:.78rem;color:var(--muted);margin-top:10px;text-align:center;line-height:1.45}
+
+/* ---------- to top ---------- */
+#totop{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:35;
+  width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);
+  font-size:1rem;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .2s}
+#totop.show{opacity:1;pointer-events:auto}
+
+/* ---------- mobile ---------- */
+@media (max-width:860px){
+  .layout{grid-template-columns:minmax(0,1fr);gap:0;padding-block:18px 70px}
+  #menubtn{display:inline-block}
+  .toc{position:fixed;inset:0 auto 0 0;width:min(84vw,300px);z-index:45;background:var(--surface);
+    border-right:1px solid var(--line);border-left:0;max-height:none;padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px));
+    transform:translateX(-102%);transition:transform .22s ease;overflow-y:auto}
+  .toc.open{transform:none;box-shadow:0 0 40px rgba(0,0,0,.28)}
+  .toc a{margin-left:0;padding-left:10px}
+  #scrim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:44}
+  h1{font-size:1.68rem}
+  h2{font-size:1.24rem;scroll-margin-top:64px}
+  .content{max-width:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+
+<div id="pbar"><i></i></div>
+
+<div class="topbar">
+  <button class="btn" id="menubtn" aria-label="Оглавление" aria-expanded="false">☰</button>
+  <span class="brand">Cyber Security 101 · Networking</span>
+  <span class="spacer"></span>
+  <span id="readpct">0% прочитано</span>
+  <button class="btn" id="fsdown" aria-label="Уменьшить шрифт">A−</button>
+  <button class="btn" id="fsup" aria-label="Увеличить шрифт">A+</button>
+  <button class="btn" id="themebtn" aria-label="Сменить тему">◐</button>
+</div>
+
+<div class="layout">
+  <nav class="toc" id="toc" aria-label="Содержание">
+    <div class="toc-h">Содержание</div>
+    <a class="t1" href="#s1">Вспомни прошлое</a>
+    <a class="t1" href="#s2">Пролог: одна ночь, три алерта</a>
+    <a class="t1" href="#s3">Глава 1. Модель OSI и TCP/IP (N…</a>
+    <a class="t2" href="#s4">Аналогия: отправка посылки</a>
+    <a class="t2" href="#s5">Ты на смене</a>
+    <a class="t2" href="#s6">Сначала слова, без которых даль…</a>
+    <a class="t2" href="#s7">Сеть — это матрёшка</a>
+    <a class="t2" href="#s8">Семь уровней OSI — где лежит ка…</a>
+    <a class="t2" href="#s9">TCP/IP: та же матрёшка, но четы…</a>
+    <a class="t2" href="#s10">Инкапсуляция: как кусок данных …</a>
+    <a class="t2" href="#s11">TCP, UDP, порты и рукопожатие</a>
+    <a class="t2" href="#s12">telnet: поговорить с портом рук…</a>
+    <a class="t2" href="#s13">Копнуть глубже</a>
+    <a class="t2" href="#s14">Термины главы</a>
+    <a class="t2" href="#s15">Как сказать на смене</a>
+    <a class="t2" href="#s16">Выжимка</a>
+    <a class="t2" href="#s17">Связи</a>
+    <a class="t1" href="#s18">Глава 2. Внутри локальной сети:…</a>
+    <a class="t2" href="#s19">Аналогия: подъезд многоквартирн…</a>
+    <a class="t2" href="#s20">Ты на смене</a>
+    <a class="t2" href="#s21">Сначала слова, без которых даль…</a>
+    <a class="t2" href="#s22">ARP: как IP превращается в MAC</a>
+    <a class="t2" href="#s23">Тёмная сторона ARP: человек пос…</a>
+    <a class="t2" href="#s24">DHCP: откуда узел берёт свой ад…</a>
+    <a class="t2" href="#s25">ICMP: жив ли узел и каким путём…</a>
+    <a class="t2" href="#s26">NAT: почему вся фирма — это оди…</a>
+    <a class="t2" href="#s27">Копнуть глубже</a>
+    <a class="t2" href="#s28">Термины главы</a>
+    <a class="t2" href="#s29">Как сказать на смене</a>
+    <a class="t2" href="#s30">Выжимка</a>
+    <a class="t2" href="#s31">Связи</a>
+    <a class="t1" href="#s32">Глава 3. Открытые протоколы: DN…</a>
+    <a class="t2" href="#s33">Аналогия: разные службы одного …</a>
+    <a class="t2" href="#s34">Ты на смене</a>
+    <a class="t2" href="#s35">Сначала слова, без которых даль…</a>
+    <a class="t2" href="#s36">DNS: справочник имён</a>
+    <a class="t2" href="#s37">HTTP(S): как приносят страницы</a>
+    <a class="t2" href="#s38">FTP: грузовик с файлами — и наш…</a>
+    <a class="t2" href="#s39">Почта: SMTP, POP3, IMAP</a>
+    <a class="t2" href="#s40">Копнуть глубже</a>
+    <a class="t2" href="#s41">Термины главы</a>
+    <a class="t2" href="#s42">Как сказать на смене</a>
+    <a class="t2" href="#s43">Выжимка</a>
+    <a class="t2" href="#s44">Связи</a>
+    <a class="t1" href="#s45">Глава 4. Защищённые протоколы: …</a>
+    <a class="t2" href="#s46">Аналогия: открытка против запеч…</a>
+    <a class="t2" href="#s47">Ты на смене</a>
+    <a class="t2" href="#s48">Сначала слова, без которых даль…</a>
+    <a class="t2" href="#s49">TLS: как обычный протокол стано…</a>
+    <a class="t2" href="#s50">HTTPS: тот же захват, но пароль…</a>
+    <a class="t2" href="#s51">SMTPS, POP3S, IMAPS: почта под …</a>
+    <a class="t2" href="#s52">SSH: защищённый вход и не только</a>
+    <a class="t2" href="#s53">SFTP и FTPS: как надо было отда…</a>
+    <a class="t2" href="#s54">VPN: защищённый переход между с…</a>
+    <a class="t2" href="#s55">Копнуть глубже</a>
+    <a class="t2" href="#s56">Термины главы</a>
+    <a class="t2" href="#s57">Как сказать на смене</a>
+    <a class="t2" href="#s58">Выжимка</a>
+    <a class="t2" href="#s59">Связи</a>
+    <a class="t1" href="#s60">Глава 5. Wireshark: читаем паке…</a>
+    <a class="t2" href="#s61">Аналогия: стоп-кадр и замедленн…</a>
+    <a class="t2" href="#s62">Ты на смене</a>
+    <a class="t2" href="#s63">Сначала слова, без которых даль…</a>
+    <a class="t2" href="#s64">Три окна Wireshark</a>
+    <a class="t2" href="#s65">Фильтры: как оставить нужное</a>
+    <a class="t2" href="#s66">Следование за потоком</a>
+    <a class="t2" href="#s67">Копнуть глубже</a>
+    <a class="t2" href="#s68">Термины главы</a>
+    <a class="t2" href="#s69">Как сказать на смене</a>
+    <a class="t2" href="#s70">Выжимка</a>
+    <a class="t2" href="#s71">Связи</a>
+    <a class="t1" href="#s72">Глава 6. Tcpdump: пакеты из ком…</a>
+    <a class="t2" href="#s73">Аналогия: та же запись, но по р…</a>
+    <a class="t2" href="#s74">Ты на смене</a>
+    <a class="t2" href="#s75">Сначала слова, без которых даль…</a>
+    <a class="t2" href="#s76">Снять и прочитать</a>
+    <a class="t2" href="#s77">Копнуть глубже</a>
+    <a class="t2" href="#s78">Термины главы</a>
+    <a class="t2" href="#s79">Как сказать на смене</a>
+    <a class="t2" href="#s80">Выжимка</a>
+    <a class="t2" href="#s81">Связи</a>
+    <a class="t1" href="#s82">Глава 7. Nmap: как выглядит ска…</a>
+    <a class="t2" href="#s83">Аналогия: вор дёргает ручки две…</a>
+    <a class="t2" href="#s84">Ты на смене</a>
+    <a class="t2" href="#s85">Сначала слова, без которых даль…</a>
+    <a class="t2" href="#s86">Как nmap находит открытые двери</a>
+    <a class="t2" href="#s87">Подпись скана в трафике</a>
+    <a class="t2" href="#s88">Копнуть глубже</a>
+    <a class="t2" href="#s89">Термины главы</a>
+    <a class="t2" href="#s90">Как сказать на смене</a>
+    <a class="t2" href="#s91">Выжимка</a>
+    <a class="t2" href="#s92">Связи</a>
+    <a class="t1" href="#s93">MITRE ATT&amp;amp;CK: сетевой инцид…</a>
+    <a class="t1" href="#s94">Самопроверка</a>
+    <a class="t1" href="#s95">Практика</a>
+    <a class="t2" href="#s96">Подготовка (один раз)</a>
+    <a class="t2" href="#s97">Задание 1. Скан портов: сколько…</a>
+    <a class="t2" href="#s98">Задание 2. Traceroute: сколько …</a>
+    <a class="t2" href="#s99">Задание 3. DNS: тип записи и оп…</a>
+    <a class="t2" href="#s100">Задание 4. Почта открытым текст…</a>
+    <a class="t2" href="#s101">Задание 5. Пароль в HTTP против…</a>
+    <a class="t2" href="#s102">Задание 6. Очередь триажа + отч…</a>
+    <a class="t1" href="#s103">Шпаргалка на один экран</a>
+    <a class="t1" href="#s104">Отзыв</a>
+  </nav>
+  <main class="content">
+<h1>Учебник: Networking</h1>
+<p><strong>Модуль:</strong> Cyber Security 101 · <strong>Комнаты:</strong> Networking Concepts, Networking Essentials, Networking Core Protocols, Networking Secure Protocols, Wireshark: The Basics, Tcpdump: The Basics, Nmap: The Basics.</p>
+<p><strong>Что будешь уметь после учебника:</strong></p>
+<ul>
+<li>разложить любую сетевую улику по уровням (модель OSI) и сказать, кто её записал и где её искать;</li>
+<li>по одному адресу понять, внутренний это узел или из интернета, и в какую сторону шло соединение;</li>
+<li>прочитать пакет в Wireshark и в tcpdump: кто кого спросил, что ответил, где пароль ушёл открытым текстом;</li>
+<li>опознать по трафику скан портов, перебор пароля и утечку файла — и отличить их от обычного сетевого фона;</li>
+<li>коротко доложить сетевой алерт по-немецки и собрать строку для тикета.</li>
+</ul>
+<p><strong>Маршрут:</strong></p>
+<ul>
+<li>🔥🤔 <strong>Глава 1. OSI и TCP/IP</strong> — комната Networking Concepts: <em>по желанию</em>. Теория вся в главе, комнату — ради telnet-практики и галочки пути. ~60 мин.</li>
+<li>🔥🤔 <strong>Глава 2. Внутри LAN</strong> — Networking Essentials: <em>по желанию</em>. ~60 мин.</li>
+<li>🔥🧪 <strong>Глава 3. Открытые протоколы</strong> — Networking Core Protocols: <em>пройди</em>. Там живой telnet к веб-, почтовому и FTP-серверу — лучшая практика на протоколы. ~45 мин.</li>
+<li>🔥🤔 <strong>Глава 4. Защищённые протоколы</strong> — Networking Secure Protocols: <em>по желанию</em>. ~60 мин.</li>
+<li>🔥🧪 <strong>Глава 5. Wireshark</strong> — Wireshark: The Basics: <em>пройди</em>. Живой интерфейс с готовым pcap, текстом не заменить (премиум). ~60 мин.</li>
+<li>👀🤔 <strong>Глава 6. Tcpdump</strong> — Tcpdump: The Basics: <em>по желанию</em>. tcpdump есть на маке, всё повторишь на моих pcap (премиум). ~60 мин.</li>
+<li>🔥🤔 <strong>Глава 7. Nmap</strong> — Nmap: The Basics: <em>по желанию</em>. Для L1 важнее узнать скан в логах, чем сканировать самому (премиум). ~60 мин.</li>
+</ul>
+<p>Итого: 6 глав 🔥 обязательных, 1 👀 беглая. Практика — в конце, на настоящих pcap, их можно открыть на маке.</p>
+<!--thv:ill-cs101-networking-->
+<figure class="thv-ill"><img src="../assets/illustrations/cs101-networking.svg" alt="Пакет проходит через уровни сети: приложение, транспорт, сеть, канал" loading="lazy" width="1200" height="520"></figure>
+<div class="ck"><div class="ck-cap">Где я в учебнике</div><div class="ck-list"><button type="button" class="ck-i" data-id="s3"><span class="ck-box" aria-hidden="true"></span><span>Глава 1. Модель OSI и TCP/IP</span></button><button type="button" class="ck-i" data-id="s18"><span class="ck-box" aria-hidden="true"></span><span>Глава 2. Внутри локальной сети: ARP, DHCP, ICMP, маршрутизация, NAT</span></button><button type="button" class="ck-i" data-id="s32"><span class="ck-box" aria-hidden="true"></span><span>Глава 3. Открытые протоколы: DNS, HTTP, FTP, почта</span></button><button type="button" class="ck-i" data-id="s45"><span class="ck-box" aria-hidden="true"></span><span>Глава 4. Защищённые протоколы: TLS/HTTPS, SSH, VPN</span></button><button type="button" class="ck-i" data-id="s60"><span class="ck-box" aria-hidden="true"></span><span>Глава 5. Wireshark: читаем пакеты глазами</span></button><button type="button" class="ck-i" data-id="s72"><span class="ck-box" aria-hidden="true"></span><span>Глава 6. Tcpdump: пакеты из командной строки</span></button><button type="button" class="ck-i" data-id="s82"><span class="ck-box" aria-hidden="true"></span><span>Глава 7. Nmap: как выглядит скан — и как его поймать</span></button></div><div class="ck-bar"><i></i></div><div class="ck-n"><span>0</span> из 7</div></div>
+<h1 id="s1" class="anchored">Вспомни прошлое</h1>
+<p>Пять вопросов из прошлых учебников — повторение, чтобы не выветрилось. Не помнишь — под ответом объяснение.</p>
+<div class="qz" data-q="1"><div class="qz-q">В логе адрес <code>10.20.0.25</code>. Что можно сказать сразу, не проверяя его в интернете?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Диапазоны `10.x`, `172.16–31.x`, `192.168.x` — частные, в интернете их нет. Проверять в VirusTotal нечего."><span class="qz-mark" aria-hidden="true"></span><span>Это частный адрес — узел внутри сети компании</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет, `10.x` — частный диапазон, в интернете не маршрутизируется."><span class="qz-mark" aria-hidden="true"></span><span>Это публичный адрес, надо пробить по базам</span></button><button type="button" class="qz-o" data-ok="0" data-why="По одному адресу роль не видна; `10.x` просто говорит «внутренний»."><span class="qz-mark" aria-hidden="true"></span><span>Это адрес DNS-сервера</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="2"><div class="qz-q">Строка журнала Linux: <code>Failed password for root from 203.0.113.5</code>. Что это?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Много таких подряд с одного адреса — перебор пароля (брутфорс)."><span class="qz-mark" aria-hidden="true"></span><span>Неудачная попытка входа по SSH под root с адреса 203.0.113.5</span></button><button type="button" class="qz-o" data-ok="0" data-why="Удачный был бы `Accepted password`, а не `Failed`."><span class="qz-mark" aria-hidden="true"></span><span>Удачный вход администратора</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет, это именно отказ во входе: пароль не подошёл."><span class="qz-mark" aria-hidden="true"></span><span>Ошибка самого сервера</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="3"><div class="qz-q">Чтобы из длинного вывода оставить только строки со словом <code>Accepted</code>, что напишешь?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="`sort` только упорядочит строки, не отфильтрует."><span class="qz-mark" aria-hidden="true"></span><span><code>cat log | sort</code></span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. `grep` оставляет строки, где есть искомое слово."><span class="qz-mark" aria-hidden="true"></span><span><code>grep "Accepted" log</code></span></button><button type="button" class="qz-o" data-ok="0" data-why="`wc -l` лишь посчитает строки, не отфильтрует."><span class="qz-mark" aria-hidden="true"></span><span><code>wc -l log</code></span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="4"><div class="qz-q">Процесс <code>svchost.exe</code> в алерте запущен из <code>C:\Users\Public\</code>. Почему это вопрос?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Имя подделать легко, место — улика. Системная программа не на своём месте — повод копать."><span class="qz-mark" aria-hidden="true"></span><span>Настоящий svchost живёт только в <code>C:\Windows\System32</code></span></button><button type="button" class="qz-o" data-ok="0" data-why="Должен, это нормальный системный процесс."><span class="qz-mark" aria-hidden="true"></span><span>svchost вообще не должен работать</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет, обычная общая папка; странна именно системная программа в ней."><span class="qz-mark" aria-hidden="true"></span><span>Public — запрещённая папка</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="5"><div class="qz-q">Что делает DNS?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="Это TLS (HTTPS)."><span class="qz-mark" aria-hidden="true"></span><span>Шифрует трафик между браузером и сайтом</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. Как телефонная книга: ищешь по имени — получаешь номер."><span class="qz-mark" aria-hidden="true"></span><span>Переводит имя вроде <code>example.com</code> в IP-адрес</span></button><button type="button" class="qz-o" data-ok="0" data-why="Это DHCP."><span class="qz-mark" aria-hidden="true"></span><span>Выдаёт компьютеру адрес при подключении к сети</span></button></div><div class="qz-why" role="status"></div></div>
+<h1 id="s2" class="anchored">Пролог: одна ночь, три алерта</h1>
+<blockquote>
+<p><strong>01:10, ночная смена. Учебная фирма Kranich Druck GmbH (типография в Фюрте, выдумана).</strong> 120 сотрудников. Наружу, в интернет, смотрит один сервер — <strong>FUE-FTP01</strong>: заказчики заливают на него макеты. Днём за фирмой следит своя IT-команда, ночью — ты, L1 в SOC, который обслуживает Kranich Druck.</p>
+</blockquote>
+<p>Фирма, машины и учётки выдуманы. Внутренние адреса — из частных диапазонов, внешние — из диапазонов, специально отведённых для примеров (<code>203.0.113.0/24</code> и подобные). Настоящие захваты трафика будут в практике и в главах 5–7, и там всегда сказано, что они настоящие.</p>
+<p>За эту ночь SIEM поднимает три алерта — и это не три разные беды, а <strong>один</strong> незваный гость с адреса <code>203.0.113.45</code>, которого мы будем вести через весь учебник:</p>
+<ul>
+<li><strong>01:14 — «много отказов входа на FTP-сервере».</strong> Кто-то подбирает пароль к FUE-FTP01 (главы 3 и 5).</li>
+<li><strong>01:16 — «скан портов снаружи».</strong> Тот же адрес до этого прошёлся по портам сервера — искал, что открыто (глава 7).</li>
+<li><strong>01:31 — «файл ушёл на внешний адрес».</strong> Со стороны сервера наружу утекли два файла заказчика (главы 3 и 4 — почему их вообще было видно).</li>
+</ul>
+<p>Три слова, без которых пролог не понять. <strong>SIEM</strong> (Security Information and Event Management) — система, которая собирает журналы со всех машин фирмы в одно место и по правилам поднимает <strong>алерты</strong>, сигналы «посмотри сюда». <strong>Сервер</strong> — обычный компьютер без монитора, круглые сутки работающий на фирму: тут на нём крутится приём файлов от заказчиков. <strong>L1</strong> — первая линия SOC, то есть ты: принимаешь алерт, проверяешь и решаешь — закрыть как ложное или передать дальше (L2).</p>
+<p>Порядок в сюжете обратный времени: сначала был скан (глава 7), потом перебор (глава 3), потом утечка. Но чтобы всё это прочитать в трафике, сперва надо понять, из чего трафик состоит. С этого и начнём.</p>
+<h1 id="s3" class="anchored">Глава 1. Модель OSI и TCP/IP (Networking Concepts)</h1>
+<div class="ch-level" data-l="must"><span class="ic">🔥</span>Обязательно <span class="why">— без неё остальные главы — набор слов; это карта, по которой ты раскладываешь любую сетевую улику</span></div>
+<div class="thm-verdict" data-v="maybe"><span class="ic">🤔</span><div><b class="v">По желанию</b> <b>Networking Concepts</b> — вся теория есть в этой главе. Комнату пройди, если хочешь руками пощупать telnet и получить галочку в пути Cyber Security 101. ~60 мин.</div></div>
+<h2 id="s4">Аналогия: отправка посылки</h2>
+<p>Ты отправляешь посылку. Сам ты только кладёшь вещь в коробку и пишешь адрес. Дальше коробку упаковывают в мешок, мешок грузят в фургон, фургон едет по трассе. На каждом этаже — свои люди, своя наклейка, свой транспорт. Получатель разбирает всё в обратном порядке и достаёт ту же вещь.</p>
+<p>Сеть устроена так же. Твоё сообщение (например, «покажи страницу») по дороге обрастает наклейками: адрес получателя, адрес твоей сетевой карты, номера для сборки. <strong>Модель OSI</strong> — это список таких этажей, одинаковый для всех. Зная этаж, ты сразу понимаешь, кто наклеил наклейку и где искать улику.</p>
+<h2 id="s5">Ты на смене</h2>
+<p>Прилетел алерт: «подозрительное соединение с сервера бухгалтерии наружу». В нём свалены в кучу: IP-адрес, порт, имя сайта, кусок HTTP-запроса. Чтобы не утонуть, ты мысленно раскладываешь это по этажам: адрес — на сетевой этаж, порт — на транспортный, имя сайта и запрос — на прикладной. Каждый этаж отвечает на свой вопрос: <em>куда шло, в какую дверь, что именно просили.</em> Так из каши получается понятная картина, и ты знаешь, что из этого важно.</p>
+<h2 id="s6">Сначала слова, без которых дальше не понять</h2>
+<p><strong>Сеть.</strong> Два и более компьютера, соединённых так, что могут обмениваться данными. Дома твой ноутбук, телефон и роутер — уже сеть.</p>
+<p><strong>Пакет</strong> (packet). Маленький кусок данных с адресом получателя — как один конверт. Большое сообщение сеть режет на много пакетов и шлёт по одному. Единого «провода от тебя до сайта» нет: есть поток пакетов.</p>
+<p><strong>Протокол</strong> (protocol). Договорённость, как именно разговаривать. Люди при встрече жмут руку — это протокол. У компьютеров протокол — это правила: какие байты в каком порядке, что значит «привет», что значит «понял». HTTP, TCP, IP — всё это протоколы для разных этажей.</p>
+<p><strong>IP-адрес</strong> (IP address). Номер компьютера в сети, как номер телефона: <code>203.0.113.45</code>. По нему пакет находит нужную машину.</p>
+<p><strong>MAC-адрес</strong> (MAC address). Несменяемый заводской номер самой сетевой карты: <code>00:25:b3:1a:77:0c</code>. IP можно поменять, MAC вшит в железо. Нужен, чтобы передать кадр соседу внутри одной локальной сети.</p>
+<p><strong>Клиент и сервер.</strong> Клиент — тот, кто просит (твой браузер). Сервер — тот, кто отвечает (машина с сайтом). Один и тот же компьютер бывает и тем, и другим в разных соединениях.</p>
+<h2 id="s7">Сеть — это матрёшка</h2>
+<p><strong>На смене:</strong> когда алерт показывает и адрес, и порт, и имя сайта, важно не считать это тремя отдельными фактами. Это одно соединение, просто описанное на разных этажах.</p>
+<p>Каждый этаж берёт данные с верхнего, добавляет свою наклейку (<strong>заголовок</strong>, header) и передаёт вниз. Заголовок — это служебная приписка в начале: кто, кому, какого размера. У получателя всё идёт наоборот: каждый этаж снимает свою наклейку и отдаёт остальное выше.</p>
+<p>Поэтому в одном пакете одновременно лежат наклейки всех этажей, вложенные друг в друга, как матрёшка. Твоя задача на смене — знать, на каком этаже какая наклейка, и не путать их.</p>
+<h2 id="s8">Семь уровней OSI — где лежит каждая улика</h2>
+<p><strong>OSI</strong> (Open Systems Interconnection) — это модель-линейка из семи уровней. Её придумали, чтобы у всех было одно общее название для каждого этажа. Запоминать все семь наизусть для L1 не обязательно — важно понимать четыре рабочих и знать, что на каком лежит.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>№</th>
+<th>Уровень</th>
+<th>Простыми словами</th>
+<th>Пример наклейки</th>
+<th>Что тут ищет L1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>7</td>
+<td>Прикладной (Application)</td>
+<td>то, что видит программа</td>
+<td>HTTP-запрос, имя сайта, письмо</td>
+<td>что именно просили: <code>GET /login</code>, адрес почты</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Представления (Presentation)</td>
+<td>формат и шифрование данных</td>
+<td>TLS, кодировка, сжатие</td>
+<td>зашифровано или нет</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Сеансовый (Session)</td>
+<td>начало и конец разговора</td>
+<td>—</td>
+<td>редко важен сам по себе</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Транспортный (Transport)</td>
+<td>в какую «дверь» и надёжно ли</td>
+<td>TCP/UDP, <strong>порт</strong></td>
+<td>порт → какая служба (80 — веб, 25 — почта)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Сетевой (Network)</td>
+<td>какой машине, через какие сети</td>
+<td><strong>IP-адрес</strong></td>
+<td>откуда и куда шло соединение</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Канальный (Data Link)</td>
+<td>соседу внутри одной сети</td>
+<td><strong>MAC-адрес</strong>, кадр</td>
+<td>кто физически отправил внутри LAN</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Физический (Physical)</td>
+<td>провод, радиоволна, свет</td>
+<td>биты в кабеле/Wi-Fi</td>
+<td>почти никогда</td>
+</tr>
+</tbody>
+</table></div>
+<p>Читается снизу вверх как «от железа к человеку». Для смены держи в голове три самых частых:</p>
+<ul>
+<li><strong>Уровень 3 (IP)</strong> — <em>куда и откуда.</em> Адрес <code>203.0.113.45</code> — отсюда пришли.</li>
+<li><strong>Уровень 4 (порт)</strong> — <em>в какую дверь.</em> Порт 21 — стучались в FTP.</li>
+<li><strong>Уровень 7 (приложение)</strong> — <em>что именно сделали.</em> <code>USER kunde_mueller</code> — пробовали войти под этой учёткой.</li>
+</ul>
+<p>Запомни ответы на вопросы «какой уровень отвечает за…»:</p>
+<ul>
+<li>связь между <strong>запущенными программами</strong> (end-to-end) — транспортный, 4;</li>
+<li><strong>маршрутизацию</strong> пакета в нужную сеть — сетевой, 3;</li>
+<li><strong>кодирование</strong> данных приложения — представления, 6;</li>
+<li>передачу между хостами в <strong>одном сегменте</strong> сети — канальный, 2.</li>
+</ul>
+<div class="qz" data-q="6"><div class="qz-q">Алерт: соединение на порт <code>25</code>. На каком уровне OSI живёт номер порта и что он тебе говорит?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Порт — всегда транспортный уровень. 25 — стандартная «дверь» почтового сервера."><span class="qz-mark" aria-hidden="true"></span><span>Транспортный (4); порт 25 — это SMTP, то есть отправка почты</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет, адрес (IP) — уровень 3, а порт — уровень 4."><span class="qz-mark" aria-hidden="true"></span><span>Сетевой (3); это адрес сервера</span></button><button type="button" class="qz-o" data-ok="0" data-why="Текст письма — уровень 7, но сам номер двери (порт) — уровень 4."><span class="qz-mark" aria-hidden="true"></span><span>Прикладной (7); это текст письма</span></button></div><div class="qz-why" role="status"></div></div>
+<h2 id="s9">TCP/IP: та же матрёшка, но четыре этажа</h2>
+<p>OSI — удобная линейка для объяснений, но реальный интернет работает по модели попроще — <strong>TCP/IP</strong> (её же зовут моделью DoD). В ней четыре уровня: несколько «тонких» этажей OSI слиты в один.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>TCP/IP (4)</th>
+<th>Что вобрал из OSI</th>
+<th>Пример</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Application (приложение)</td>
+<td>7 + 6 + 5</td>
+<td>HTTP, DNS, FTP, TLS</td>
+</tr>
+<tr>
+<td>Transport (транспорт)</td>
+<td>4</td>
+<td>TCP, UDP</td>
+</tr>
+<tr>
+<td>Internet (интернет)</td>
+<td>3</td>
+<td>IP</td>
+</tr>
+<tr>
+<td>Link / Network Access (доступ к сети)</td>
+<td>2 + 1</td>
+<td>Ethernet, Wi-Fi, MAC</td>
+</tr>
+</tbody>
+</table></div>
+<p>Два факта, которые спрашивают прямо:</p>
+<ul>
+<li><strong>HTTP</strong> в модели TCP/IP лежит на уровне <strong>Application</strong>.</li>
+<li>Уровень <strong>Application</strong> в TCP/IP покрывает <strong>три</strong> верхних уровня OSI (7, 6 и 5).</li>
+</ul>
+<p>Почему тебе это важно: инструменты и документация прыгают между двумя моделями. Splunk и Wireshark чаще говорят на языке TCP/IP, а учебники и сертификаты (в том числе экзамен SEC1) любят спрашивать номера уровней OSI. Держи обе линейки рядом.</p>
+<h2 id="s10">Инкапсуляция: как кусок данных меняет имя</h2>
+<p><strong>На смене:</strong> в Wireshark один и тот же кусок называется по-разному на разных строках. Если не знать, почему, кажется, что это разные вещи. На самом деле это одна матрёшка на разных этажах.</p>
+<p><strong>Инкапсуляция</strong> (encapsulation) — «вкладывание»: каждый уровень оборачивает данные верхнего в свой заголовок. У данных на каждом этаже своё имя:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Этаж</th>
+<th>Как называется единица</th>
+<th>Что добавилось</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Приложение</td>
+<td>данные (data)</td>
+<td>само сообщение</td>
+</tr>
+<tr>
+<td>Транспорт (TCP)</td>
+<td><strong>сегмент</strong> (segment)</td>
+<td>порты, номера для сборки</td>
+</tr>
+<tr>
+<td>Транспорт (UDP)</td>
+<td><strong>датаграмма</strong> (datagram)</td>
+<td>порты</td>
+</tr>
+<tr>
+<td>Интернет (IP)</td>
+<td><strong>пакет</strong> (packet)</td>
+<td>IP-адреса откуда/куда</td>
+</tr>
+<tr>
+<td>Доступ к сети</td>
+<td><strong>кадр</strong> (frame)</td>
+<td>MAC-адреса, в Wi-Fi тоже кадр</td>
+</tr>
+</tbody>
+</table></div>
+<p>Запомни ответы:</p>
+<ul>
+<li>данные, завёрнутые в TCP, — <strong>сегмент</strong>;</li>
+<li>данные, завёрнутые в UDP, — <strong>датаграмма</strong>;</li>
+<li>IP-пакет, завёрнутый для Wi-Fi, — <strong>кадр</strong> (frame).</li>
+</ul>
+<!--thv::layers-pkt--><figure class="thv" data-v="layers" id="thv-:layers-pkt"><figcaption><b>Один пакет по слоям: что добавил каждый уровень</b><span>Учебный пример: запрос к FUE-FTP01 (адреса из диапазонов для примеров)</span></figcaption><script type="application/json">{"layers":[
+{"name":"Канальный — кадр (Ethernet)","bytes":14,"note":"MAC откуда/куда, внутри LAN","fields":[["dst MAC","00:25:b3:11:aa:01","сетевая карта шлюза"],["src MAC","00:25:b3:1a:77:0c","карта отправителя"]]},
+{"name":"Сетевой — пакет (IP)","bytes":20,"note":"адреса машин","fields":[["src IP","203.0.113.45","гость снаружи"],["dst IP","10.20.0.25","FUE-FTP01"],["TTL","54","сколько прыжков осталось"]]},
+{"name":"Транспортный — сегмент (TCP)","bytes":20,"note":"порты и флаги","fields":[["dst port","21","дверь FTP"],["flags","SYN","просит открыть соединение"]]},
+{"name":"Прикладной — данные","bytes":16,"note":"что просят","fields":[["payload","USER kunde_mueller","пробуют эту учётку"]]}
+]}</script></figure><!--/thv::layers-pkt-->
+<p>Видишь: <code>USER kunde_mueller</code> (что просят) лежит в самой глубине, обёрнутый сначала в TCP (порт 21), потом в IP (кто кому), потом в кадр (соседу). Ровно это ты и раскладываешь по уровням на смене.</p>
+<h2 id="s11">TCP, UDP, порты и рукопожатие</h2>
+<p><strong>На смене:</strong> почти каждый алерт называет порт и протокол транспорта. От того, TCP это или UDP, зависит, увидишь ли ты в трафике «начало разговора» — а по нему и ловят скан и перебор.</p>
+<p>Транспортный уровень (4) умеет двумя способами.</p>
+<p><strong>TCP</strong> (Transmission Control Protocol) — с гарантией доставки. Прежде чем слать данные, стороны устанавливают соединение и подтверждают каждый кусок. Как телефонный звонок: сначала «алло — алло — слышу», потом разговор.</p>
+<p><strong>UDP</strong> (User Datagram Protocol) — без гарантии. Шлёт и не ждёт подтверждения. Как крикнуть через двор: быстро, но не факт, что услышали. На нём работают DNS, DHCP — там скорость важнее надёжности.</p>
+<p>Соединение TCP открывается <strong>трёхсторонним рукопожатием</strong> (three-way handshake) — тремя пакетами с особыми пометками, <strong>флагами</strong>:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Шаг</th>
+<th>Кто</th>
+<th>Флаг</th>
+<th>Смысл</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>клиент</td>
+<td><strong>SYN</strong></td>
+<td>«давай соединимся»</td>
+</tr>
+<tr>
+<td>2</td>
+<td>сервер</td>
+<td><strong>SYN, ACK</strong></td>
+<td>«давай; подтверждаю твой»</td>
+</tr>
+<tr>
+<td>3</td>
+<td>клиент</td>
+<td><strong>ACK</strong></td>
+<td>«подтверждаю, работаем»</td>
+</tr>
+</tbody>
+</table></div>
+<p>Флаг — это пометка в заголовке TCP, одно короткое состояние. Тебе важны три:</p>
+<ul>
+<li><strong>SYN</strong> — запрос на открытие соединения;</li>
+<li><strong>ACK</strong> — подтверждение;</li>
+<li><strong>RST</strong> (reset) — «сброс», резкий отказ: «тут закрыто, уходи».</li>
+</ul>
+<p>Почему это ядро всей сетевой защиты: по этим флагам читаются атаки. Скан портов (глава 7) шлёт пачку <strong>SYN</strong> на разные порты; закрытый порт отвечает <strong>RST</strong>, открытый — <strong>SYN, ACK</strong>. Так в захвате видно, что искали и что нашли, — ответ на вопрос, кто требует трёхстороннего рукопожатия: это <strong>TCP</strong>.</p>
+<p><strong>Порты</strong> — это 65 536 «дверей» на каждом узле (число 16-битное, от 0 до 65535). Низкие номера закреплены за известными службами (80 — веб, 21 — FTP, 22 — SSH), высокие случайные — за клиентом на время соединения. Так ответ на «сколько примерно портов»: около <strong>65 тысяч</strong>.</p>
+<h2 id="s12">telnet: поговорить с портом руками</h2>
+<p><strong>На смене:</strong> иногда надо быстро проверить, что за служба висит на порту и отвечает ли она. Для текстовых протоколов это делают голой командой <code>telnet</code>.</p>
+<p><strong>telnet</strong> — старая программа: открывает соединение на любой порт и даёт печатать текст прямо в него. Шифрования нет, поэтому для работы она опасна (об этом глава 4), но как «пинг для прикладного уровня» — удобна.</p>
+<pre><code>telnet 10.20.0.25 80
+</code></pre>
+<p>Ты набираешь <code>GET / HTTP/1.0</code> и дважды Enter — и видишь ответ сервера прямо текстом: строку вида <code>Server: nginx/1.24.0</code>. Это и есть ответ на вопрос «какой веб-сервер и какой версии тут стоит» — версия пригодится, чтобы потом проверить, нет ли у неё известных дыр.</p>
+<p><strong>Если не получилось:</strong>
+- <code>command not found</code> — на маке <code>telnet</code> не ставят по умолчанию. Поставь <code>brew install telnet</code> или проверь порт через <code>nc 10.20.0.25 80</code> (<code>nc</code>, netcat, есть почти везде).
+- Соединение висит и ничего не печатает — порт закрыт или фильтруется. Это уже ответ: служба недоступна.</p>
+<p><strong>Ошибка новичка:</strong> считать telnet безопасным инструментом «на каждый день». Всё, что ты в него печатаешь, включая пароль, идёт по сети открытым текстом — любой по дороге прочитает. Для диагностики на минуту — да, для входов — никогда.</p>
+<h2 id="s13">Копнуть глубже</h2>
+<details>
+<summary>IP-адреса, подсети и «не настоящий» адрес</summary>
+<p>IP-адрес версии 4 — это четыре числа через точку, и каждое число (<strong>октет</strong>) умещается в один байт, то есть от 0 до 255. Поэтому адрес, где хоть один октет больше 255 (скажем, <code>10.0.300.1</code>), — <strong>невалидный</strong>: такого байта не бывает. Это первая проверка на смене: число &gt; 255 — значит, перед тобой не адрес, а опечатка или мусор.</p>
+<p>Адреса делятся на <strong>публичные</strong> (маршрутизируются в интернете) и <strong>частные</strong> (только внутри сети, в интернет не выходят). Три частных диапазона стоит запомнить — именно они встречаются во внутренних логах:</p>
+<ul>
+<li><code>10.0.0.0 – 10.255.255.255</code></li>
+<li><code>172.16.0.0 – 172.31.255.255</code></li>
+<li><code>192.168.0.0 – 192.168.255.255</code></li>
+</ul>
+<p>Правило чтения: адрес из этих диапазонов — внутренний узел фирмы; любой другой — из интернета, его можно пробивать по базам. Осторожно с <code>172</code>: частный только кусок <code>172.16–172.31</code>, а, например, <code>172.67.x</code> — уже публичный. Так что <code>172</code> сам по себе ещё ничего не говорит, смотри второй октет.</p>
+<p><strong>Подсеть</strong> (subnet) — способ порезать большую сеть на куски. Запись <code>/24</code> (маска подсети) говорит, сколько бит адреса — «номер сети», а сколько — «номер хоста». Для L1 хватает чтения: если видишь <code>10.20.0.0/24</code>, значит «все адреса <code>10.20.0.1–10.20.0.254</code> — одна локальная сеть». Считать маски руками на смене почти не приходится — это работа сетевиков.</p>
+</details>
+<h2 id="s14">Термины главы</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>EN</th>
+<th>RU</th>
+<th>DE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>packet</td>
+<td>пакет</td>
+<td>das Paket</td>
+</tr>
+<tr>
+<td>header</td>
+<td>заголовок (наклейка)</td>
+<td>der Header / der Kopf</td>
+</tr>
+<tr>
+<td>encapsulation</td>
+<td>инкапсуляция</td>
+<td>die Kapselung</td>
+</tr>
+<tr>
+<td>frame</td>
+<td>кадр</td>
+<td>der Rahmen / der Frame</td>
+</tr>
+<tr>
+<td>segment</td>
+<td>сегмент</td>
+<td>das Segment</td>
+</tr>
+<tr>
+<td>port</td>
+<td>порт</td>
+<td>der Port</td>
+</tr>
+<tr>
+<td>layer</td>
+<td>уровень</td>
+<td>die Schicht / der Layer</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="s15">Как сказать на смене</h2>
+<p>«Die verdächtige Verbindung läuft auf Port 21, also FTP — das ist Transportschicht und Anwendungsschicht.» — Подозрительное соединение идёт на порт 21, то есть FTP — это транспортный и прикладной уровни.</p>
+<h2 id="s16">Выжимка</h2>
+<ul>
+<li>OSI — линейка из 7 уровней, TCP/IP — та же идея в 4; держи обе рядом, инструменты говорят то на одном, то на другом языке.</li>
+<li>Три рабочих вопроса: уровень 3 (IP) — <em>откуда/куда</em>, уровень 4 (порт) — <em>в какую дверь/какая служба</em>, уровень 7 — <em>что именно сделали</em>.</li>
+<li>Инкапсуляция: один кусок данных зовётся сегментом (TCP) / датаграммой (UDP) → пакетом (IP) → кадром (канальный).</li>
+<li>Частные адреса (<code>10.x</code>, <code>172.16–31.x</code>, <code>192.168.x</code>) в интернете не встречаются; <code>/24</code> — это «одна локальная сеть».</li>
+<li><code>telnet</code> открывает порт и говорит текстом — удобно для проверки, опасно для паролей.</li>
+</ul>
+<h2 id="s17">Связи</h2>
+<ul>
+<li><strong>Следующая глава</strong> — как эти адреса превращаются в MAC и откуда узел вообще берёт свой IP (ARP, DHCP).</li>
+<li><strong>Networking Concepts</strong> на THM — та же теория плюс telnet-практика к веб-серверу.</li>
+</ul>
+<h1 id="s18" class="anchored">Глава 2. Внутри локальной сети: ARP, DHCP, ICMP, маршрутизация, NAT (Networking Essentials)</h1>
+<div class="ch-level" data-l="must"><span class="ic">🔥</span>Обязательно <span class="why">— тут живёт первая реальная сетевая атака, которую ловит L1 (ARP-спуфинг), и объясняется, почему вся фирма в интернете — это один адрес</span></div>
+<div class="thm-verdict" data-v="maybe"><span class="ic">🤔</span><div><b class="v">По желанию</b> <b>Networking Essentials</b> — всё разобрано в главе на настоящих захватах. Комнату пройди по желанию — ради закрепления и галочки пути. ~60 мин.</div></div>
+<h2 id="s19">Аналогия: подъезд многоквартирного дома</h2>
+<p>Локальная сеть — это подъезд. Внутри все знают друг друга в лицо (по MAC-адресу) и могут передать записку соседу напрямую. Но чтобы написать кому-то в другом городе, записку несут консьержу (<strong>шлюзу</strong>, gateway) — он один знает дорогу наружу. А чтобы весь дом общался с городом под одним адресом, на двери висит одна табличка (<strong>NAT</strong>), и почтальон снаружи видит только её, а не номера квартир.</p>
+<h2 id="s20">Ты на смене</h2>
+<p>Алерт: «аномалия ARP на этаже бухгалтерии». Звучит непонятно, пока не знаешь, что ARP — это способ узнать MAC соседа по его IP. А значит, подделка ARP — это «я теперь выдаю себя за шлюз, пусть весь трафик идёт через меня». Это атака «человек посередине». Твоя работа — в захвате трафика увидеть один MAC, который заявляет сразу два адреса, и понять, кого он подслушивает.</p>
+<h2 id="s21">Сначала слова, без которых дальше не понять</h2>
+<p><strong>Локальная сеть / LAN</strong> (Local Area Network). Компьютеры в одном месте, соединённые напрямую: офис, квартира. Внутри они общаются по MAC-адресам.</p>
+<p><strong>Шлюз</strong> (gateway). Устройство (обычно роутер), через которое сеть выходит наружу, в другие сети и интернет. Его адрес узел запоминает как «дорогу к остальному миру». Часто это <code>.1</code> в своей сети, например <code>192.168.1.1</code>.</p>
+<p><strong>Роутер</strong> (router, маршрутизатор). Коробка, которая соединяет разные сети и решает, в какую сторону отправить пакет. Домашний роутер — одновременно и шлюз.</p>
+<p><strong>Широковещание</strong> (broadcast). Сообщение «всем в этой сети сразу», без конкретного адресата. Адрес-получатель для него особый: <code>255.255.255.255</code> или <code>ff:ff:ff:ff:ff:ff</code>. Так узел кричит на весь подъезд, когда ещё не знает, к кому обращаться.</p>
+<h2 id="s22">ARP: как IP превращается в MAC</h2>
+<p><strong>На смене:</strong> ARP — тихий служебный протокол, который почти всегда норма. Но именно его подделывают, чтобы встать посередине и читать чужой трафик. Поэтому его надо уметь читать.</p>
+<p><strong>ARP</strong> (Address Resolution Protocol) решает одну задачу: «у меня есть IP соседа, мне нужен его MAC». Узел кричит на весь подъезд (широковещание): <strong>кто такой <code>192.168.66.1</code>? сообщите свой MAC.</strong> Нужный хозяин отвечает лично: <strong>это я, мой MAC такой-то.</strong></p>
+<ul>
+<li>Вопрос (ARP Request) идёт на MAC-получатель <code>ff:ff:ff:ff:ff:ff</code> — всем сразу.</li>
+<li>Ответ (ARP Reply) приходит лично спросившему: пара «вот IP — вот его MAC».</li>
+</ul>
+<p>Так ответы на частые вопросы: получатель в ARP-запросе — <strong>широковещательный <code>ff:ff:ff:ff:ff:ff</code></strong>; MAC адреса <code>192.168.66.1</code> — тот, что придёт в ответе от самого <code>192.168.66.1</code>.</p>
+<h2 id="s23">Тёмная сторона ARP: человек посередине</h2>
+<p>Беда в том, что ARP верит на слово. Никто не проверяет, правда ли ответивший — хозяин адреса. Атакующий рассылает ложные ответы: «шлюз <code>172.16.0.1</code> — это мой MAC». Все начинают слать трафик для интернета ему, он читает и передаёт дальше. Жертва ничего не замечает. Это <strong>ARP-спуфинг</strong>, он же <strong>человек посередине</strong> (MITM, man-in-the-middle; в свежих материалах — AiTM, adversary-in-the-middle).</p>
+<p>Как это выглядит в захвате: <strong>один MAC заявляет сразу несколько IP.</strong> На настоящем примере из учебного набора:</p>
+<pre><code>MAC 00:25:b3:bf:91:ee  →  заявляет 172.16.0.1  И  172.16.0.105
+</code></pre>
+<p>Один и тот же MAC говорит, что он и шлюз (<code>172.16.0.1</code>), и обычный хост (<code>172.16.0.105</code>). В честной сети так не бывает: у каждого адреса свой MAC. Это и есть подпись атаки.</p>
+<p><strong>Как записать в тикет:</strong></p>
+<pre><code>ARP-спуфинг в сегменте бухгалтерии. MAC 00:25:b3:bf:91:ee заявляет два адреса:
+172.16.0.1 (шлюз) и 172.16.0.105. Похоже на «человека посередине» —
+трафик жертвы может читаться. Эскалация на L2, изолировать порт коммутатора.
+</code></pre>
+<h2 id="s24">DHCP: откуда узел берёт свой адрес</h2>
+<p><strong>На смене:</strong> когда видишь незнакомый адрес в своей сети, полезно знать, сам он его взял честно (через DHCP) или кто-то воткнул чужое устройство. DHCP-журнал отвечает, какой машине какой адрес выдали и когда.</p>
+<p><strong>DHCP</strong> (Dynamic Host Configuration Protocol) выдаёт новому устройству настройки сети: IP-адрес, маску, шлюз, DNS. Иначе каждый адрес пришлось бы вбивать руками. Обмен идёт в <strong>четыре шага</strong>, их зовут DORA:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Шаг</th>
+<th>Кто</th>
+<th>Что говорит</th>
+<th>Адреса</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>D</strong>iscover</td>
+<td>клиент</td>
+<td>«есть тут DHCP? дайте настройки»</td>
+<td>от <code>0.0.0.0</code> всем (<code>255.255.255.255</code>)</td>
+</tr>
+<tr>
+<td><strong>O</strong>ffer</td>
+<td>сервер</td>
+<td>«предлагаю адрес X»</td>
+<td>сервер → клиенту</td>
+</tr>
+<tr>
+<td><strong>R</strong>equest</td>
+<td>клиент</td>
+<td>«беру X»</td>
+<td>снова всем</td>
+</tr>
+<tr>
+<td><strong>A</strong>ck</td>
+<td>сервер</td>
+<td>«закрепил X за тобой»</td>
+<td>сервер → клиенту</td>
+</tr>
+</tbody>
+</table></div>
+<p>Так ответы: шагов в DHCP — <strong>четыре</strong>; при Discover клиент шлёт на <code>255.255.255.255</code> (ещё нет своего адреса), а <strong>свой</strong> адрес-источник у него <code>0.0.0.0</code> — тоже потому, что адреса пока нет.</p>
+<h2 id="s25">ICMP: жив ли узел и каким путём идёт пакет</h2>
+<p><strong>На смене:</strong> <code>ping</code> и <code>traceroute</code> — первое, чем проверяют «узел вообще отвечает?» и «где обрывается путь?». А ещё всплеск ICMP бывает прикрытием: им сканируют сеть или прячут данные. Надо уметь прочитать и то, и другое.</p>
+<p><strong>ICMP</strong> (Internet Control Message Protocol) — служебные сообщения о состоянии сети: «дошло / не дошло / время вышло».</p>
+<p><strong>ping</strong> шлёт «эхо-запрос» (тип 8) и ждёт «эхо-ответ» (тип 0). Пришёл ответ — узел жив и путь до него есть.</p>
+<pre><code>192.168.100.138 → 192.168.100.1  ICMP Echo (ping) request   (тип 8)
+192.168.100.1 → 192.168.100.138  ICMP Echo (ping) reply     (тип 0)
+</code></pre>
+<p><strong>traceroute</strong> (на Windows — <code>tracert</code>) показывает каждый узел по пути. Хитрость — в поле <strong>TTL</strong> (Time To Live, «время жизни»): это счётчик прыжков в заголовке IP. Каждый роутер уменьшает его на 1; дойдёт до <strong>нуля</strong> — роутер выбрасывает пакет и шлёт назад ICMP «время истекло» (тип 11). traceroute отправляет пакеты с TTL=1, потом 2, потом 3 — и по «жалобам» собирает список узлов.</p>
+<p>На настоящем захвате видно, как TTL растёт по три пробы на шаг, и каждый шаг «жалуется» новый роутер:</p>
+<pre><code>TTL=1 → отвечает 192.168.100.1     (первый роутер, твой шлюз)
+TTL=2 → отвечает 12.180.241.1      (следующий)
+TTL=3 → отвечает 12.86.61.157      ...
+</code></pre>
+<p>Так ответ: до нуля traceroute доводит поле <strong>TTL</strong> — на нём держится весь трюк.</p>
+<p><strong>Если не получилось:</strong> <code>ping</code> молчит — это не всегда «узел мёртв». Многие серверы и файрволы специально не отвечают на ICMP. Проверяй доступность ещё и по нужному порту (глава 7, <code>nmap</code>), а не только пингом.</p>
+<p><strong>Ошибка новичка:</strong> считать всплеск ICMP всегда безобидным. Десятки тысяч ICMP-пакетов между двумя узлами — это может быть и сбой, и прикрытие скана, и вынос данных внутри ICMP. Смотри объём и направление.</p>
+<h2 id="s26">NAT: почему вся фирма — это один адрес</h2>
+<p><strong>На смене:</strong> это объясняет, почему в алерте «соединение с нашего адреса <code>203.0.113.45</code>» за одним публичным адресом могут прятаться сотни машин — и почему внешнему злодею вся Kranich Druck видна как один IP.</p>
+<p><strong>NAT</strong> (Network Address Translation) — подмена адресов на границе сети. Внутри все узлы живут на частных адресах (<code>192.168.x</code>), а наружу роутер выпускает их все под <strong>одним</strong> публичным. Чтобы не перепутать, кому вернулся ответ, он держит таблицу и каждому соединению даёт свой номер порта.</p>
+<p>Поэтому: если за NAT телефон с адресом <code>192.168.0.5</code> выходит в интернет через роутер с публичным <code>X</code>, снаружи он <strong>появляется как <code>X</code></strong>. Ports — числа <strong>16-битные</strong>, то есть в таблице NAT на один публичный адрес помещается до 65 536 одновременных «дверей».</p>
+<p>Для тебя вывод двойной: внешний адрес в алерте — это часто целая сеть за NAT, а не одна машина; и наоборот, весь внутренний трафик Kranich Druck наружу выходит под одним адресом, по которому злодей и «щупает» фирму — как раз с этого начнётся глава 7.</p>
+<div class="qz" data-q="7"><div class="qz-q">В захвате один MAC <code>00:25:b3:bf:91:ee</code> отвечает, что он и <code>172.16.0.1</code>, и <code>172.16.0.105</code>. Твой вердикт?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Один MAC на два IP (один из них — шлюз) в честной сети невозможен. Трафик жертвы может читаться."><span class="qz-mark" aria-hidden="true"></span><span>ARP-спуфинг, «человек посередине» — эскалация</span></button><button type="button" class="qz-o" data-ok="0" data-why="У одной карты бывает и два IP, но не чужой шлюзовый — это подмена, а не конфигурация."><span class="qz-mark" aria-hidden="true"></span><span>Норма: у устройства два адреса</span></button><button type="button" class="qz-o" data-ok="0" data-why="DHCP выдаёт адреса, но не заставляет один MAC выдавать себя за шлюз."><span class="qz-mark" aria-hidden="true"></span><span>Это DHCP выдал адрес</span></button></div><div class="qz-why" role="status"></div></div>
+<h2 id="s27">Копнуть глубже</h2>
+<details>
+<summary>Топологии и зачем резать сеть на подсети</summary>
+<p><strong>Топология</strong> — схема, как соединены устройства. Для L1 важнее не названия (звезда, шина, кольцо), а идея сегментации: сеть режут на части (подсети, VLAN), чтобы бухгалтерия и гостевой Wi-Fi не были в одном «подъезде». Тогда заражённый гостевой ноут не увидит сервер бухгалтерии напрямую, и ARP-спуфинг из прошлого пункта не достанет чужой сегмент. Когда в алерте «источник и цель в разных подсетях» — значит, трафик прошёл через роутер, и это уже заметное событие.</p>
+</details>
+<h2 id="s28">Термины главы</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>EN</th>
+<th>RU</th>
+<th>DE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gateway</td>
+<td>шлюз</td>
+<td>das Gateway</td>
+</tr>
+<tr>
+<td>broadcast</td>
+<td>широковещание</td>
+<td>der Broadcast / der Rundruf</td>
+</tr>
+<tr>
+<td>ARP spoofing</td>
+<td>подмена ARP</td>
+<td>das ARP-Spoofing</td>
+</tr>
+<tr>
+<td>man-in-the-middle</td>
+<td>человек посередине</td>
+<td>der Mittelsmann-Angriff</td>
+</tr>
+<tr>
+<td>lease (DHCP)</td>
+<td>аренда адреса</td>
+<td>die Lease / die Adresszuweisung</td>
+</tr>
+<tr>
+<td>hop</td>
+<td>прыжок (узел по пути)</td>
+<td>der Hop</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="s29">Как сказать на смене</h2>
+<p>«Wir sehen einen ARP-Spoofing-Angriff im Buchhaltungssegment — eine MAC-Adresse gibt sich als Gateway aus. Mögliches Man-in-the-Middle.» — Мы видим ARP-спуфинг в сегменте бухгалтерии: один MAC выдаёт себя за шлюз. Возможен «человек посередине».</p>
+<h2 id="s30">Выжимка</h2>
+<ul>
+<li>ARP переводит IP в MAC через вопрос «всем» и личный ответ; он верит на слово — поэтому его подделывают.</li>
+<li>Подпись ARP-спуфинга (человек посередине): <strong>один MAC заявляет несколько IP</strong>, особенно адрес шлюза.</li>
+<li>DHCP выдаёт адрес за 4 шага (DORA); при Discover источник <code>0.0.0.0</code>, получатель <code>255.255.255.255</code>.</li>
+<li><code>ping</code> (ICMP тип 8/0) — жив ли узел; traceroute растит TTL от 1, ловя «время истекло» от каждого роутера.</li>
+<li>NAT прячет всю сеть за одним публичным адресом; внешний IP в алерте — часто целая сеть, а не одна машина.</li>
+</ul>
+<h2 id="s31">Связи</h2>
+<ul>
+<li><strong>Глава 7 (Nmap)</strong> — как снаружи щупают тот самый один публичный адрес и находят открытые двери.</li>
+<li><strong>Networking Essentials</strong> на THM — те же DHCP, ARP, ICMP, NAT с задачами на чтение.</li>
+</ul>
+<h1 id="s32" class="anchored">Глава 3. Открытые протоколы: DNS, HTTP, FTP, почта (Networking Core Protocols)</h1>
+<div class="ch-level" data-l="must"><span class="ic">🔥</span>Обязательно <span class="why">— это протоколы, которые L1 видит каждую смену; здесь же разворачивается перебор пароля из нашего инцидента</span></div>
+<div class="thm-verdict" data-v="go"><span class="ic">🧪</span><div><b class="v">Пройди</b> <b>Networking Core Protocols</b> — прочитай главу → пройди комнату → вернись к практике. В комнате живой telnet к веб-, FTP- и почтовому серверу — руками пройти «разговор» с протоколом текстом бесценно. ~45 мин.</div></div>
+<h2 id="s33">Аналогия: разные службы одного города</h2>
+<p>Если сеть — это почта, то открытые протоколы — конкретные службы города. DNS — справочная: по имени даёт адрес. HTTP — курьер, который приносит страницы. FTP — грузовик с файлами. SMTP/POP3/IMAP — почтовое отделение: отправить, забрать, разложить письма. У каждой службы свой «язык» (команды) и своя дверь (порт). И у всех этих служб есть общая беда: они говорят <strong>открытым текстом</strong>. Кто подслушивает линию — читает всё, включая пароли.</p>
+<h2 id="s34">Ты на смене</h2>
+<p>01:14, тот самый первый алерт ночи: «много отказов входа на FUE-FTP01». Ты открываешь захват и видишь командный канал FTP прямо текстом: <code>USER kunde_mueller</code>, <code>PASS …</code>, <code>530 Login incorrect</code>, снова, снова — и вдруг <code>230 Login successful</code>. Пароль подобрали. Через пару строк — <code>RETR Auftrag_4711_Katalog.pdf</code>: файл заказчика выкачали. Всё это читается глазами, потому что FTP ничего не прячет. Твоя задача — прочитать этот разговор и понять, где перебор перешёл в удачный вход и кражу.</p>
+<h2 id="s35">Сначала слова, без которых дальше не понять</h2>
+<p><strong>Открытый текст</strong> (plaintext, cleartext). Данные идут по сети как есть, без шифрования. В захвате видно каждое слово, включая логин и пароль.</p>
+<p><strong>Команда протокола.</strong> Короткое слово, которым клиент управляет службой: <code>GET</code> (дай страницу), <code>USER</code> (вот логин), <code>RETR</code> (забери файл). Сервер отвечает <strong>кодом</strong> — числом, например <code>230</code> (успех) или <code>530</code> (отказ).</p>
+<p><strong>Доменное имя</strong> (domain name). Человеческое имя машины в интернете: <code>kranich-druck.example</code>. DNS переводит его в IP-адрес.</p>
+<p><strong>Запись DNS</strong> (DNS record). Строка в справочнике DNS. Разные типы хранят разное: адрес, почтовый сервер, псевдоним.</p>
+<p><strong>Порт по умолчанию.</strong> Стандартная «дверь» службы, чтобы клиент знал, куда стучаться: веб — 80, FTP — 21, почта — 25. Их полезно помнить.</p>
+<h2 id="s36">DNS: справочник имён</h2>
+<p><strong>На смене:</strong> почти любое соединение начинается с запроса к DNS. Поэтому в DNS-логах видно, <em>куда</em> машина собиралась пойти, ещё до того как пошла. Вредонос, который ходит на свой сервер управления, сначала спрашивает его имя — и это видно.</p>
+<p><strong>DNS</strong> (Domain Name System) переводит имя в адрес. Клиент спрашивает: «какой адрес у <code>wireshark.org</code>?» — сервер отвечает записью. На настоящем захвате:</p>
+<p>На настоящем захвате один обмен: клиент спрашивает <code>A? wireshark.org</code>, сервер отвечает <code>A 128.121.50.122</code> — имя превратилось в адрес, можно идти.</p>
+<p>Запись бывает разных <strong>типов</strong>, и это спрашивают прямо:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Тип</th>
+<th>Что хранит</th>
+<th>Когда увидишь</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A</strong></td>
+<td>адрес IPv4 (<code>128.121.50.122</code>)</td>
+<td>обычный поход на сайт</td>
+</tr>
+<tr>
+<td><strong>AAAA</strong></td>
+<td>адрес <strong>IPv6</strong></td>
+<td>то же, но новый формат адресов</td>
+</tr>
+<tr>
+<td><strong>MX</strong></td>
+<td><strong>почтовый</strong> сервер домена</td>
+<td>куда слать письма для домена</td>
+</tr>
+<tr>
+<td><strong>CNAME</strong></td>
+<td>псевдоним (одно имя → другое)</td>
+<td><code>www</code> ведёт на основной хост</td>
+</tr>
+<tr>
+<td><strong>TXT</strong></td>
+<td>произвольный текст</td>
+<td>проверки владения, записи защиты почты</td>
+</tr>
+</tbody>
+</table></div>
+<p>Так ответы: IPv6 — это запись <strong>AAAA</strong>; почтовый сервер — запись <strong>MX</strong>.</p>
+<p><strong>Копнуть WHOIS по ходу:</strong> <code>whois</code> — отдельная справка о <em>домене</em>, а не об адресе: кто зарегистрировал, когда создан. На смене это обогащение индикатора: домен, созданный три дня назад, подозрительнее домена с историей в 20 лет. Дату создания <code>whois</code> отдаёт в поле Creation Date (формат ГГГГ-ММ-ДД).</p>
+<p><strong>Ошибка новичка:</strong> путать «запрос к DNS» и «заход на сайт». Запрос DNS — только спросили адрес; похода ещё могло не быть. Но сам факт запроса к странному имени — уже зацепка.</p>
+<h2 id="s37">HTTP(S): как приносят страницы</h2>
+<p><strong>На смене:</strong> веб-логи — один из главных источников для L1. Надо уметь прочитать, что запросили (<code>GET /login</code>), что сервер ответил (код), и заметить пароль, если он ушёл открытым текстом.</p>
+<p><strong>HTTP</strong> (HyperText Transfer Protocol) — язык веба, порт <strong>80</strong>. Клиент шлёт <strong>запрос</strong> методом, сервер отвечает <strong>кодом состояния</strong>.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Метод</th>
+<th>Что значит</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td>дай страницу/файл</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td>отправь данные на сервер (форма входа, комментарий)</td>
+</tr>
+</tbody>
+</table></div>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Код</th>
+<th>Значит</th>
+<th>Когда увидишь</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>200 OK</code></td>
+<td>всё хорошо, вот ответ</td>
+<td>обычная загрузка</td>
+</tr>
+<tr>
+<td><code>302 Found</code></td>
+<td>иди по другому адресу (переадресация)</td>
+<td>после входа перекидывает на кабинет</td>
+</tr>
+<tr>
+<td><code>404 Not Found</code></td>
+<td>нет такой страницы</td>
+<td>опечатка или перебор адресов</td>
+</tr>
+<tr>
+<td><code>403 / 401</code></td>
+<td>нет доступа</td>
+<td>защищённая страница</td>
+</tr>
+</tbody>
+</table></div>
+<p>Главное для безопасности: по HTTP <strong>форма входа видна целиком</strong>. На настоящем захвате входа в учебное веб-приложение:</p>
+<pre><code>POST /dvwa/login.php
+username=admin   password=password
+</code></pre>
+<p>Логин и пароль лежат прямо в теле запроса. Любой, кто читает линию, их получит. Поэтому в реальном мире вход всегда по <strong>HTTPS</strong> — тот же HTTP, но завёрнутый в шифрование (порт <strong>443</strong>). Как это спасает — вся глава 4.</p>
+<h2 id="s38">FTP: грузовик с файлами — и наш инцидент</h2>
+<p><strong>На смене:</strong> FTP — старый протокол передачи файлов, порт <strong>21</strong>. Он держит командный канал открытым текстом: логины, пароли, имена файлов — всё видно. Именно это и случилось с FUE-FTP01.</p>
+<p>Разберём захват инцидента по строкам. Сначала перебор:</p>
+<pre><code>C: USER kunde_mueller
+S: 331 Please specify the password.
+C: PASS kunde123
+S: 530 Login incorrect.          ← пароль не подошёл
+C: PASS Kranich2026
+S: 530 Login incorrect.          ← снова
+C: PASS Sommer2026!
+S: 230 Login successful.         ← подобрали
+</code></pre>
+<p>Три попытки подряд, две с отказом <code>530</code>, третья — успех <code>230</code>. Это <strong>перебор пароля</strong> (брутфорс), закончившийся входом. Дальше — кража:</p>
+<pre><code>C: CWD auftraege                 ← зашёл в папку заказов
+C: RETR Auftrag_4711_Katalog.pdf ← забрал файл
+C: RETR Preisliste_2027.csv      ← и ещё один
+</code></pre>
+<p><code>RETR</code> (retrieve) — «скачать файл». Два <code>RETR</code> — два файла заказчика ушли наружу. Вот и третий алерт ночи, «файл ушёл на внешний адрес».</p>
+<figure class="fb"><div class="fb-cap">Строка командного канала FTP по полям</div><div class="fb-line"><span class="fld" tabindex="0" role="button" data-k="dir" data-d="направление: C: — клиент (гость) серверу, S: — сервер клиенту">C:</span> <span class="fld" tabindex="0" role="button" data-k="cmd" data-d="команда FTP: PASS передаёт пароль открытым текстом">PASS</span> <span class="fld" tabindex="0" role="button" data-k="arg" data-d="сам пароль — виден в захвате как есть, без всякого шифрования">Sommer2026!</span> <span class="fld" tabindex="0" role="button" data-k="sep" data-d="дальше ответ сервера отдельной строкой"></span> <span class="fld" tabindex="0" role="button" data-k="code" data-d="код ответа: 230 — вход удался, 530 — отказ, 331 — «жду пароль»">230</span> <span class="fld" tabindex="0" role="button" data-k="msg" data-d="текст ответа для человека">Login successful.</span></div><div class="fb-out fb-hint">Наведи на поле или нажми на него.</div></figure>
+<p><strong>Как записать в тикет:</strong></p>
+<pre><code>FUE-FTP01: перебор пароля по FTP с 203.0.113.45 завершился входом.
+Учётка kunde_mueller, успех в 01:14 (230) после двух отказов (530).
+После входа скачаны Auftrag_4711_Katalog.pdf и Preisliste_2027.csv — утечка.
+Эскалация на L2: сменить пароль kunde_mueller, проверить, что ещё качали.
+</code></pre>
+<p><strong>Ошибка новичка:</strong> увидев <code>230 Login successful</code>, успокоиться — «ну вошёл же легально». Смотри, что было <strong>до</strong>: если входу предшествовали отказы <code>530</code> пачкой с того же адреса, это подобранный пароль, а не законный вход.</p>
+<h2 id="s39">Почта: SMTP, POP3, IMAP</h2>
+<p><strong>На смене:</strong> почтовые протоколы тоже открытые. В захвате видно, кто кому писал и даже тело письма. Это и источник улик (куда ушло письмо с данными), и место утечки.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Протокол</th>
+<th>Что делает</th>
+<th>Порт</th>
+<th>Аналогия</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>SMTP</strong></td>
+<td><strong>отправить</strong> письмо</td>
+<td>25</td>
+<td>отнести конверт на почту</td>
+</tr>
+<tr>
+<td><strong>POP3</strong></td>
+<td><strong>забрать</strong> письма на одно устройство</td>
+<td>110</td>
+<td>вынуть всё из ящика и унести</td>
+</tr>
+<tr>
+<td><strong>IMAP</strong></td>
+<td><strong>синхронизировать</strong> письма между устройствами</td>
+<td>143</td>
+<td>читать ящик, оставляя письма на сервере</td>
+</tr>
+</tbody>
+</table></div>
+<p>SMTP ведёт диалог командами, и на настоящем захвате он весь открыт:</p>
+<pre><code>C: EHLO [172.16.16.225]                    ← представился
+C: MAIL FROM:&lt;sanders@skynet.local&gt;        ← от кого
+C: RCPT TO:&lt;sanders@cyberdyne.local&gt;       ← кому
+C: DATA                                     ← начинаю тело письма
+S: 354 End data with &lt;CR&gt;&lt;LF&gt;.&lt;CR&gt;&lt;LF&gt;      ← «давай, конец — точка на пустой строке»
+C: .                                        ← конец письма
+S: 250 2.0.0 Ok: queued as 931C4400D5       ← принято
+</code></pre>
+<p>Так ответы: начало тела письма клиент помечает командой <strong>DATA</strong>; конец — одиночной <strong>точкой</strong> на пустой строке (<code>.</code>). У POP3 в приветствии видно имя сервера (например, <code>Dovecot</code>), у IMAP четвёртое письмо забирают командой вида <code>FETCH 4 BODY[]</code>.</p>
+<p><strong>Ошибка новичка:</strong> искать пароль почты в теле письма. Логин/пароль уходят в начале сессии (команды <code>AUTH</code>/<code>USER</code>/<code>PASS</code>), а не в письме. По открытому POP3/SMTP их видно там.</p>
+<div class="qz" data-q="8"><div class="qz-q">В захвате FTP: <code>PASS kunde123</code> → <code>530</code>, <code>PASS Kranich2026</code> → <code>530</code>, <code>PASS Sommer2026!</code> → <code>230</code>, дальше <code>RETR</code> двух файлов. Вердикт?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Два отказа `530` и успех `230` с одного адреса — подобранный пароль; `RETR` после — утечка."><span class="qz-mark" aria-hidden="true"></span><span>Подтверждённый перебор с входом и кражей файлов — эскалация</span></button><button type="button" class="qz-o" data-ok="0" data-why="Человек не перебирает пароли за секунды, и обычно не с чужого внешнего адреса. Плюс сразу качает файлы."><span class="qz-mark" aria-hidden="true"></span><span>Норма: заказчик забыл пароль и вспомнил</span></button><button type="button" class="qz-o" data-ok="0" data-why="Отказы входа — не шум; три подряд с успехом в конце — классическая подпись перебора."><span class="qz-mark" aria-hidden="true"></span><span>Ложное срабатывание: FTP всегда шумит</span></button></div><div class="qz-why" role="status"></div></div>
+<h2 id="s40">Копнуть глубже</h2>
+<details>
+<summary>Передача зоны DNS (AXFR) — утечка карты сети</summary>
+<p>Обычный DNS-запрос спрашивает одно имя. Но есть запрос <strong>AXFR</strong> (тип 252) — «отдай мне всю зону целиком», то есть список всех имён и адресов домена. Он задуман для копирования между DNS-серверами, но если сервер отдаёт его кому попало — атакующий одним запросом получает карту всей внутренней сети. На настоящем захвате такой запрос к <code>contoso.local</code> виден как <code>dns.qry.type == 252</code>. В алерте «DNS AXFR с внешнего адреса» это почти всегда разведка — на странице MITRE это T1590, сбор информации о сети жертвы.</p>
+</details>
+<h2 id="s41">Термины главы</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>EN</th>
+<th>RU</th>
+<th>DE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>plaintext / cleartext</td>
+<td>открытый текст</td>
+<td>der Klartext</td>
+</tr>
+<tr>
+<td>DNS record</td>
+<td>запись DNS</td>
+<td>der DNS-Eintrag</td>
+</tr>
+<tr>
+<td>status code</td>
+<td>код состояния</td>
+<td>der Statuscode</td>
+</tr>
+<tr>
+<td>credentials</td>
+<td>учётные данные (логин/пароль)</td>
+<td>die Zugangsdaten</td>
+</tr>
+<tr>
+<td>brute force</td>
+<td>перебор пароля</td>
+<td>der Brute-Force-Angriff</td>
+</tr>
+<tr>
+<td>exfiltration</td>
+<td>утечка/вынос данных</td>
+<td>die Datenexfiltration</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="s42">Как сказать на смене</h2>
+<p>«Ein Brute-Force-Angriff auf den FTP-Server war erfolgreich, danach wurden zwei Kundendateien heruntergeladen — mögliche Datenexfiltration.» — Перебор пароля на FTP-сервере удался, затем скачаны два файла заказчика — возможная утечка данных.</p>
+<h2 id="s43">Выжимка</h2>
+<ul>
+<li>DNS переводит имя в адрес; записи: A (IPv4), AAAA (IPv6), MX (почта), CNAME (псевдоним). DNS-запрос показывает намерение ещё до соединения.</li>
+<li>HTTP (80) показывает метод (<code>GET</code>/<code>POST</code>) и код (<code>200</code>/<code>302</code>/<code>404</code>); по HTTP форма входа видна целиком — поэтому вход всегда по HTTPS (443).</li>
+<li>FTP (21) держит командный канал открытым текстом: <code>USER</code>/<code>PASS</code>/<code>RETR</code> видны. Отказы <code>530</code> пачкой + успех <code>230</code> = подобранный пароль.</li>
+<li>Почта: SMTP (25) отправляет, POP3 (110) забирает, IMAP (143) синхронизирует; по открытым протоколам видны и адреса, и тело.</li>
+<li>Общая беда всех пяти — открытый текст; кто слушает линию, читает всё.</li>
+</ul>
+<h2 id="s44">Связи</h2>
+<ul>
+<li><strong>Глава 4</strong> — те же протоколы, завёрнутые в шифрование (HTTPS, SFTP, SMTPS): почему тогда пароль уже не виден.</li>
+<li><strong>Глава 5 (Wireshark)</strong> — прочитаем этот же FTP-захват в живом интерфейсе.</li>
+<li><strong>Networking Core Protocols</strong> на THM — telnet к каждому из этих протоколов руками.</li>
+</ul>
+<h1 id="s45" class="anchored">Глава 4. Защищённые протоколы: TLS/HTTPS, SSH, VPN (Networking Secure Protocols)</h1>
+<div class="ch-level" data-l="must"><span class="ic">🔥</span>Обязательно <span class="why">— объясняет, почему в одном захвате пароль видно, а в другом нет; без этого не прочитать, защищено соединение или беззащитно</span></div>
+<div class="thm-verdict" data-v="maybe"><span class="ic">🤔</span><div><b class="v">По желанию</b> <b>Networking Secure Protocols</b> — главное — разбор, что видно в зашифрованном трафике, а что нет — есть в главе на настоящих захватах. Комнату пройди по желанию ради VPN-практики и галочки пути. ~60 мин.</div></div>
+<h2 id="s46">Аналогия: открытка против запечатанного конверта</h2>
+<p>Глава 3 — это открытки: почтальон и любой по дороге читают текст. Эта глава — конверты. Снаружи конверта всё ещё видно <em>кому</em> и <em>куда</em> (адрес, размер), но <em>что внутри</em> — нет. Защита не прячет сам факт переписки, она прячет содержимое. Это важно понимать на смене: даже в зашифрованном трафике тебе видно много (кто с кем, когда, сколько), просто не видно паролей и тел.</p>
+<h2 id="s47">Ты на смене</h2>
+<p>Два похожих алерта: вход на портал по HTTP и вход по HTTPS. В первом захвате ты открываешь пакет — и пароль лежит прямо в теле. Во втором на том же месте — <code>Application Data</code>, нечитаемая каша. Разница не в везении: первый шёл открытым текстом, второй завёрнут в TLS. Твоя задача — по порту и по тому, что видно в пакете, сразу сказать: это соединение беззащитно или защищено, и утекли ли по нему учётные данные.</p>
+<h2 id="s48">Сначала слова, без которых дальше не понять</h2>
+<p><strong>Шифрование</strong> (encryption). Превращение данных в нечитаемый вид по секретному ключу. Без ключа — бессмысленный набор байт. Обратно разбирает только тот, у кого ключ.</p>
+<p><strong>TLS</strong> (Transport Layer Security). Общая «обёртка шифрования», которую надевают поверх обычных протоколов. Раньше называлась <strong>SSL</strong> — это её старое имя, TLS построен на нём и заменил его. Именно TLS превращает HTTP в HTTPS, SMTP в SMTPS и так далее.</p>
+<p><strong>Сертификат</strong> (certificate). Электронное удостоверение сервера: подтверждает, что ты говоришь именно с тем сайтом, а не с подделкой. Выдаёт его доверенный центр.</p>
+<p><strong>Рукопожатие</strong> (handshake). Короткий обмен в начале соединения, где стороны договариваются о ключах и проверяют сертификат. Только после него идёт зашифрованная переписка.</p>
+<h2 id="s49">TLS: как обычный протокол становится защищённым</h2>
+<p><strong>На смене:</strong> TLS — одна обёртка на все случаи. Поняв её раз, ты читаешь защищённость любого протокола: есть <code>S</code> на конце (HTTPS, SMTPS, POP3S) — завёрнут в TLS, пароли не видны.</p>
+<p>TLS добавляет к протоколу три вещи: шифрование (чужой не прочитает), проверку сервера сертификатом (ты говоришь с тем, с кем думаешь) и защиту от подмены (данные не поменяли по дороге).</p>
+<p>Два факта спрашивают прямо: TLS <strong>построен на SSL</strong> и заменил его; и для проверки подлинности сервера <strong>нельзя доверять самоподписанным сертификатам</strong> (self-signed) — их выдаёт сам сервер себе, их никто не удостоверял, поэтому подделать такой может кто угодно.</p>
+<h2 id="s50">HTTPS: тот же захват, но пароль не виден</h2>
+<p><strong>На смене:</strong> это самый наглядный пример защиты. Сравним два настоящих захвата входа на один портал — по HTTP и по HTTPS.</p>
+<p>По HTTP (глава 3) тело запроса читается целиком:</p>
+<pre><code>POST /login     user=kunde_mueller   pass=Sommer2026!
+</code></pre>
+<p>По HTTPS на том же месте — только <code>Application Data</code>, и поиск по захвату строки <code>Sommer</code> не находит <strong>ничего</strong>: пароль зашифрован ещё до отправки.</p>
+<!--thv::http-vs-https--><figure class="thv" data-v="diff" id="thv-:http-vs-https"><figcaption><b>Один и тот же вход: HTTP против HTTPS</b><span>Данные из настоящих захватов (учебный портал)</span></figcaption><script type="application/json">{"a":{"title":"HTTP, порт 80 — видно всё","lines":[
+"POST /login HTTP/1.1",
+"Content-Type: application/x-www-form-urlencoded",
+"user=kunde_mueller&pass=Sommer2026!   ← пароль открыт",
+"поиск 'Sommer' в захвате: найдено"
+]},
+"b":{"title":"HTTPS, порт 443 — видно только обёртку","lines":[
+"TLSv1.3 Client Hello / Server Hello   ← рукопожатие",
+"Application Data (зашифровано)",
+"Application Data (зашифровано)",
+"поиск 'Sommer' в захвате: НЕ найдено"
+]}}</script></figure><!--/thv::http-vs-https-->
+<p>Что в HTTPS всё равно видно: адреса сторон (уровень 3), порт 443 (уровень 4), имя сайта на этапе рукопожатия, объём и время. Не видно: путь запроса, заголовки, тело, пароли. Для L1 это значит: по HTTPS ты скажешь <em>кто с кем и сколько</em>, но не <em>что именно просили</em>.</p>
+<p><strong>Ошибка новичка:</strong> считать, что «раз HTTPS — там точно всё чисто, смотреть нечего». Вредонос тоже ходит по HTTPS. Ты всё равно видишь, на какой адрес и как часто он стучится, — и это бывает достаточной зацепкой.</p>
+<h2 id="s51">SMTPS, POP3S, IMAPS: почта под TLS</h2>
+<p>Те же почтовые протоколы из главы 3, завёрнутые в TLS, получают <code>S</code> на конце и свои порты: SMTPS <strong>465</strong>, POP3S <strong>995</strong>, IMAPS <strong>993</strong>. Смысл тот же, что с HTTPS: по открытым (25/110/143) логин и тело письма видно, по защищённым (465/995/993) — нет. Поэтому вопрос «из какого захвата можно вытащить учётные данные» всегда решается так: смотри, открытый протокол или TLS-версия. Из зашифрованного — нельзя.</p>
+<h2 id="s52">SSH: защищённый вход и не только</h2>
+<p><strong>На смене:</strong> SSH — то, через что админы законно заходят на серверы, и то, через что атакующий закрепляется, если украл ключ или пароль. Видеть SSH в трафике — норма; видеть перебор SSH или вход в неурочный час — повод копать.</p>
+<p><strong>SSH</strong> (Secure Shell), порт <strong>22</strong>, — защищённый способ управлять машиной текстом (встречали в прошлых учебниках). В отличие от telnet, всё шифруется: пароль по сети не утечёт. Самая распространённая реализация — <strong>OpenSSH</strong> (открытый, бесплатный; стоит почти на каждом Linux).</p>
+<p>SSH умеет не только вход: по нему <strong>безопасно передают файлы</strong> и строят <strong>туннели</strong> — заворачивают трафик другого, незащищённого протокола внутрь шифрованного SSH. Если хочешь пустить какой-нибудь открытый протокол через враждебную сеть — SSH-туннель это закроет.</p>
+<h2 id="s53">SFTP и FTPS: как надо было отдавать файлы</h2>
+<p>Вернёмся к инциденту. FUE-FTP01 отдавал файлы по <strong>FTP</strong> (21) — открытым текстом, поэтому и пароль, и имена файлов утекли. Правильные варианты:</p>
+<ul>
+<li><strong>SFTP</strong> (SSH File Transfer Protocol) — передача файлов внутри SSH, порт <strong>22</strong>. Не путать с FTPS: SFTP — это целиком про SSH.</li>
+<li><strong>FTPS</strong> — обычный FTP, завёрнутый в TLS (как HTTP→HTTPS).</li>
+</ul>
+<p>Будь на FUE-FTP01 SFTP вместо FTP, захват показал бы только зашифрованный поток: ни <code>PASS Sommer2026!</code>, ни имён скачанных файлов. Это и есть вывод инцидента для IT-команды фирмы — убрать открытый FTP наружу.</p>
+<h2 id="s54">VPN: защищённый переход между сетями</h2>
+<p><strong>На смене:</strong> VPN объясняет, почему сотрудник из дома виден в сети фирмы как «внутренний», и почему офисы в разных городах — одна сеть.</p>
+<p><strong>VPN</strong> (Virtual Private Network) — зашифрованный «туннель» поверх интернета, который соединяет либо удалённого человека с сетью фирмы, либо две сети фирмы между собой. Трафик внутри туннеля зашифрован, снаружи виден только сам туннель.</p>
+<p>Так ответ на типичный вопрос: чтобы связать разные площадки компании так, чтобы сотрудник удалённого офиса работал с ресурсами центрального, используют <strong>VPN</strong> (site-to-site VPN между площадками).</p>
+<div class="qz" data-q="9"><div class="qz-q">Два захвата входа на портал. В первом пароль <code>Sommer2026!</code> виден в теле, порт 80. Во втором на том же месте <code>Application Data</code>, порт 443. Почему?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. TLS заворачивает запрос до отправки; тело и пароль в захвате уже нечитаемы."><span class="qz-mark" aria-hidden="true"></span><span>Первый — HTTP (открыто), второй — HTTPS (TLS шифрует тело)</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет, данные на месте — они зашифрованы. Это не повреждение."><span class="qz-mark" aria-hidden="true"></span><span>Второй захват битый, данные потерялись</span></button><button type="button" class="qz-o" data-ok="0" data-why="Отправляли, просто в зашифрованном виде; соединение дошло до `302`, как и первое."><span class="qz-mark" aria-hidden="true"></span><span>Во втором пароль не отправляли</span></button></div><div class="qz-why" role="status"></div></div>
+<h2 id="s55">Копнуть глубже</h2>
+<details>
+<summary>Что всё-таки видно в TLS — и зачем это L1</summary>
+<p>Даже не расшифровывая TLS, по рукопожатию видно имя сайта, к которому идут (поле SNI в Client Hello), версию TLS и сертификат сервера. Поэтому аналитик без ключей всё равно отвечает на вопросы «на какой домен ходит заражённая машина», «не устаревшая ли это версия TLS», «не самоподписанный ли сертификат у подозрительного сервера». Полную расшифровку делают только там, где есть ключи (например, корпоративный разбор своего трафика), — у L1 этого обычно нет, и не нужно.</p>
+</details>
+<h2 id="s56">Термины главы</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>EN</th>
+<th>RU</th>
+<th>DE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>encryption</td>
+<td>шифрование</td>
+<td>die Verschlüsselung</td>
+</tr>
+<tr>
+<td>certificate</td>
+<td>сертификат</td>
+<td>das Zertifikat</td>
+</tr>
+<tr>
+<td>handshake</td>
+<td>рукопожатие</td>
+<td>der Handshake</td>
+</tr>
+<tr>
+<td>self-signed</td>
+<td>самоподписанный</td>
+<td>selbstsigniert</td>
+</tr>
+<tr>
+<td>tunnel</td>
+<td>туннель</td>
+<td>der Tunnel</td>
+</tr>
+<tr>
+<td>VPN</td>
+<td>VPN (виртуальная частная сеть)</td>
+<td>das VPN</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="s57">Как сказать на смене</h2>
+<p>«Der Login lief über HTTP, nicht HTTPS — die Zugangsdaten waren im Klartext sichtbar. Empfehlung: nur noch TLS zulassen.» — Вход шёл по HTTP, а не HTTPS — учётные данные были видны открытым текстом. Рекомендация: разрешить только TLS.</p>
+<h2 id="s58">Выжимка</h2>
+<ul>
+<li>TLS — обёртка шифрования поверх обычных протоколов; раньше звалась SSL и построена на нём. Буква <code>S</code> на конце (HTTPS, SMTPS, POP3S) = завёрнуто в TLS.</li>
+<li>По HTTP пароль виден целиком, по HTTPS — только <code>Application Data</code>; остаётся видно кто/куда/сколько, но не что именно.</li>
+<li>Самоподписанным сертификатам доверять нельзя — их никто не удостоверял.</li>
+<li>SSH (22) — защищённый вход, передача файлов (SFTP) и туннели; реализация — OpenSSH.</li>
+<li>VPN соединяет удалённых людей и площадки фирмы зашифрованным туннелем; наружу виден только туннель.</li>
+</ul>
+<h2 id="s59">Связи</h2>
+<ul>
+<li><strong>Глава 3</strong> — те же протоколы без защиты: там и утёк пароль с FUE-FTP01.</li>
+<li><strong>Networking Secure Protocols</strong> на THM — TLS, SSH и VPN с разбором захватов и задачей на извлечение пароля из открытого трафика.</li>
+</ul>
+<h1 id="s60" class="anchored">Глава 5. Wireshark: читаем пакеты глазами (Wireshark: The Basics)</h1>
+<div class="ch-level" data-l="must"><span class="ic">🔥</span>Обязательно <span class="why">— Wireshark — главный инструмент разбора трафика в SOC; без него сетевой алерт остаётся словами</span></div>
+<div class="thm-verdict" data-v="go"><span class="ic">🧪</span><div><b class="v">Пройди</b> <b>Wireshark: The Basics</b> — прочитай главу → пройди комнату → вернись к практике. В комнате живой Wireshark с готовым файлом — щёлкать по пакетам руками текстом не заменить (премиум). ~60 мин.</div></div>
+<h2 id="s61">Аналогия: стоп-кадр и замедленный повтор</h2>
+<p>Трафик летит слишком быстро, чтобы разглядеть. Wireshark — как замедленный повтор в спорте: он записал всё и даёт отмотать к любому пакету, остановиться и разглядеть каждую деталь — кто, кому, что в заголовке, что внутри. Ты не участник игры, ты судья у монитора.</p>
+<h2 id="s62">Ты на смене</h2>
+<p>Пришёл алерт с приложенным захватом (<code>.pcap</code>) — «перебор на FTP». Открываешь в Wireshark. Сверху — список пакетов, как лента событий. Ставишь фильтр <code>ftp</code>, и из тысяч строк остаются только команды FTP: <code>USER</code>, <code>PASS</code>, <code>530</code>, <code>530</code>, <code>230</code>. Щёлкаешь по <code>230</code> — внизу разбор по уровням. Пять минут — и ты видишь момент, где перебор стал удачным входом. Без Wireshark это была бы стена из байт.</p>
+<h2 id="s63">Сначала слова, без которых дальше не понять</h2>
+<p><strong>Wireshark.</strong> Программа, которая показывает записанный сетевой трафик по пакету и разбирает каждый на уровни (те самые из главы 1). Бесплатная, ставится на мак.</p>
+<p><strong>pcap / pcapng</strong> (packet capture). Файл с записанным трафиком. Его открывают в Wireshark. <code>pcapng</code> — новый формат того же.</p>
+<p><strong>Захват</strong> (capture). Процесс или файл записи трафика. «Снять захват» — записать, что ходит по сети.</p>
+<p><strong>Фильтр отображения</strong> (display filter). Строка, которая прячет все пакеты, кроме нужных, уже в открытом файле. Например, <code>ip.addr == 203.0.113.45</code> — только пакеты этого адреса. Файл не меняется, просто показывается меньше.</p>
+<p><strong>Поток</strong> (stream). Весь разговор двух сторон одного соединения, собранный в один текст.</p>
+<h2 id="s64">Три окна Wireshark</h2>
+<p><strong>На смене:</strong> разобравшись, где что лежит, ты перестаёшь теряться в интерфейсе и работаешь быстро.</p>
+<p>Экран Wireshark делится на три части сверху вниз:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Окно</th>
+<th>Что показывает</th>
+<th>Зачем тебе</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Список пакетов</strong> (Packet List)</td>
+<td>лента: №, время, откуда, куда, протокол, краткое описание</td>
+<td>обзор: что вообще происходило</td>
+</tr>
+<tr>
+<td><strong>Детали пакета</strong> (Packet Details)</td>
+<td>выбранный пакет, разобранный по уровням OSI</td>
+<td>разложить улику: IP, порт, команда</td>
+</tr>
+<tr>
+<td><strong>Байты</strong> (Packet Bytes)</td>
+<td>тот же пакет в сыром виде</td>
+<td>редко; когда надо увидеть точные байты</td>
+</tr>
+</tbody>
+</table></div>
+<p>Щёлкнул строку в списке — в деталях раскрывается её разбор. Разворачиваешь уровень (▸ Internet Protocol) — видишь адреса и TTL; разворачиваешь Transmission Control Protocol — порты и флаги. Это ровно та матрёшка из главы 1, только кликабельная.</p>
+<!--thv::ws-ftp--><figure class="thv" data-v="ui" id="thv-:ws-ftp"><figcaption><b>Wireshark: перебор FTP в списке пакетов</b><span>Учебный пример: захват инцидента FUE-FTP01 (адреса из диапазонов для примеров)</span></figcaption><script type="application/json">{"app":"wireshark","title":"fue-ftp01_2026-11-12.pcap","filter":"ftp","query":"ftp",
+"cols":["№","Время","Источник","Назначение","Проток.","Описание"],
+"rows":[
+["2298","01:14:19","203.0.113.45","10.20.0.25","FTP","Request: USER kunde_mueller"],
+["2301","01:14:19","203.0.113.45","10.20.0.25","FTP","Request: PASS kunde123"],
+["2303","01:14:23","10.20.0.25","203.0.113.45","FTP","Response: 530 Login incorrect."],
+["2315","01:14:27","203.0.113.45","10.20.0.25","FTP","Request: PASS Kranich2026"],
+["2317","01:14:30","10.20.0.25","203.0.113.45","FTP","Response: 530 Login incorrect."],
+["2329","01:14:31","203.0.113.45","10.20.0.25","FTP","Request: PASS Sommer2026!"],
+["2330","01:14:31","10.20.0.25","203.0.113.45","FTP","Response: 230 Login successful."],
+["2356","01:14:31","203.0.113.45","10.20.0.25","FTP","Request: RETR Auftrag_4711_Katalog.pdf"]
+]}</script></figure><!--/thv::ws-ftp-->
+<h2 id="s65">Фильтры: как оставить нужное</h2>
+<p><strong>На смене:</strong> без фильтра захват — тысячи строк. Фильтр отображения — твой главный навык в Wireshark.</p>
+<p>Частые фильтры (пишутся в строку сверху):</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Фильтр</th>
+<th>Оставляет</th>
+<th>Когда</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ip.addr == 203.0.113.45</code></td>
+<td>всё с этим адресом (в любую сторону)</td>
+<td>«что делал этот гость»</td>
+</tr>
+<tr>
+<td><code>tcp.port == 21</code></td>
+<td>трафик порта 21 (FTP)</td>
+<td>одна служба</td>
+</tr>
+<tr>
+<td><code>ftp</code> / <code>http</code> / <code>dns</code></td>
+<td>только этот протокол</td>
+<td>по типу</td>
+</tr>
+<tr>
+<td><code>ip.src == 10.20.0.25</code></td>
+<td>только <strong>от</strong> этого адреса</td>
+<td>только исходящее</td>
+</tr>
+<tr>
+<td><code>tcp.flags.syn == 1 &amp;&amp; tcp.flags.ack == 0</code></td>
+<td>только запросы на соединение</td>
+<td>искать скан (глава 7)</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Разница, на которой спотыкаются:</strong> <code>==</code> — это «равно» (сравнение), а <code>=</code> одиночное Wireshark не поймёт. И фильтр отображения (прячет в открытом файле) — не то же, что фильтр захвата (решает, что вообще записывать). На смене почти всегда нужен первый.</p>
+<h2 id="s66">Следование за потоком</h2>
+<p><strong>На смене:</strong> когда надо прочитать весь разговор целиком, а не по пакету, — правый клик по пакету → <strong>Follow → TCP Stream</strong> (или HTTP Stream). Wireshark склеит обе стороны в один текст: видно весь диалог FTP или всю HTTP-страницу разом. Так удобно вытаскивать переданные файлы, читать команды атакующего, находить переданные данные.</p>
+<p><strong>Если не получилось:</strong>
+- Фильтр покраснел красным — синтаксическая ошибка (например, <code>=</code> вместо <code>==</code> или опечатка в имени поля). Исправь, пока строка не станет зелёной.
+- Фильтр зелёный, но пакетов ноль — условие верное, но таких пакетов в файле нет. Проверь адрес/порт, попробуй шире (<code>ip.addr</code> вместо <code>ip.src</code>).</p>
+<p><strong>Ошибка новичка:</strong> читать захват подряд с первого пакета. В большом файле так утонешь. Начинай с фильтра по адресу или протоколу из алерта, потом Follow Stream — и только нужное.</p>
+<div class="qz" data-q="10"><div class="qz-q">Нужно из большого захвата оставить только трафик FTP-сервера <code>10.20.0.25</code>. Что впишешь в строку фильтра?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Оставит все пакеты с этим адресом в любую сторону; дальше можно сузить `&amp;&amp; ftp`."><span class="qz-mark" aria-hidden="true"></span><span><code>ip.addr == 10.20.0.25</code></span></button><button type="button" class="qz-o" data-ok="0" data-why="Одиночное `=` Wireshark не примет — нужно `==`. Строка покраснеет."><span class="qz-mark" aria-hidden="true"></span><span><code>ip.addr = 10.20.0.25</code></span></button><button type="button" class="qz-o" data-ok="0" data-why="Голый адрес без имени поля — не фильтр; Wireshark не поймёт."><span class="qz-mark" aria-hidden="true"></span><span><code>10.20.0.25</code></span></button></div><div class="qz-why" role="status"></div></div>
+<h2 id="s67">Копнуть глубже</h2>
+<details>
+<summary>Экспертные подсказки и хэш файла</summary>
+<p>Внизу Wireshark есть <strong>Expert Information</strong> — он сам отмечает странности: повторы, сбросы, предупреждения. Для триажа это быстрый способ увидеть, «здорова» ли сессия или рвётся. А ещё по захвату часто спрашивают <strong>хэш файла</strong> (SHA256) — это «отпечаток» файла: прогоняешь файл через <code>shasum -a 256 файл</code> на маке и получаешь строку, по которой файл потом опознают. Хэш захвата и хэши вытащенных из него файлов идут в тикет как доказательство, что речь об одном и том же файле.</p>
+</details>
+<h2 id="s68">Термины главы</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>EN</th>
+<th>RU</th>
+<th>DE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>capture</td>
+<td>захват (трафика)</td>
+<td>die Aufzeichnung / der Mitschnitt</td>
+</tr>
+<tr>
+<td>display filter</td>
+<td>фильтр отображения</td>
+<td>der Anzeigefilter</td>
+</tr>
+<tr>
+<td>packet details</td>
+<td>детали пакета</td>
+<td>die Paketdetails</td>
+</tr>
+<tr>
+<td>follow stream</td>
+<td>следовать за потоком</td>
+<td>dem Stream folgen</td>
+</tr>
+<tr>
+<td>hash</td>
+<td>хэш (отпечаток)</td>
+<td>der Hash(-wert)</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="s69">Как сказать на смене</h2>
+<p>«Ich habe den Mitschnitt in Wireshark geöffnet und auf FTP gefiltert — der Brute-Force und der erfolgreiche Login sind klar erkennbar.» — Я открыл захват в Wireshark и отфильтровал по FTP — перебор и удачный вход чётко видны.</p>
+<h2 id="s70">Выжимка</h2>
+<ul>
+<li>Wireshark показывает записанный трафик по пакету и разбирает каждый по уровням (матрёшка из главы 1 — кликабельная).</li>
+<li>Три окна: список пакетов (лента), детали (разбор по уровням), байты (сырьё).</li>
+<li>Фильтр отображения — главный навык: <code>ip.addr == X</code>, <code>tcp.port == 21</code>, <code>ftp</code>; <code>==</code>, не <code>=</code>; зелёный — верный, красный — ошибка, ноль пакетов — таких нет.</li>
+<li>Follow → TCP/HTTP Stream склеивает весь разговор в один текст — так читают диалоги и вытаскивают файлы.</li>
+<li>Хэш файла (SHA256) — отпечаток для тикета; <code>shasum -a 256</code> на маке.</li>
+</ul>
+<h2 id="s71">Связи</h2>
+<ul>
+<li><strong>Глава 1</strong> — уровни, которые Wireshark раскрывает в деталях пакета.</li>
+<li><strong>Глава 6</strong> — то же чтение, но из командной строки (tcpdump), когда интерфейса нет.</li>
+<li><strong>Wireshark: The Basics</strong> на THM — весь разбор руками на готовом <code>Exercise.pcapng</code>.</li>
+</ul>
+<h1 id="s72" class="anchored">Глава 6. Tcpdump: пакеты из командной строки (Tcpdump: The Basics)</h1>
+<div class="ch-level" data-l="skim"><span class="ic">👀</span>Бегло <span class="why">— полезно, но Wireshark закрывает ту же задачу; читай по диагонали — пригодится, когда графики нет, только терминал сервера</span></div>
+<div class="thm-verdict" data-v="maybe"><span class="ic">🤔</span><div><b class="v">По желанию</b> <b>Tcpdump: The Basics</b> — tcpdump уже стоит на маке, все команды повторишь на моих pcap в практике. Комнату пройди по желанию ради галочки пути (премиум). ~60 мин.</div></div>
+<h2 id="s73">Аналогия: та же запись, но по рации</h2>
+<p>Wireshark — повтор на большом экране. tcpdump — тот же повтор, но комментатор диктует его по рации: ни картинки, ни мышки, только текст. На сервере в дата-центре окон нет — там только рация, поэтому tcpdump часто единственный способ снять и прочитать трафик прямо на месте.</p>
+<h2 id="s74">Ты на смене</h2>
+<p>На Linux-сервере без графики сработал алерт, а Wireshark поставить некуда. Ты заходишь по SSH и одной строкой <code>tcpdump</code> снимаешь трафик в файл, потом фильтруешь его тут же в терминале: сколько ICMP, кто слал ARP, какое первое DNS-имя спросили. Быстрый ответ прямо на машине, без переноса файла.</p>
+<h2 id="s75">Сначала слова, без которых дальше не понять</h2>
+<p><strong>tcpdump.</strong> Программа командной строки, которая снимает и показывает сетевые пакеты текстом. Стоит на маке и почти любом Linux. Под капотом — библиотека <strong>libpcap</strong> (та самая, что делает <code>.pcap</code>).</p>
+<p><strong>Интерфейс</strong> (interface). Сетевая карта, с которой снимают трафик: проводная, Wi-Fi, loopback. У каждой своё имя (<code>en0</code> на маке, <code>eth0</code> на Linux).</p>
+<p><strong>Выражение фильтра</strong> (filter expression). Условие прямо в команде: <code>host</code>, <code>port</code>, <code>icmp</code> — что снимать или показывать.</p>
+<h2 id="s76">Снять и прочитать</h2>
+<p><strong>На смене:</strong> два режима — снять живой трафик (<code>-w файл</code>) и прочитать готовый (<code>-r файл</code>). Читать чужой <code>.pcap</code> можно и на маке, не трогая сеть.</p>
+<pre><code class="language-bash">tcpdump -r traffic.pcap                 # прочитать готовый захват
+tcpdump -r traffic.pcap -nn             # не переводить адреса и порты в имена
+tcpdump -r traffic.pcap icmp            # только ICMP
+tcpdump -r traffic.pcap -c 5            # только первые 5 пакетов
+</code></pre>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Ключ</th>
+<th>Что делает</th>
+<th>Зачем тебе</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-r файл</code></td>
+<td>читать из файла</td>
+<td>разбор присланного захвата</td>
+</tr>
+<tr>
+<td><code>-w файл</code></td>
+<td>писать в файл</td>
+<td>снять трафик для Wireshark</td>
+</tr>
+<tr>
+<td><code>-n</code></td>
+<td>не превращать адреса в имена</td>
+<td>быстрее, видно сырой IP</td>
+</tr>
+<tr>
+<td><code>-nn</code></td>
+<td>не превращать и порты в имена</td>
+<td>видно номер порта как есть</td>
+</tr>
+<tr>
+<td><code>-c N</code></td>
+<td>остановиться после N пакетов</td>
+<td>не утонуть в выводе</td>
+</tr>
+<tr>
+<td><code>-i имя</code></td>
+<td>с какой карты снимать</td>
+<td>выбрать интерфейс</td>
+</tr>
+</tbody>
+</table></div>
+<p>Строка вывода читается слева направо: время, откуда <code>&gt;</code> куда, протокол и детали. Например:</p>
+<pre><code>01:14:19.415835 IP 203.0.113.45.52122 &gt; 10.20.0.25.21: Flags [P.], ... FTP: USER kunde_mueller
+</code></pre>
+<p>— время, адрес и порт источника (<code>.52122</code>), адрес и порт получателя (<code>.21</code>, FTP), флаги TCP, дальше полезная нагрузка. Это те же поля, что в Wireshark, только одной строкой.</p>
+<p><strong>Фильтры-выражения</strong> (комбинируются словами <code>and</code>, <code>or</code>, <code>not</code>):</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Выражение</th>
+<th>Оставляет</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>host 203.0.113.45</code></td>
+<td>трафик этого адреса</td>
+</tr>
+<tr>
+<td><code>port 21</code></td>
+<td>трафик порта 21</td>
+</tr>
+<tr>
+<td><code>icmp</code> / <code>arp</code> / <code>tcp</code></td>
+<td>только этот протокол</td>
+</tr>
+<tr>
+<td><code>src host 203.0.113.45</code></td>
+<td>только <strong>от</strong> адреса</td>
+</tr>
+<tr>
+<td><code>tcp port 21 and host 10.20.0.25</code></td>
+<td>FTP именно к серверу</td>
+</tr>
+</tbody>
+</table></div>
+<pre><code class="language-bash">tcpdump -r traffic.pcap -nn 'icmp' | wc -l      # сколько ICMP-пакетов
+tcpdump -r traffic.pcap -nn 'arp' | head         # кто кого спрашивал по ARP
+</code></pre>
+<p><strong>Если не получилось:</strong>
+- <code>Permission denied</code> при живом снятии (<code>-i</code>) — снимать трафик может только администратор: <code>sudo tcpdump -i en0</code>. Чтение готового файла (<code>-r</code>) прав не требует.
+- <code>tcpdump: syntax error</code> — ошибка в выражении фильтра: проверь слова (<code>host</code>, <code>port</code>) и кавычки вокруг сложного выражения.</p>
+<p><strong>Ошибка новичка:</strong> забыть <code>-nn</code> и удивляться, почему порт <code>80</code> показан как <code>http</code>, а адрес — как имя. Для разбора почти всегда нужен сырой вид: <code>-nn</code>.</p>
+<h2 id="s77">Копнуть глубже</h2>
+<details>
+<summary>Wireshark или tcpdump — что когда</summary>
+<p>Они дополняют друг друга. tcpdump — снять на сервере, где нет графики, и быстро прикинуть объём и типы. Wireshark — вдумчиво разобрать: раскрыть уровни, собрать поток, вытащить файл. Частый рабочий путь: снял на сервере <code>tcpdump -w дамп.pcap</code>, скачал файл, открыл в Wireshark на своей машине. Один и тот же <code>.pcap</code> читается обоими.</p>
+</details>
+<h2 id="s78">Термины главы</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>EN</th>
+<th>RU</th>
+<th>DE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>interface</td>
+<td>интерфейс (сетевая карта)</td>
+<td>die Schnittstelle</td>
+</tr>
+<tr>
+<td>filter expression</td>
+<td>выражение фильтра</td>
+<td>der Filterausdruck</td>
+</tr>
+<tr>
+<td>libpcap</td>
+<td>libpcap (библиотека захвата)</td>
+<td>die libpcap-Bibliothek</td>
+</tr>
+<tr>
+<td>payload</td>
+<td>полезная нагрузка</td>
+<td>die Nutzlast</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="s79">Как сказать на смене</h2>
+<p>«Ich habe den Verkehr direkt auf dem Server mit tcpdump mitgeschnitten und zur Analyse in Wireshark geöffnet.» — Я снял трафик прямо на сервере через tcpdump и открыл для разбора в Wireshark.</p>
+<h2 id="s80">Выжимка</h2>
+<ul>
+<li>tcpdump снимает и читает пакеты текстом из командной строки; работает на сервере без графики. Под капотом libpcap.</li>
+<li><code>-r</code> читать файл, <code>-w</code> писать, <code>-nn</code> сырой вид адресов и портов, <code>-c N</code> первые N, <code>-i</code> интерфейс.</li>
+<li>Фильтры-слова: <code>host</code>, <code>port</code>, <code>icmp</code>, <code>arp</code>, <code>src host</code>; комбинируются <code>and</code>/<code>or</code>/<code>not</code>.</li>
+<li>Чтение готового <code>.pcap</code> прав не требует; живое снятие — только через <code>sudo</code>.</li>
+<li>Один <code>.pcap</code> читается и tcpdump, и Wireshark — снимают часто tcpdump'ом, разбирают Wireshark'ом.</li>
+</ul>
+<h2 id="s81">Связи</h2>
+<ul>
+<li><strong>Глава 5 (Wireshark)</strong> — то же чтение, но в графике; разбирают захват обычно там.</li>
+<li><strong>Tcpdump: The Basics</strong> на THM — те же ключи и фильтры на готовом <code>traffic.pcap</code>.</li>
+</ul>
+<h1 id="s82" class="anchored">Глава 7. Nmap: как выглядит скан — и как его поймать (Nmap: The Basics)</h1>
+<div class="ch-level" data-l="must"><span class="ic">🔥</span>Обязательно <span class="why">— nmap — инструмент, которым щупают сеть; L1 должен узнавать скан в логах и захвате, с этого начинаются многие атаки</span></div>
+<div class="thm-verdict" data-v="maybe"><span class="ic">🤔</span><div><b class="v">По желанию</b> <b>Nmap: The Basics</b> — понять, как устроен скан и как он выглядит в трафике, важнее, чем сканировать самому. Это разобрано в главе на настоящих захватах. Комнату пройди по желанию ради практики и галочки пути (премиум). ~60 мин.</div></div>
+<h2 id="s83">Аналогия: вор дёргает ручки дверей</h2>
+<p>Прежде чем лезть, вор идёт вдоль дома и тихо дёргает каждую ручку: заперто, заперто, открыто. <strong>Nmap</strong> — такой инструмент: он по очереди стучится в тысячи «дверей» (портов) и отмечает, какие открыты. В руках админа — проверить свою сеть; в руках атакующего — разведка перед взломом. Для тебя это первый шаг чужой атаки, который видно в трафике.</p>
+<h2 id="s84">Ты на смене</h2>
+<p>01:16, второй алерт ночи: «скан портов снаружи». Открываешь захват — и видишь, как <code>203.0.113.45</code> за секунды шлёт сотни запросов на соединение, каждый на новый порт FUE-FTP01. Человек так не делает. Это разведка: гость ищет, что открыто, чтобы выбрать, куда бить. Через минуту он найдёт порт 21 и начнётся перебор из главы 3. Твоя работа — узнать эту подпись и понять, что нашли.</p>
+<h2 id="s85">Сначала слова, без которых дальше не понять</h2>
+<p><strong>Nmap</strong> (Network Mapper). Программа, которая сканирует сеть: находит живые узлы, открытые порты и службы на них. Бесплатная, есть на маке.</p>
+<p><strong>Сканирование портов</strong> (port scan). Перебор портов узла, чтобы узнать, какие открыты. По сути — массовая проверка «эта дверь отвечает?».</p>
+<p><strong>Открытый порт</strong> (open port). Порт, на котором висит служба и готова общаться. Скан отличает открытый (служба ответила) от закрытого (отказ) и фильтруемого (молчит, вероятно файрвол).</p>
+<p><strong>root / sudo.</strong> root — главный администратор, которому можно всё. <code>sudo</code> запускает одну команду от его имени. Некоторым типам скана нужны права root, чтобы собирать пакеты вручную.</p>
+<h2 id="s86">Как nmap находит открытые двери</h2>
+<p><strong>На смене:</strong> понимая механику скана, ты узнаёшь его подпись в захвате и отличаешь типы.</p>
+<p>nmap сначала проверяет, <strong>жив ли узел</strong> (host discovery) — обычно пингом и парой пробных пакетов. Потом <strong>сканирует порты</strong>. Два главных способа:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Тип</th>
+<th>Ключ</th>
+<th>Как работает</th>
+<th>Нужен root?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SYN-скан («полуоткрытый»)</td>
+<td><code>-sS</code></td>
+<td>шлёт SYN, на ответ SYN/ACK (открыт) сразу шлёт RST — соединение не достраивает</td>
+<td>да</td>
+</tr>
+<tr>
+<td>TCP connect-скан</td>
+<td><code>-sT</code></td>
+<td>достраивает полное соединение (как обычный клиент)</td>
+<td>нет</td>
+</tr>
+</tbody>
+</table></div>
+<p>Тонкость, которую спрашивают: SYN-скан (<code>-sS</code>) умеет собирать пакеты только с правами root. Запустишь nmap <strong>без</strong> root и без <code>sudo</code> — он не сможет и <strong>откатится на connect-скан</strong> (<code>-sT</code>), который обходится без спецправ. Поэтому «обычный пользователь → connect-скан».</p>
+<p>Ещё частые ключи:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Ключ</th>
+<th>Что делает</th>
+<th>Зачем тебе (как L1)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-sV</code></td>
+<td>определить <strong>версию</strong> службы на порту</td>
+<td>по версии потом ищут известные дыры</td>
+</tr>
+<tr>
+<td><code>-sU</code></td>
+<td>сканировать <strong>UDP</strong>-порты</td>
+<td>DNS, DHCP живут на UDP</td>
+</tr>
+<tr>
+<td><code>-p 1-1024</code></td>
+<td>какие порты</td>
+<td>понять охват скана в логах</td>
+</tr>
+<tr>
+<td><code>-T0</code>…<code>-T5</code></td>
+<td>скорость (шаблон тайминга по номеру или имени)</td>
+<td>медленный скан прячется, быстрый — шумит</td>
+</tr>
+<tr>
+<td><code>-oN / -oX / -oG</code></td>
+<td>сохранить результат (текст / XML / под grep)</td>
+<td>как хранят вывод скана</td>
+</tr>
+<tr>
+<td><code>-d</code></td>
+<td>режим отладки (debugging)</td>
+<td>подробный вывод при разборе</td>
+</tr>
+</tbody>
+</table></div>
+<p>Определение версии (<code>-sV</code>) на учебном сервере даёт как раз то, что ищет и атакующий, и ты:</p>
+<pre><code>21/tcp  open  ftp      vsftpd 3.0.5
+22/tcp  open  ssh      OpenSSH 9.6p1
+80/tcp  open  http     nginx 1.24.0
+</code></pre>
+<p>— имя и версия каждой службы. Версия <code>vsftpd 3.0.5</code> — повод проверить, нет ли у неё известных уязвимостей.</p>
+<h2 id="s87">Подпись скана в трафике</h2>
+<p><strong>На смене:</strong> главное для L1 — узнать скан, а не запустить. Подпись простая: <strong>один источник, много портов назначения, за короткое время, часто без достройки соединения.</strong></p>
+<p>На настоящем захвате SYN-скана (учебный набор) один узел <code>172.16.0.8</code> за 6 секунд шлёт почти 2000 SYN-пакетов — вот сколько их по секундам:</p>
+<!--thv::scan-burst--><figure class="thv" data-v="timeline" id="thv-:scan-burst"><figcaption><b>Всплеск SYN при скане портов — сотни в секунду</b><span>Данные из настоящего захвата (учебный набор)</span></figcaption><script type="application/json">{"unit":"SYN-пакетов/сек","points":[["0с",16,""],["1с",163,"bad"],["2с",328,"bad"],["3с",641,"bad"],["4с",759,"bad"],["5с",87,""]],"marks":[{"i":3,"text":"пик: 641/сек — так печатает не человек, а программа","kind":"bad"}]}</script></figure><!--/thv::scan-burst-->
+<p>Сотни запросов на соединение в секунду с одного адреса — это машина, не человек. В том захвате из всех опрошенных портов ответили «открыто» (SYN/ACK) только три — 22, 53 и 80; остальные дали отказ. Вот что «нашёл» сканер.</p>
+<p>В нашем инциденте то же самое: <code>203.0.113.45</code> опросил больше тысячи портов FUE-FTP01, почти все ответили отказом (RST — «закрыто»), а открытыми оказались 21, 22, 80 и 443. Дальше гость выбрал 21 (FTP) и пошёл подбирать пароль.</p>
+<p><strong>Как записать в тикет:</strong></p>
+<pre><code>Скан портов FUE-FTP01 с 203.0.113.45 в 01:16. Опрошено &gt;1000 портов за секунды,
+подпись SYN-скана. Открытыми отвечают 21, 22, 80, 443. Следом — перебор по FTP (21).
+Это разведка перед атакой, не ошибка. Эскалация на L2, адрес — в блок.
+</code></pre>
+<p><strong>Ошибка новичка:</strong> увидев одиночные отказы соединения, сразу кричать «скан». Скан — это <em>массовость</em>: много портов с одного адреса за короткое время. Одно-два соединения в закрытый порт — обычный сетевой фон.</p>
+<div class="qz" data-q="11"><div class="qz-q">В захвате <code>203.0.113.45</code> за несколько секунд шлёт SYN более чем на тысячу разных портов <code>10.20.0.25</code>, почти все — с ответом RST. Что это?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Один источник, тысячи портов, короткое время, без достройки соединения — классическая подпись скана."><span class="qz-mark" aria-hidden="true"></span><span>Скан портов (SYN-скан) — разведка, эскалация</span></button><button type="button" class="qz-o" data-ok="0" data-why="Браузер не стучится на тысячу разных портов одного сервера за секунды; это не пользовательский трафик."><span class="qz-mark" aria-hidden="true"></span><span>Норма: клиент открывает много вкладок</span></button><button type="button" class="qz-o" data-ok="0" data-why="Это не повторы одного соединения, а запросы на тысячу разных портов — целенаправленный перебор дверей."><span class="qz-mark" aria-hidden="true"></span><span>Сбой сети: пакеты повторяются</span></button></div><div class="qz-why" role="status"></div></div>
+<h2 id="s88">Копнуть глубже</h2>
+<details>
+<summary>Почему медленный скан (`-T0`) опаснее для защитника</summary>
+<p>Шаблоны тайминга <code>-T0</code>…<code>-T5</code> — от «параноидально медленно» до «безумно быстро». Быстрый скан (как в примере, сотни пакетов в секунду) легко заметить: всплеск виден в любом графике. Но терпеливый атакующий ставит <code>-T0</code> — один порт в несколько минут, растянув разведку на дни. Тогда в потоке обычного трафика скан почти не выделяется, и всплеска нет. Поэтому детектирование скана строят не только на «много за секунду», но и на «один источник трогает необычно много разных портов за сутки», даже если медленно.</p>
+</details>
+<h2 id="s89">Термины главы</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>EN</th>
+<th>RU</th>
+<th>DE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>port scan</td>
+<td>сканирование портов</td>
+<td>der Portscan</td>
+</tr>
+<tr>
+<td>open port</td>
+<td>открытый порт</td>
+<td>der offene Port</td>
+</tr>
+<tr>
+<td>host discovery</td>
+<td>обнаружение узлов</td>
+<td>die Host-Erkennung</td>
+</tr>
+<tr>
+<td>SYN scan</td>
+<td>SYN-сканирование</td>
+<td>der SYN-Scan</td>
+</tr>
+<tr>
+<td>version detection</td>
+<td>определение версии</td>
+<td>die Versionserkennung</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="s90">Как сказать на смене</h2>
+<p>«Wir sehen einen Portscan von 203.0.113.45 gegen den FTP-Server — über tausend Ports in wenigen Sekunden. Das ist Aufklärung vor einem Angriff.» — Мы видим скан портов с 203.0.113.45 на FTP-сервер — больше тысячи портов за секунды. Это разведка перед атакой.</p>
+<h2 id="s91">Выжимка</h2>
+<ul>
+<li>nmap находит живые узлы и открытые порты; <code>-sS</code> — SYN-скан (нужен root), <code>-sT</code> — connect-скан (без root). Без прав nmap сам откатывается на <code>-sT</code>.</li>
+<li><code>-sV</code> определяет версию службы (по ней ищут дыры), <code>-sU</code> — UDP, <code>-T0…-T5</code> — скорость, <code>-oN/-oX/-oG</code> — сохранить вывод.</li>
+<li>Подпись скана: один источник, много портов назначения, короткое время, часто без достройки соединения (SYN→RST).</li>
+<li>Сотни SYN в секунду с одного адреса — это программа, не человек; открытые порты отвечают SYN/ACK, закрытые — RST.</li>
+<li>Медленный скан (<code>-T0</code>) прячется в фоне — детект строят ещё и на «необычно много разных портов с одного источника за сутки».</li>
+</ul>
+<h2 id="s92">Связи</h2>
+<ul>
+<li><strong>Глава 1</strong> — SYN, RST и порты, на которых держится подпись скана.</li>
+<li><strong>Глава 3</strong> — что было после скана: перебор по найденному открытому порту 21.</li>
+<li><strong>Nmap: The Basics</strong> на THM — те же типы скана и ключи на живой цели.</li>
+</ul>
+<h1 id="s93" class="anchored">MITRE ATT&amp;CK: сетевой инцидент по этапам</h1>
+<p><strong>MITRE ATT&amp;CK</strong> — большой каталог приёмов атакующих. Каждый приём — <strong>техника</strong> с кодом (например, <code>T1110</code>). Техники сгруппированы по <strong>тактикам</strong> — зачем приём нужен (разведка, доступ, утечка). Для L1 это общий язык: в тикете пишешь код — и L2 сразу понимает, о каком шаге речь.</p>
+<p>Наш ночной инцидент по шагам:</p>
+<!--thv::kc-net--><figure class="thv" data-v="chain" id="thv-:kc-net"><figcaption><b>Kill chain: ночь в Kranich Druck</b></figcaption><script type="application/json">{"stages":[
+{"name":"Recon","ru":"Разведка: скан портов","state":"done","note":"203.0.113.45 опросил >1000 портов, нашёл 21/22/80/443"},
+{"name":"Credential Access","ru":"Перебор пароля FTP","state":"done","note":"530, 530, 230 — пароль kunde_mueller подобран"},
+{"name":"Exfiltration","ru":"Утечка файлов","state":"cur","note":"RETR двух файлов заказчика по открытому FTP"}
+]}</script></figure><!--/thv::kc-net-->
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Этап инцидента</th>
+<th>Тактика</th>
+<th>Техника (ID)</th>
+<th>Как увидеть в логах/трафике</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Скан портов снаружи</td>
+<td>Reconnaissance</td>
+<td><strong>T1595.001</strong> Scanning IP Blocks</td>
+<td>один источник, тысячи портов, SYN→RST за секунды</td>
+</tr>
+<tr>
+<td>Разведка служб и версий</td>
+<td>Discovery</td>
+<td><strong>T1046</strong> Network Service Discovery</td>
+<td>много коротких соединений, запросы версий служб</td>
+</tr>
+<tr>
+<td>Вход на выставленную службу</td>
+<td>Initial Access</td>
+<td><strong>T1133</strong> External Remote Services</td>
+<td>соединение снаружи на открытый наружу порт (21)</td>
+</tr>
+<tr>
+<td>Перебор пароля FTP</td>
+<td>Credential Access</td>
+<td><strong>T1110.001</strong> Password Guessing</td>
+<td>пачка <code>530</code> + итоговый <code>230</code> с одного адреса</td>
+</tr>
+<tr>
+<td>Утечка по открытому протоколу</td>
+<td>Exfiltration</td>
+<td><strong>T1048.003</strong> Exfiltration Over Unencrypted Non-C2 Protocol</td>
+<td><code>RETR</code>/большой исходящий поток по FTP/HTTP</td>
+</tr>
+</tbody>
+</table></div>
+<p>Отдельный учебный случай (не из этой ночи) — «человек посередине» из главы 2:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Приём</th>
+<th>Тактика</th>
+<th>Техника (ID)</th>
+<th>Подпись</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Подмена ARP</td>
+<td>Credential Access / Collection</td>
+<td><strong>T1557.002</strong> ARP Cache Poisoning</td>
+<td>один MAC заявляет несколько IP, включая шлюз</td>
+</tr>
+<tr>
+<td>Снятие трафика</td>
+<td>Credential Access</td>
+<td><strong>T1040</strong> Network Sniffing</td>
+<td>захват чужого трафика после подмены</td>
+</tr>
+</tbody>
+</table></div>
+<h1 id="s94" class="anchored">Самопроверка</h1>
+<p>Двенадцать вопросов по всему учебнику плюс пара из прошлых модулей. Не уверен — возвращайся к главе.</p>
+<div class="qz" data-q="12"><div class="qz-q">Адрес в алерте лежит на уровне 3 (сетевой), порт — на уровне 4 (транспортный). На каком уровне OSI лежит сам HTTP-запрос <code>GET /login</code>?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. То, что видит программа (запрос, имя сайта, тело), — уровень 7."><span class="qz-mark" aria-hidden="true"></span><span>Прикладной (7)</span></button><button type="button" class="qz-o" data-ok="0" data-why="На 4 живёт порт, а не содержимое запроса."><span class="qz-mark" aria-hidden="true"></span><span>Транспортный (4)</span></button><button type="button" class="qz-o" data-ok="0" data-why="На 2 — MAC и кадр, не прикладные данные."><span class="qz-mark" aria-hidden="true"></span><span>Канальный (2)</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="13"><div class="qz-q">Данные, завёрнутые в TCP, называются сегментом. А завёрнутые для передачи по Wi-Fi?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. На канальном уровне (Ethernet, Wi-Fi) единица — кадр."><span class="qz-mark" aria-hidden="true"></span><span>Кадр (frame)</span></button><button type="button" class="qz-o" data-ok="0" data-why="Пакет — это на уровне IP (сетевой)."><span class="qz-mark" aria-hidden="true"></span><span>Пакет</span></button><button type="button" class="qz-o" data-ok="0" data-why="Датаграмма — это UDP на транспортном уровне."><span class="qz-mark" aria-hidden="true"></span><span>Датаграмма</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="14"><div class="qz-q">В захвате один MAC заявляет, что он и <code>192.168.1.1</code> (шлюз), и <code>192.168.1.50</code>. Что это?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Один MAC на два IP, один из них шлюзовый, — подмена ARP."><span class="qz-mark" aria-hidden="true"></span><span>ARP-спуфинг, «человек посередине»</span></button><button type="button" class="qz-o" data-ok="0" data-why="DHCP выдаёт адреса, но не заставляет один MAC изображать шлюз."><span class="qz-mark" aria-hidden="true"></span><span>Обычная работа DHCP</span></button><button type="button" class="qz-o" data-ok="0" data-why="Чужой шлюзовый адрес на карте — это подмена, а не конфигурация."><span class="qz-mark" aria-hidden="true"></span><span>Нормальная настройка сервера</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="15"><div class="qz-q">Сколько шагов в обмене DHCP и как они зовутся?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Клиент ищет, сервер предлагает, клиент берёт, сервер подтверждает."><span class="qz-mark" aria-hidden="true"></span><span>Четыре: Discover, Offer, Request, Ack (DORA)</span></button><button type="button" class="qz-o" data-ok="0" data-why="Шагов четыре, не три; это DORA."><span class="qz-mark" aria-hidden="true"></span><span>Три: запрос, ответ, подтверждение</span></button><button type="button" class="qz-o" data-ok="0" data-why="Это похоже на DNS, а не на DHCP."><span class="qz-mark" aria-hidden="true"></span><span>Два: запрос и ответ</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="16"><div class="qz-q">Какое поле заголовка IP traceroute доводит до нуля, чтобы узнать каждый узел по пути?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Каждый роутер уменьшает TTL на 1; на нуле шлёт «время истекло», так виден узел."><span class="qz-mark" aria-hidden="true"></span><span>TTL (время жизни)</span></button><button type="button" class="qz-o" data-ok="0" data-why="Порт — транспортный уровень, к traceroute отношения не имеет."><span class="qz-mark" aria-hidden="true"></span><span>Порт назначения</span></button><button type="button" class="qz-o" data-ok="0" data-why="MAC меняется на каждом участке, но счётчик прыжков — это TTL."><span class="qz-mark" aria-hidden="true"></span><span>MAC-адрес</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="17"><div class="qz-q">В захвате HTTP видно <code>POST /login</code> с <code>user=...&amp;pass=...</code> прямо в теле. Почему это проблема и как чинят?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. По HTTP тело видно всем на линии; TLS шифрует его до отправки."><span class="qz-mark" aria-hidden="true"></span><span>Пароль идёт открытым текстом; чинят переходом на HTTPS (TLS)</span></button><button type="button" class="qz-o" data-ok="0" data-why="Метод POST не шифрует; по HTTP он так же открыт, как GET."><span class="qz-mark" aria-hidden="true"></span><span>Проблемы нет, POST безопасен сам по себе</span></button><button type="button" class="qz-o" data-ok="0" data-why="Смена номера порта ничего не шифрует."><span class="qz-mark" aria-hidden="true"></span><span>Чинят сменой порта на 8080</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="18"><div class="qz-q">Какой тип записи DNS указывает на почтовый сервер домена?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. MX (Mail eXchange) — куда слать почту для домена."><span class="qz-mark" aria-hidden="true"></span><span>MX</span></button><button type="button" class="qz-o" data-ok="0" data-why="A — это адрес IPv4 хоста."><span class="qz-mark" aria-hidden="true"></span><span>A</span></button><button type="button" class="qz-o" data-ok="0" data-why="CNAME — псевдоним одного имени для другого."><span class="qz-mark" aria-hidden="true"></span><span>CNAME</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="19"><div class="qz-q">В захвате FTP: два <code>530 Login incorrect</code>, потом <code>230 Login successful</code>, потом <code>RETR файл</code>. Вердикт?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Отказы + успех с одного адреса = перебор; `RETR` после = кража."><span class="qz-mark" aria-hidden="true"></span><span>Подобранный пароль и утечка файла — эскалация</span></button><button type="button" class="qz-o" data-ok="0" data-why="Человек не перебирает пароли за секунды; плюс сразу качает файлы."><span class="qz-mark" aria-hidden="true"></span><span>Законный вход заказчика</span></button><button type="button" class="qz-o" data-ok="0" data-why="Отказы входа и успех — не шум, это подпись перебора."><span class="qz-mark" aria-hidden="true"></span><span>Ложное срабатывание FTP</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="20"><div class="qz-q">Чем SSH (порт 22) отличается от telnet для входа на сервер?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Поэтому для входов — только SSH."><span class="qz-mark" aria-hidden="true"></span><span>SSH шифрует сессию, пароль по сети не утечёт; telnet всё шлёт открытым текстом</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет: telnet открыт, SSH зашифрован."><span class="qz-mark" aria-hidden="true"></span><span>Ничем, это разные названия одного</span></button><button type="button" class="qz-o" data-ok="0" data-why="Скорость не про безопасность; telnet передаёт пароль открыто."><span class="qz-mark" aria-hidden="true"></span><span>telnet быстрее и потому безопаснее</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="21"><div class="qz-q">В захвате <code>203.0.113.45</code> за секунды шлёт SYN на тысячу разных портов <code>10.20.0.25</code>, почти все — ответ RST. Что это?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Один источник, много портов, короткое время, без достройки — подпись скана."><span class="qz-mark" aria-hidden="true"></span><span>Скан портов — разведка</span></button><button type="button" class="qz-o" data-ok="0" data-why="Браузер не стучится на тысячу портов одного сервера за секунды."><span class="qz-mark" aria-hidden="true"></span><span>Пользователь открыл много вкладок</span></button><button type="button" class="qz-o" data-ok="0" data-why="Это не повторы, а запросы на тысячу разных портов — целенаправленно."><span class="qz-mark" aria-hidden="true"></span><span>Сбой сети</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="22"><div class="qz-q">Запустили <code>nmap</code> без прав root и без <code>sudo</code>. Какой скан он применит вместо SYN-скана?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. SYN-скан требует root; без прав nmap откатывается на полное соединение."><span class="qz-mark" aria-hidden="true"></span><span>TCP connect-скан (<code>-sT</code>)</span></button><button type="button" class="qz-o" data-ok="0" data-why="UDP включают отдельно (`-sU`), это не автоматический откат."><span class="qz-mark" aria-hidden="true"></span><span>UDP-скан</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет, nmap просто переключится на connect-скан."><span class="qz-mark" aria-hidden="true"></span><span>Никакой, выдаст ошибку</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="23"><div class="qz-q">По HTTPS вместо тела запроса видно <code>Application Data</code>. Что всё-таки доступно L1 без расшифровки?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Шифруется содержимое, а «кто с кем и сколько» видно."><span class="qz-mark" aria-hidden="true"></span><span>Адреса сторон, порт, имя сайта из рукопожатия, объём и время</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет: внешний «конверт» (адреса, порт, объём) виден."><span class="qz-mark" aria-hidden="true"></span><span>Ничего, HTTPS скрывает всё</span></button><button type="button" class="qz-o" data-ok="0" data-why="Тело как раз зашифровано — его не видно."><span class="qz-mark" aria-hidden="true"></span><span>Полный текст запроса</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="24"><div class="qz-q">(из прошлого модуля) В логе Linux <code>/var/log/secure</code>, а не <code>auth.log</code>. О какой семье систем это говорит?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. У семьи Red Hat входы по SSH пишутся в `secure`."><span class="qz-mark" aria-hidden="true"></span><span>Red Hat (RHEL, Rocky, CentOS, Fedora)</span></button><button type="button" class="qz-o" data-ok="0" data-why="У Debian это `auth.log`, а не `secure`."><span class="qz-mark" aria-hidden="true"></span><span>Debian (Ubuntu, Kali)</span></button><button type="button" class="qz-o" data-ok="0" data-why="Windows не пишет текстовые `secure`; у него журнал событий."><span class="qz-mark" aria-hidden="true"></span><span>Windows</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="25"><div class="qz-q">(из прошлого модуля) Процесс <code>svchost.exe</code> запущен из <code>C:\Temp\</code>. Почему вопрос?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Системная программа не на месте — повод копать."><span class="qz-mark" aria-hidden="true"></span><span>Настоящий svchost живёт только в <code>C:\Windows\System32</code></span></button><button type="button" class="qz-o" data-ok="0" data-why="Должен; это нормальный системный процесс."><span class="qz-mark" aria-hidden="true"></span><span>svchost не должен работать совсем</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет; странна именно системная программа в ней."><span class="qz-mark" aria-hidden="true"></span><span>Temp — запрещённая папка</span></button></div><div class="qz-why" role="status"></div></div>
+<h1 id="s95" class="anchored">Практика</h1>
+<p>Шесть заданий на настоящих захватах. Файлы — из открытого набора <code>chrissanders/packets</code> (скачай папку целиком) плюс захват нашего инцидента (отдам отдельно). Всё делается на маке: <code>tshark</code>/<code>tcpdump</code> там есть, Wireshark ставится <code>brew install --cask wireshark</code>. Ответы комнат не выдаю — тут ты считаешь сам.</p>
+<h2 id="s96">Подготовка (один раз)</h2>
+<pre><code class="language-bash"># набор реальных pcap:
+git clone https://github.com/chrissanders/packets ~/packets
+# tshark (из Wireshark) — проверь, что есть:
+tshark --version   # нет — поставь: brew install --cask wireshark
+</code></pre>
+<h2 id="s97">Задание 1. Скан портов: сколько открыто</h2>
+<p>Файл <code>synscan.pcapng</code>. Один узел сканирует другой.</p>
+<pre><code class="language-bash">cd ~/packets
+tshark -r synscan.pcapng -Y &quot;tcp.flags.syn==1 &amp;&amp; tcp.flags.ack==1&quot; -T fields -e tcp.srcport | sort -n | uniq
+</code></pre>
+<p>Открытый порт отвечает SYN/ACK (<code>syn==1 &amp;&amp; ack==1</code>). <strong>Должно получиться:</strong> три открытых порта. Назови их и скажи, какие службы на них обычно висят.</p>
+<h2 id="s98">Задание 2. Traceroute: сколько узлов по пути</h2>
+<p>Файл <code>icmp_traceroute.pcapng</code>.</p>
+<pre><code class="language-bash">tshark -r icmp_traceroute.pcapng -Y &quot;icmp.type==11&quot; -T fields -e ip.src | sort -u
+</code></pre>
+<p>Каждый отвечающий адрес — один узел (hop) на пути. <strong>Должно получиться:</strong> список роутеров по дороге. Посчитай их и объясни, почему traceroute вообще их видит (вспомни про TTL).</p>
+<h2 id="s99">Задание 3. DNS: тип записи и опасный запрос</h2>
+<p>Файлы <code>dns_query_response.pcapng</code> и <code>dns_axfr.pcapng</code>.</p>
+<pre><code class="language-bash">tshark -r dns_query_response.pcapng -T fields -e dns.qry.name -e dns.a
+tshark -r dns_axfr.pcapng -T fields -e dns.qry.name -e dns.qry.type
+</code></pre>
+<p>В первом — обычный запрос имени (какой адрес вернулся?). Во втором тип запроса <code>252</code>. Найди в главе 3, что это за запрос и почему он опасен, если сервер отдаёт его кому попало.</p>
+<h2 id="s100">Задание 4. Почта открытым текстом: кто кому писал</h2>
+<p>Файл <code>mail_sender_client_1.pcapng</code>.</p>
+<pre><code class="language-bash">tshark -r mail_sender_client_1.pcapng -Y smtp.req -T fields -e smtp.req.command -e smtp.req.parameter
+</code></pre>
+<p><strong>Должно получиться:</strong> команды SMTP с адресами. Выпиши отправителя (<code>MAIL FROM</code>) и получателя (<code>RCPT TO</code>). Объясни, почему ты это вообще видишь (какой это протокол и чем он отличается от SMTPS).</p>
+<h2 id="s101">Задание 5. Пароль в HTTP против HTTPS</h2>
+<p>Файл <code>http_dvwa_clearlogin.pcapng</code> (вход по открытому HTTP).</p>
+<pre><code class="language-bash">tshark -r http_dvwa_clearlogin.pcapng -Y &quot;http.request.method==POST&quot; -T fields -e urlencoded-form.key -e urlencoded-form.value
+</code></pre>
+<p><strong>Должно получиться:</strong> логин и пароль прямо в выводе. Теперь ответь сам: если бы тот же вход шёл по HTTPS, нашёл бы ты пароль этой же командой? Почему?</p>
+<h2 id="s102">Задание 6. Очередь триажа + отчёт по-немецки</h2>
+<p>Разбери события ночного инцидента ниже. По каждому поставь вердикт (<strong>TP</strong> — подтверждённая угроза, <strong>FP</strong> — ложное, <strong>копать</strong> — нужно больше данных), приоритет и одну строку обоснования. Фильтруй по источнику <code>203.0.113.45</code> — это нить атаки.</p>
+<!--thv::siem-net--><figure class="thv" data-v="siem" id="thv-:siem-net"><figcaption><b>Мини-SIEM: события ночи в Kranich Druck</b><span>Учебный пример: сетевые события (адреса из диапазонов для примеров)</span></figcaption><script type="application/json">{"cols":["Время","Источник","Назначение","Событие","Детали"],
+"filter":[1,3],
+"rows":[
+["01:12","10.20.0.30","9.9.9.9","DNS-запрос","A? portal.kranich-druck.example"],
+["01:16","203.0.113.45","10.20.0.25","Скан портов",">1000 портов за секунды, SYN→RST"],
+["01:14","203.0.113.45","10.20.0.25","Перебор FTP","530, 530, затем 230 Login successful"],
+["01:14","203.0.113.45","10.20.0.25","Утечка по FTP","RETR двух файлов заказчика"],
+["01:20","192.168.30.11","192.168.30.1","DHCP","DORA, выдан 192.168.30.11 — норма"],
+["01:25","10.20.0.41","203.0.113.90","HTTPS","Application Data, порт 443 — тело не видно"],
+["01:31","00:25:b3:bf:91:ee","—","ARP-аномалия","один MAC заявляет шлюз и хост"]
+],
+"tasks":[
+"Отфильтруй по источнику 203.0.113.45 — собери нить атаки в порядке recon → brute → exfil.",
+"Для DHCP и HTTPS реши: TP, FP или копать — и почему.",
+"ARP-аномалию привяжи к технике из главы 2."
+]}</script></figure><!--/thv::siem-net-->
+<p>Потом собери короткий отчёт по-немецки по схеме <strong>Was → Wann (с часовым поясом) → Woher → Auswirkung → Empfehlung</strong>:</p>
+<pre><code>Was: Portscan, erfolgreicher FTP-Brute-Force und Datenexfiltration auf FUE-FTP01.
+Wann: 12.11.2026, 01:16–01:31 MEZ.
+Woher: 203.0.113.45 (extern).
+Auswirkung: Konto kunde_mueller kompromittiert, zwei Kundendateien abgeflossen.
+Empfehlung: Passwort zurücksetzen, FTP nach außen schließen (SFTP/FTPS), IP sperren, Eskalation an L2.
+</code></pre>
+<p>(Was — что, Wann — когда, Woher — откуда, Auswirkung — последствие, Empfehlung — рекомендация. MEZ — Mitteleuropäische Zeit, центральноевропейское время.)</p>
+<h1 id="s103" class="anchored">Шпаргалка на один экран</h1>
+<p><strong>Уровни OSI (где улика):</strong> 7 приложение (запрос, имя сайта) · 4 транспорт (порт, TCP/UDP) · 3 сеть (IP) · 2 канал (MAC). TCP/IP = те же в 4: Application / Transport / Internet / Link.</p>
+<p><strong>Единицы:</strong> data → сегмент (TCP) / датаграмма (UDP) → пакет (IP) → кадр (канальный).</p>
+<p><strong>Частные адреса:</strong> <code>10.x</code>, <code>172.16–31.x</code>, <code>192.168.x</code> — в интернете не бывают. Невалидный байт &gt; 255.</p>
+<p><strong>Порты:</strong> 21 FTP · 22 SSH/SFTP · 25 SMTP · 53 DNS · 80 HTTP · 110 POP3 · 143 IMAP · 443 HTTPS · 465 SMTPS · 993 IMAPS · 995 POP3S.</p>
+<p><strong>Открыто/защищено:</strong> есть <code>S</code> (HTTPS/SMTPS/POP3S) → TLS, пароль не виден. Нет <code>S</code> (HTTP/FTP/SMTP/POP3) → открытый текст, видно всё.</p>
+<p><strong>Подписи атак:</strong>
+- ARP-спуфинг (MITM) — один MAC заявляет несколько IP (включая шлюз).
+- Перебор FTP/SSH — пачка отказов + успех с одного адреса.
+- Скан портов — один источник, тысячи портов, SYN→RST за секунды.
+- Утечка — <code>RETR</code>/большой исходящий по открытому протоколу.</p>
+<p><strong>Wireshark:</strong> фильтр <code>ip.addr==X</code>, <code>tcp.port==21</code>, <code>ftp</code> (<code>==</code>, не <code>=</code>); правый клик → Follow → TCP Stream.</p>
+<p><strong>tcpdump:</strong> <code>tcpdump -r файл -nn 'host X'</code>; <code>-w</code> снять, <code>-r</code> читать, <code>-c N</code> первые N. Чтение — без sudo, снятие — с sudo.</p>
+<p><strong>nmap:</strong> <code>-sS</code> SYN (root), <code>-sT</code> connect (без root), <code>-sV</code> версия, <code>-sU</code> UDP. Без root — откат на <code>-sT</code>.</p>
+<p><strong>Отчёт DE:</strong> Was → Wann (MEZ) → Woher → Auswirkung → Empfehlung.</p>
+<h1 id="s104" class="anchored">Отзыв</h1>
+<p>Три вопроса — ответь одной-двумя фразами, допишу правила на будущее:</p>
+<ol>
+<li>Что зашло больше всего: аналогии, разборы захватов или практика на реальных pcap?</li>
+<li>Что было лишним, скучным или слишком очевидным?</li>
+<li>Где пришлось перечитать дважды — тема была сложная или я плохо объяснил?</li>
+</ol>
+<p>И четвёртый, под этот учебник: хватило ли одного сквозного инцидента (скан → перебор → утечка), чтобы связать все протоколы, или в какой-то главе он мешал?</p>
+<!--/thv:ill-cs101-networking-->
+  </main>
+</div>
+
+<button id="totop" aria-label="Наверх">↑</button>
+
+<script>
+(function(){
+  "use strict";
+  var LS={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},
+          set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+
+  /* theme */
+  var root=document.documentElement;
+  var saved=LS.get("thm-theme");
+  if(saved==="dark"||saved==="light")root.setAttribute("data-theme",saved);
+  document.getElementById("themebtn").addEventListener("click",function(){
+    var isDark=root.getAttribute("data-theme")==="dark"||
+      (!root.hasAttribute("data-theme")&&window.matchMedia("(prefers-color-scheme: dark)").matches);
+    var next=isDark?"light":"dark";
+    root.setAttribute("data-theme",next);LS.set("thm-theme",next);
+  });
+
+  /* font size */
+  var fs=parseInt(LS.get("thm-fs")||"17",10);
+  if(isNaN(fs))fs=17;
+  function applyFs(){root.style.setProperty("--fs",fs+"px");LS.set("thm-fs",String(fs));}
+  applyFs();
+  document.getElementById("fsup").addEventListener("click",function(){fs=Math.min(fs+1,23);applyFs();});
+  document.getElementById("fsdown").addEventListener("click",function(){fs=Math.max(fs-1,14);applyFs();});
+
+  /* copy buttons */
+  Array.prototype.forEach.call(document.querySelectorAll("pre"),function(pre){
+    var b=document.createElement("button");
+    b.className="copy";b.type="button";b.textContent="копировать";
+    b.addEventListener("click",function(){
+      var t=pre.querySelector("code")?pre.querySelector("code").innerText:pre.innerText;
+      if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){
+        b.textContent="скопировано";setTimeout(function(){b.textContent="копировать";},1400);
+      });}
+    });
+    pre.appendChild(b);
+  });
+
+  /* field breakdown */
+  Array.prototype.forEach.call(document.querySelectorAll(".fb"),function(fb){
+    var out=fb.querySelector(".fb-out");
+    var def=out.innerHTML;
+    function show(el){
+      Array.prototype.forEach.call(fb.querySelectorAll(".fld"),function(f){f.classList.remove("on");});
+      el.classList.add("on");
+      out.innerHTML="<b>"+el.getAttribute("data-k")+"</b>"+el.getAttribute("data-d");
+    }
+    fb.addEventListener("mouseover",function(e){var t=e.target.closest(".fld");if(t)show(t);});
+    fb.addEventListener("focusin",function(e){var t=e.target.closest(".fld");if(t)show(t);});
+    fb.addEventListener("click",function(e){var t=e.target.closest(".fld");if(t)show(t);});
+    fb.addEventListener("mouseleave",function(){
+      if(!fb.contains(document.activeElement)){
+        Array.prototype.forEach.call(fb.querySelectorAll(".fld"),function(f){f.classList.remove("on");});
+        out.innerHTML=def;
+      }
+    });
+  });
+
+  /* read marks */
+  var heads=Array.prototype.slice.call(document.querySelectorAll("main h2, main h1.anchored"));
+  var doneSet={};
+  try{doneSet=JSON.parse(LS.get("thm-done-01")||"{}")||{};}catch(e){doneSet={};}
+  function pct(){
+    var n=0;for(var i=0;i<heads.length;i++){if(doneSet[heads[i].id])n++;}
+    var p=heads.length?Math.round(n*100/heads.length):0;
+    document.getElementById("readpct").textContent=p+"% прочитано";
+  }
+  heads.forEach(function(h){
+    var txt=h.innerHTML;
+    h.innerHTML="";
+    var b=document.createElement("button");
+    b.className="mark";b.type="button";
+    b.setAttribute("aria-label","Отметить раздел прочитанным");
+    b.setAttribute("aria-pressed",doneSet[h.id]?"true":"false");
+    if(doneSet[h.id])h.classList.add("done");
+    var s=document.createElement("span");s.className="h2t";s.innerHTML=txt;
+    h.appendChild(b);h.appendChild(s);
+    b.addEventListener("click",function(){
+      if(doneSet[h.id]){delete doneSet[h.id];b.setAttribute("aria-pressed","false");h.classList.remove("done");}
+      else{doneSet[h.id]=1;b.setAttribute("aria-pressed","true");h.classList.add("done");}
+      LS.set("thm-done-01",JSON.stringify(doneSet));pct();
+    });
+  });
+  pct();
+
+  /* toc drawer */
+  var toc=document.getElementById("toc"),mb=document.getElementById("menubtn"),scrim=null;
+  function closeDrawer(){toc.classList.remove("open");mb.setAttribute("aria-expanded","false");
+    if(scrim){scrim.remove();scrim=null;}}
+  mb.addEventListener("click",function(){
+    if(toc.classList.contains("open")){closeDrawer();return;}
+    toc.classList.add("open");mb.setAttribute("aria-expanded","true");
+    scrim=document.createElement("div");scrim.id="scrim";
+    scrim.addEventListener("click",closeDrawer);document.body.appendChild(scrim);
+  });
+  toc.addEventListener("click",function(e){if(e.target.tagName==="A")closeDrawer();});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")closeDrawer();});
+
+  /* progress + active toc + to top */
+  var links=Array.prototype.slice.call(toc.querySelectorAll("a"));
+  var bar=document.querySelector("#pbar i"),top=document.getElementById("totop");
+  top.addEventListener("click",function(){window.scrollTo({top:0,behavior:"smooth"});});
+  var ticking=false;
+  function onScroll(){
+    if(ticking)return;ticking=true;
+    window.requestAnimationFrame(function(){
+      var h=document.documentElement.scrollHeight-window.innerHeight;
+      var p=h>0?Math.min(100,Math.max(0,window.scrollY*100/h)):0;
+      bar.style.width=p+"%";
+      top.classList.toggle("show",window.scrollY>600);
+      var cur=null;
+      for(var i=0;i<heads.length;i++){if(heads[i].getBoundingClientRect().top<120)cur=heads[i].id;}
+      links.forEach(function(a){a.classList.toggle("on",a.getAttribute("href")==="#"+cur);});
+      ticking=false;
+    });
+  }
+  window.addEventListener("scroll",onScroll,{passive:true});
+  window.addEventListener("resize",onScroll);
+  onScroll();
+})();
+</script>
+
+<style>
+.qz{margin:1.3em 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 15px}
+.qz-q{font-weight:600;margin-bottom:11px;line-height:1.5}
+.qz-opts{display:flex;flex-direction:column;gap:7px}
+.qz-o{display:flex;gap:9px;align-items:flex-start;text-align:left;font:inherit;font-size:.93rem;
+  color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:9px 11px;cursor:pointer}
+.qz-o:hover{border-color:var(--accent)}
+.qz-mark{flex:none;width:17px;height:17px;border:1.5px solid var(--line);border-radius:50%;margin-top:2px}
+.qz-o.ok .qz-mark{border-color:#1c8a4a;background:#1c8a4a}
+.qz-o.no .qz-mark{border-color:#c2432f;background:#c2432f}
+.qz-o.ok{border-color:#1c8a4a}.qz-o.no{border-color:#c2432f}
+.qz-o[disabled]{cursor:default;opacity:.95}
+.qz-why{display:none;margin-top:11px;padding-top:11px;border-top:1px solid var(--line);font-size:.9rem;line-height:1.55}
+.qz-why.show{display:block}
+.qz-why b{display:block;font-size:.76rem;letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px}
+.qz-why.good b{color:#1c8a4a}.qz-why.bad b{color:#c2432f}
+.tr{margin:1.4em 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.tr-cap{font-family:var(--sans);font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+  padding:9px 14px;border-bottom:1px solid var(--line)}
+.tr-alert{padding:12px 14px;font-family:var(--mono);font-size:.82rem;line-height:1.7}
+.tr-btns{display:flex;flex-wrap:wrap;gap:8px;padding:0 14px 13px}
+.tr-b{font:inherit;font-size:.87rem;color:inherit;background:var(--bg);border:1px solid var(--line);
+  border-radius:8px;padding:8px 13px;cursor:pointer}
+.tr-b:hover{border-color:var(--accent);color:var(--accent)}
+.tr-b.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
+.tr-out{display:none;border-top:1px solid var(--line);padding:12px 14px;font-size:.9rem;line-height:1.6}
+.tr-out.on{display:block}
+.tr-out b{display:block;font-size:.76rem;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.ck{margin:1.5em 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:13px 15px 15px}
+.ck-cap{font-family:var(--sans);font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.ck-list{display:flex;flex-direction:column;gap:3px}
+.ck-i{display:flex;gap:9px;align-items:center;text-align:left;font:inherit;font-size:.9rem;color:inherit;
+  background:none;border:0;padding:5px 2px;cursor:pointer;border-radius:6px}
+.ck-i:hover{color:var(--accent)}
+.ck-box{flex:none;width:15px;height:15px;border:1.5px solid var(--line);border-radius:4px;position:relative}
+.ck-i.on .ck-box{border-color:var(--accent);background:var(--accent)}
+.ck-i.on .ck-box::after{content:"";position:absolute;left:4px;top:1px;width:4px;height:8px;
+  border:solid #fff;border-width:0 1.8px 1.8px 0;transform:rotate(42deg)}
+.ck-i.on span:last-child{opacity:.55;text-decoration:line-through}
+.ck-bar{height:4px;background:var(--line);border-radius:3px;margin:11px 0 6px;overflow:hidden}
+.ck-bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .18s}
+.ck-n{font-family:var(--sans);font-size:.75rem;color:var(--muted)}
+.kc{margin:1.5em 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.kc-cap{font-family:var(--sans);font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+  padding:9px 14px;border-bottom:1px solid var(--line)}
+.kc-tabs{display:flex;overflow-x:auto;gap:6px;padding:11px 14px;border-bottom:1px solid var(--line)}
+.kc-t{flex:none;display:flex;align-items:center;gap:6px;font:inherit;font-size:.82rem;color:inherit;
+  background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:6px 12px;cursor:pointer;white-space:nowrap}
+.kc-t:hover{border-color:var(--accent);color:var(--accent)}
+.kc-t.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
+.kc-t .kc-n{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;
+  background:var(--line);color:var(--fg);font-size:.68rem;font-weight:600}
+.kc-t.on .kc-n{background:var(--accent);color:#fff}
+.kc-p{display:none;padding:13px 15px}
+.kc-p.on{display:block}
+.kc-what{font-size:.94rem;line-height:1.55;margin-bottom:10px}
+.kc-row{display:flex;gap:10px;font-size:.87rem;line-height:1.5;padding:5px 0;border-top:1px solid var(--line)}
+.kc-row b{flex:none;width:96px;font-size:.73rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);
+  font-weight:600;padding-top:2px}
+.kc figcaption{text-align:left;padding:0 15px 13px;margin-top:2px}
+@media (max-width:560px){.kc-row{flex-direction:column;gap:2px}.kc-row b{width:auto}}
+</style>
+
+<script>
+(function(){
+  // квизы
+  Array.prototype.forEach.call(document.querySelectorAll(".qz"), function(qz){
+    var why = qz.querySelector(".qz-why"), done = false;
+    Array.prototype.forEach.call(qz.querySelectorAll(".qz-o"), function(b){
+      b.addEventListener("click", function(){
+        if (done) return; done = true;
+        var ok = b.getAttribute("data-ok") === "1";
+        b.classList.add(ok ? "ok" : "no");
+        if (!ok) {
+          var right = qz.querySelector('.qz-o[data-ok="1"]');
+          if (right) right.classList.add("ok");
+        }
+        Array.prototype.forEach.call(qz.querySelectorAll(".qz-o"), function(x){ x.disabled = true; });
+        why.className = "qz-why show " + (ok ? "good" : "bad");
+        why.innerHTML = "<b>" + (ok ? "Верно" : "Не то") + "</b>" + b.getAttribute("data-why");
+      });
+    });
+  });
+  // триаж
+  Array.prototype.forEach.call(document.querySelectorAll(".tr"), function(tr){
+    Array.prototype.forEach.call(tr.querySelectorAll(".tr-b"), function(b){
+      b.addEventListener("click", function(){
+        var k = b.getAttribute("data-k");
+        Array.prototype.forEach.call(tr.querySelectorAll(".tr-b"), function(x){ x.classList.toggle("on", x === b); });
+        Array.prototype.forEach.call(tr.querySelectorAll(".tr-out"), function(o){
+          o.classList.toggle("on", o.getAttribute("data-k") === k);
+        });
+      });
+    });
+  });
+  // чеклист глав — состояние в переменной, без localStorage
+  Array.prototype.forEach.call(document.querySelectorAll(".ck"), function(ck){
+    var items = ck.querySelectorAll(".ck-i"), bar = ck.querySelector(".ck-bar i"),
+        num = ck.querySelector(".ck-n span"), state = {};
+    function paint(){
+      var n = 0; for (var k in state) if (state[k]) n++;
+      bar.style.width = (items.length ? (n / items.length * 100) : 0) + "%";
+      num.textContent = n;
+    }
+    Array.prototype.forEach.call(items, function(it){
+      it.addEventListener("click", function(ev){
+        var id = it.getAttribute("data-id");
+        if (ev.target.classList.contains("ck-box")) {
+          state[id] = !state[id]; it.classList.toggle("on", !!state[id]); paint(); return;
+        }
+        state[id] = !state[id]; it.classList.toggle("on", !!state[id]); paint();
+        var t = document.getElementById(id);
+        if (t && state[id]) t.scrollIntoView({behavior:"smooth", block:"start"});
+      });
+    });
+    paint();
+  });
+  // лента этапов
+  Array.prototype.forEach.call(document.querySelectorAll(".kc"), function(kc){
+    Array.prototype.forEach.call(kc.querySelectorAll(".kc-t"), function(t){
+      t.addEventListener("click", function(){
+        var i = t.getAttribute("data-i");
+        Array.prototype.forEach.call(kc.querySelectorAll(".kc-t"), function(x){ x.classList.toggle("on", x === t); });
+        Array.prototype.forEach.call(kc.querySelectorAll(".kc-p"), function(p){
+          p.classList.toggle("on", p.getAttribute("data-i") === i);
+        });
+      });
+    });
+  });
+})();
+</script>
+<!--thm-reader:start--><link rel="manifest" href="../manifest.webmanifest"><meta name="theme-color" content="#16212e"><script src="../assets/reader.js" defer></script><script>if('serviceWorker' in navigator)navigator.serviceWorker.register('../sw.js').catch(function(){});</script><!--thm-reader:end-->
