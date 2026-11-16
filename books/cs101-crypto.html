@@ -1,0 +1,1740 @@
+<title>Учебник: Cryptography</title><!--thm-og:start--><meta name="description" content="Cyber Security 101 · Cryptography Basics, Public Key Cryptography Basics, Hashing Basics, John the Ripper: The Basics"><meta property="og:type" content="website"><meta property="og:site_name" content="THM Полка"><meta property="og:locale" content="ru_RU"><meta property="og:title" content="Учебник: Cryptography"><meta property="og:description" content="Cyber Security 101 · Cryptography Basics, Public Key Cryptography Basics, Hashing Basics, John the Ripper: The Basics"><meta property="og:url" content="https://1luskin.github.io/thm-polka/books/cs101-crypto.html"><meta property="og:image" content="https://1luskin.github.io/thm-polka/assets/og/cs101-crypto.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><link rel="icon" href="/thm-polka/assets/favicon.svg" type="image/svg+xml"><link rel="icon" href="/thm-polka/favicon.ico" sizes="32x32"><link rel="apple-touch-icon" href="/thm-polka/assets/apple-touch-icon.png"><!--thm-og:end-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#eef1f5; --surface:#ffffff; --surface-2:#f6f8fa;
+  --ink:#111a22; --muted:#5b6b7b; --line:#d5dde5; --line-soft:#e4eaf0;
+  --accent:#1a5fa8; --accent-soft:#e3edf8;
+  --alert:#a85e0e; --alert-soft:#f9eedd;
+  --ok:#0f7551; --ok-soft:#e2f2eb;
+  --code-bg:#101a24; --code-ink:#dbe6f0; --code-dim:#8aa0b4;
+  --fs:17px; --maxw:none;
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d141b; --surface:#141d26; --surface-2:#19232e;
+    --ink:#e4ecf3; --muted:#93a5b6; --line:#25323f; --line-soft:#1e2933;
+    --accent:#6ba8f5; --accent-soft:#16283c;
+    --alert:#e0a555; --alert-soft:#2c2417;
+    --ok:#52c095; --ok-soft:#13291f;
+    --code-bg:#080e14; --code-ink:#d7e3ef; --code-dim:#7f95a9;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d141b; --surface:#141d26; --surface-2:#19232e;
+  --ink:#e4ecf3; --muted:#93a5b6; --line:#25323f; --line-soft:#1e2933;
+  --accent:#6ba8f5; --accent-soft:#16283c;
+  --alert:#e0a555; --alert-soft:#2c2417;
+  --ok:#52c095; --ok-soft:#13291f;
+  --code-bg:#080e14; --code-ink:#d7e3ef; --code-dim:#7f95a9;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:var(--fs);line-height:1.68;-webkit-text-size-adjust:100%}
+a{color:var(--accent);text-underline-offset:2px;overflow-wrap:anywhere}
+li,p,td,th{overflow-wrap:break-word}
+a:focus-visible,button:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+
+/* ---------- progress + topbar ---------- */
+#pbar{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;height:3px;background:transparent;z-index:40}
+#pbar i{display:block;height:100%;width:0;background:var(--accent);transition:width .12s linear}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;display:flex;align-items:center;gap:10px;
+  background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);padding:8px 16px;font-family:var(--sans)}
+.topbar .brand{font-size:.82rem;font-weight:600;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto}
+.topbar .spacer{flex:1}
+.btn{font-family:var(--sans);font-size:.78rem;font-weight:500;color:var(--ink);background:var(--surface-2);
+  border:1px solid var(--line);border-radius:7px;padding:5px 9px;cursor:pointer;line-height:1.2}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+#readpct{font-family:var(--sans);font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+#menubtn{display:none}
+
+/* ---------- layout ---------- */
+.layout{display:grid;grid-template-columns:262px minmax(0,1fr);gap:34px;align-items:start;
+  max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:26px 80px}
+.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 58px);max-height:calc(100vh - 92px);overflow-y:auto;
+  font-family:var(--sans);font-size:.83rem;line-height:1.35;border-left:2px solid var(--line-soft);padding-left:14px}
+.toc .toc-h{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.toc a{display:block;color:var(--muted);text-decoration:none;padding:4px 0;border-left:2px solid transparent;margin-left:-16px;padding-left:14px}
+.toc a.t1{color:var(--ink);font-weight:600;margin-top:12px;font-size:.84rem}
+.toc a.t2{padding-left:26px;font-size:.8rem}
+.toc a:hover{color:var(--accent)}
+.toc a.on{color:var(--accent);border-left-color:var(--accent);font-weight:600}
+.content{min-width:0;max-width:70ch}
+
+/* ---------- typography ---------- */
+h1{font-family:var(--sans);font-size:2.05rem;line-height:1.15;font-weight:600;letter-spacing:-.015em;margin:.2em 0 .5em;text-wrap:balance}
+h1.anchored{font-size:1.72rem;margin-top:2.2em;padding-top:.7em;border-top:2px solid var(--line);
+   display:flex;align-items:center;gap:10px;scroll-margin-top:72px}
+h2{font-family:var(--sans);font-size:1.3rem;font-weight:600;line-height:1.25;margin:2.2em 0 .7em;text-wrap:balance;
+   display:flex;align-items:center;gap:10px;scroll-margin-top:72px}
+h3{font-family:var(--sans);font-size:1.06rem;font-weight:600;margin:1.9em 0 .5em;color:var(--ink);text-wrap:balance}
+.mark{flex:none;width:19px;height:19px;border:1.5px solid var(--line);border-radius:5px;background:var(--surface);
+  cursor:pointer;padding:0;position:relative}
+.mark[aria-pressed="true"]{background:var(--ok);border-color:var(--ok)}
+.mark[aria-pressed="true"]::after{content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;
+  border:solid #fff;border-width:0 2px 2px 0;transform:rotate(42deg)}
+.done .h2t{opacity:.5}
+p{margin:0 0 1.05em}
+ul,ol{margin:0 0 1.15em;padding-left:1.35em}
+li{margin:.3em 0}
+hr{border:0;border-top:1px solid var(--line);margin:2.6em 0}
+blockquote{margin:1.4em 0;padding:.85em 1.1em;background:var(--alert-soft);border-left:3px solid var(--alert);border-radius:0 8px 8px 0}
+blockquote p:last-child{margin:0}
+strong{font-weight:600}
+.lede{color:var(--muted);font-size:.95rem;font-family:var(--sans)}
+
+/* ---------- code ---------- */
+code{font-family:var(--mono);font-size:.86em;background:var(--surface-2);border:1px solid var(--line-soft);
+  border-radius:4px;padding:.08em .32em;overflow-wrap:anywhere;word-break:break-word}
+pre{position:relative;background:var(--code-bg);color:var(--code-ink);border-radius:10px;padding:14px 16px;
+  overflow-x:auto;margin:1.2em 0;font-size:.85rem;line-height:1.55}
+pre code{background:none;border:0;padding:0;color:inherit;font-size:1em}
+.copy{position:absolute;top:8px;right:8px;font-family:var(--sans);font-size:.68rem;color:var(--code-dim);
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:6px;padding:3px 7px;cursor:pointer}
+.copy:hover{color:#fff;border-color:rgba(255,255,255,.4)}
+
+/* ---------- tables ---------- */
+.tablewrap{overflow-x:auto;margin:1.3em 0;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-family:var(--sans);font-size:.87rem;line-height:1.45}
+th,td{text-align:left;padding:9px 13px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;font-size:.76rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+
+/* ---------- details ---------- */
+details{margin:1.1em 0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:2px 15px}
+details[open]{background:var(--surface-2)}
+summary{cursor:pointer;font-family:var(--sans);font-size:.9rem;font-weight:500;padding:11px 0;list-style:none;
+  display:flex;gap:9px;align-items:flex-start}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"▸";color:var(--accent);flex:none;transition:transform .15s}
+details[open] summary::before{transform:rotate(90deg)}
+details > :not(summary){font-size:.95rem}
+details > p:last-child{padding-bottom:.6em}
+
+/* ---------- field breakdown ---------- */
+.fb{margin:1.4em 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.fb-cap{font-family:var(--sans);font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+  padding:9px 14px 0}
+.fb-line{font-family:var(--mono);font-size:.8rem;line-height:2.1;padding:8px 14px 12px;overflow-x:auto;white-space:pre}
+.fld{border-radius:4px;padding:2px 3px;cursor:pointer;border-bottom:2px solid var(--line);transition:background .12s}
+.fld:hover,.fld.on{background:var(--accent-soft);border-bottom-color:var(--accent)}
+.fld.on{box-shadow:inset 0 0 0 1px var(--accent)}
+.fb-out{font-family:var(--sans);font-size:.85rem;border-top:1px solid var(--line);padding:11px 14px;
+  background:var(--surface-2);min-height:3.6em}
+.fb-out b{font-weight:600;color:var(--accent);display:block;font-size:.78rem;letter-spacing:.03em;text-transform:uppercase;margin-bottom:2px}
+.fb-hint{color:var(--muted)}
+
+/* ---------- figures ---------- */
+figure{margin:1.6em 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 16px 10px}
+figure svg{display:block;max-width:100%;height:auto;margin:0 auto;color:var(--ink)}
+figcaption{font-family:var(--sans);font-size:.78rem;color:var(--muted);margin-top:10px;text-align:center;line-height:1.45}
+
+/* ---------- to top ---------- */
+#totop{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:35;
+  width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);
+  font-size:1rem;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .2s}
+#totop.show{opacity:1;pointer-events:auto}
+
+/* ---------- mobile ---------- */
+@media (max-width:860px){
+  .layout{grid-template-columns:minmax(0,1fr);gap:0;padding-block:18px 70px}
+  #menubtn{display:inline-block}
+  .toc{position:fixed;inset:0 auto 0 0;width:min(84vw,300px);z-index:45;background:var(--surface);
+    border-right:1px solid var(--line);border-left:0;max-height:none;padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px));
+    transform:translateX(-102%);transition:transform .22s ease;overflow-y:auto}
+  .toc.open{transform:none;box-shadow:0 0 40px rgba(0,0,0,.28)}
+  .toc a{margin-left:0;padding-left:10px}
+  #scrim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:44}
+  h1{font-size:1.68rem}
+  h2{font-size:1.24rem;scroll-margin-top:64px}
+  .content{max-width:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+
+<div id="pbar"><i></i></div>
+
+<div class="topbar">
+  <button class="btn" id="menubtn" aria-label="Оглавление" aria-expanded="false">☰</button>
+  <span class="brand">Cyber Security 101 · Cryptography</span>
+  <span class="spacer"></span>
+  <span id="readpct">0% прочитано</span>
+  <button class="btn" id="fsdown" aria-label="Уменьшить шрифт">A−</button>
+  <button class="btn" id="fsup" aria-label="Увеличить шрифт">A+</button>
+  <button class="btn" id="themebtn" aria-label="Сменить тему">◐</button>
+</div>
+
+<div class="layout">
+  <nav class="toc" id="toc" aria-label="Содержание">
+    <div class="toc-h">Содержание</div>
+    <a class="t1" href="#s1">Вспомни прошлое</a>
+    <a class="t1" href="#s2">Пролог: украли не файлы, а паро…</a>
+    <a class="t1" href="#s3">Глава 1. Основы: шифр, ключ, си…</a>
+    <a class="t2" href="#s4">Аналогия: сейф с кодовым замком</a>
+    <a class="t2" href="#s5">Ты на смене</a>
+    <a class="t2" href="#s6">Сначала слова, без которых даль…</a>
+    <a class="t2" href="#s7">Что защищает криптография</a>
+    <a class="t2" href="#s8">Как выглядит шифртекст вживую</a>
+    <a class="t2" href="#s9">Шифр Цезаря: почему важен разме…</a>
+    <a class="t2" href="#s10">Симметричное шифрование: один к…</a>
+    <a class="t2" href="#s11">Асимметричное шифрование: замок…</a>
+    <a class="t2" href="#s12">Немного математики: XOR и остат…</a>
+    <a class="t2" href="#s13">Копнуть глубже</a>
+    <a class="t2" href="#s14">Термины главы</a>
+    <a class="t2" href="#s15">Как сказать на смене</a>
+    <a class="t2" href="#s16">Выжимка</a>
+    <a class="t2" href="#s17">Связи</a>
+    <a class="t1" href="#s18">Глава 2. Открытый ключ: RSA, Di…</a>
+    <a class="t2" href="#s19">Аналогия: ящик с прорезью</a>
+    <a class="t2" href="#s20">Ты на смене</a>
+    <a class="t2" href="#s21">Сначала слова, без которых даль…</a>
+    <a class="t2" href="#s22">RSA: самый известный асимметрич…</a>
+    <a class="t2" href="#s23">Diffie-Hellman: договориться о …</a>
+    <a class="t2" href="#s24">SSH-ключи: вход без пароля</a>
+    <a class="t2" href="#s25">Подписи и сертификаты: как сайт…</a>
+    <a class="t2" href="#s26">PGP и GPG: подписать и зашифров…</a>
+    <a class="t2" href="#s27">Копнуть глубже</a>
+    <a class="t2" href="#s28">Термины главы</a>
+    <a class="t2" href="#s29">Как сказать на смене</a>
+    <a class="t2" href="#s30">Выжимка</a>
+    <a class="t2" href="#s31">Связи</a>
+    <a class="t1" href="#s32">Глава 3. Хэши: отпечаток, IOC, …</a>
+    <a class="t2" href="#s33">Аналогия: отпечаток пальца</a>
+    <a class="t2" href="#s34">Ты на смене</a>
+    <a class="t2" href="#s35">Сначала слова, без которых даль…</a>
+    <a class="t2" href="#s36">Что такое хэш-функция вживую</a>
+    <a class="t2" href="#s37">Размер хэша: он всегда одинаков…</a>
+    <a class="t2" href="#s38">Хэш файла как IOC — главный при…</a>
+    <a class="t2" href="#s39">Проверка целостности: тот же хэ…</a>
+    <a class="t2" href="#s40">Как хранят пароли (и почему не …</a>
+    <a class="t2" href="#s41">Распознать хэш пароля по виду</a>
+    <a class="t2" href="#s42">Взлом хэшей: что это и как види…</a>
+    <a class="t2" href="#s43">Хэш, кодирование, шифрование — …</a>
+    <a class="t2" href="#s44">Копнуть глубже</a>
+    <a class="t2" href="#s45">Термины главы</a>
+    <a class="t2" href="#s46">Как сказать на смене</a>
+    <a class="t2" href="#s47">Выжимка</a>
+    <a class="t2" href="#s48">Связи</a>
+    <a class="t1" href="#s49">Глава 4. John the Ripper: почем…</a>
+    <a class="t2" href="#s50">Зачем L1 вообще знать инструмен…</a>
+    <a class="t2" href="#s51">Ты на смене</a>
+    <a class="t2" href="#s52">Сначала слова, без которых даль…</a>
+    <a class="t2" href="#s53">Как работает john: базовый запу…</a>
+    <a class="t2" href="#s54">Подсказать john тип хэша</a>
+    <a class="t2" href="#s55">Хэши из /etc/shadow: unshadow</a>
+    <a class="t2" href="#s56">Windows-хэши и другие форматы</a>
+    <a class="t2" href="#s57">Single crack: пароль из имени п…</a>
+    <a class="t2" href="#s58">Custom rules: как john «коверка…</a>
+    <a class="t2" href="#s59">Запароленные файлы и ключи: zip…</a>
+    <a class="t2" href="#s60">Копнуть глубже</a>
+    <a class="t2" href="#s61">Термины главы</a>
+    <a class="t2" href="#s62">Как сказать на смене</a>
+    <a class="t2" href="#s63">Выжимка</a>
+    <a class="t2" href="#s64">Связи</a>
+    <a class="t1" href="#s65">MITRE ATT&amp;amp;CK: кража и подбо…</a>
+    <a class="t1" href="#s66">Самопроверка</a>
+    <a class="t1" href="#s67">Практика</a>
+    <a class="t2" href="#s68">Подготовка (один раз)</a>
+    <a class="t2" href="#s69">Задание 1. Отпечаток и лавина</a>
+    <a class="t2" href="#s70">Задание 2. Распознай хэши по ви…</a>
+    <a class="t2" href="#s71">Задание 3. Base64 — раскодируй</a>
+    <a class="t2" href="#s72">Задание 4. Проверь целостность</a>
+    <a class="t2" href="#s73">Задание 5. Очередь триажа + отч…</a>
+    <a class="t2" href="#s74">Задание 6. Почувствуй, за сколь…</a>
+    <a class="t1" href="#s75">Шпаргалка на один экран</a>
+    <a class="t1" href="#s76">Отзыв</a>
+  </nav>
+  <main class="content">
+<h1>Учебник: Cryptography</h1>
+<p><strong>Модуль:</strong> Cyber Security 101 · <strong>Комнаты:</strong> Cryptography Basics, Public Key Cryptography Basics, Hashing Basics, John the Ripper: The Basics.</p>
+<p><strong>Что будешь уметь после учебника:</strong></p>
+<ul>
+<li>отличать три вещи, которые новички путают всю жизнь: шифрование, хэш и кодирование — и говорить, что из них можно вернуть обратно, а что нет;</li>
+<li>по виду строки опознать хэш: какой алгоритм, есть ли соль, слабый он или стойкий — это проверка на каждой смене;</li>
+<li>взять хэш файла из письма с угрозой и пробить его как <strong>IOC</strong> (признак заражения) — самое частое действие L1;</li>
+<li>понимать, что делает атакующий, когда уносит <code>/etc/shadow</code> или базу паролей и ломает её офлайн, — и увидеть это в логах;</li>
+<li>прогнать john и hashcat по учебным хэшам и понять, почему слабый пароль падает за секунды, а стойкий — нет;</li>
+<li>коротко доложить такой алерт по-немецки и собрать строку для тикета.</li>
+</ul>
+<p><strong>Маршрут:</strong></p>
+<ul>
+<li>🔥⏭ <strong>Глава 1. Основы: шифр, ключ, хэш</strong> — комната Cryptography Basics: <em>пропусти</em>. Чистая теория без машины, вся здесь. Ради галочки пути SEC1 прокликаешь комнату за ~10 мин. ~45 мин экономии.</li>
+<li>🔥🤔 <strong>Глава 2. Открытый ключ: RSA, Diffie-Hellman, SSH, сертификаты</strong> — Public Key Cryptography Basics: <em>по желанию</em>. <code>ssh-keygen</code> и <code>gpg</code> повторишь на маке по главе; комнату — ради задач с ключом и галочки. ~60 мин.</li>
+<li>🔥🧪 <strong>Глава 3. Хэши: распознать, проверить целостность, пробить как IOC</strong> — Hashing Basics: <em>пройди</em>. Живая работа с hashcat и реальными хэшами, текстом не заменить. ~75 мин.</li>
+<li>🔥🧪 <strong>Глава 4. John the Ripper: как ломают пароли</strong> — John the Ripper: The Basics: <em>пройди</em>. Чистая практика взлома хэшей, архивов и ключей. ~60 мин.</li>
+</ul>
+<p>Итого: 4 главы 🔥 обязательных (крипто — фундамент, дальше без неё никуда). Две комнаты пройди руками, одну по желанию, одну прокликай ради галочки. Практика — в конце, на маке, без виртуалок.</p>
+<!--thv:ill-cs101-crypto-->
+<figure class="thv-ill"><img src="../assets/illustrations/cs101-crypto.svg" alt="Открытый текст превращается в шифртекст ключом, а хэш идёт только в одну сторону" loading="lazy" width="1200" height="520"></figure>
+<div class="ck"><div class="ck-cap">Где я в учебнике</div><div class="ck-list"><button type="button" class="ck-i" data-id="s3"><span class="ck-box" aria-hidden="true"></span><span>Глава 1. Основы: шифр, ключ, симметрия</span></button><button type="button" class="ck-i" data-id="s18"><span class="ck-box" aria-hidden="true"></span><span>Глава 2. Открытый ключ: RSA, Diffie-Hellman, SSH, сертификаты</span></button><button type="button" class="ck-i" data-id="s32"><span class="ck-box" aria-hidden="true"></span><span>Глава 3. Хэши: отпечаток, IOC, хранение паролей</span></button><button type="button" class="ck-i" data-id="s49"><span class="ck-box" aria-hidden="true"></span><span>Глава 4. John the Ripper: почему слабый пароль не спасает</span></button></div><div class="ck-bar"><i></i></div><div class="ck-n"><span>0</span> из 4</div></div>
+<h1 id="s1" class="anchored">Вспомни прошлое</h1>
+<p>Пять вопросов из прошлых учебников — повторение, чтобы не выветрилось. Не помнишь — под ответом объяснение.</p>
+<div class="qz" data-q="1"><div class="qz-q">В прошлом учебнике вход на портал по HTTPS был виден в захвате как <code>Application Data</code>, а пароль найти не удалось. Почему?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. TLS (шифрование транспорта) превращает запрос в нечитаемый набор байт ещё до сети. Эта тема — ровно про то, что внутри."><span class="qz-mark" aria-hidden="true"></span><span>HTTPS заворачивает тело в TLS — шифрует до отправки</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет, данные на месте, просто зашифрованы."><span class="qz-mark" aria-hidden="true"></span><span>Пакет был битый, данные потерялись</span></button><button type="button" class="qz-o" data-ok="0" data-why="Отправляли, но в зашифрованном виде."><span class="qz-mark" aria-hidden="true"></span><span>Пароль не отправляли</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="2"><div class="qz-q">Строка журнала Linux: <code>Failed password for root from 203.0.113.45</code>. Много таких подряд с одного адреса — что это?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Пачка отказов с одного адреса — подбор пароля. В этом учебнике посмотрим, что бывает, когда подбор удался."><span class="qz-mark" aria-hidden="true"></span><span>Перебор пароля (брутфорс) по SSH</span></button><button type="button" class="qz-o" data-ok="0" data-why="Удачный был бы `Accepted password`."><span class="qz-mark" aria-hidden="true"></span><span>Удачный вход администратора</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет, это отказ во входе: пароль не подошёл."><span class="qz-mark" aria-hidden="true"></span><span>Ошибка самого сервера</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="3"><div class="qz-q">Чтобы из длинного вывода оставить только строки со словом <code>Accepted</code>, что напишешь?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. `grep` оставляет строки с искомым словом. Этой же командой будем искать хэши и совпадения."><span class="qz-mark" aria-hidden="true"></span><span><code>grep "Accepted" log</code></span></button><button type="button" class="qz-o" data-ok="0" data-why="`sort` только упорядочит, не отфильтрует."><span class="qz-mark" aria-hidden="true"></span><span><code>cat log | sort</code></span></button><button type="button" class="qz-o" data-ok="0" data-why="Посчитает строки, не отфильтрует."><span class="qz-mark" aria-hidden="true"></span><span><code>wc -l log</code></span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="4"><div class="qz-q">Процесс в алерте запущен из <code>C:\Users\Public\</code>, а называется как системный. Почему это вопрос?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Имя подделать легко, место — улика. Та же логика дальше: по виду строки судим, что перед нами."><span class="qz-mark" aria-hidden="true"></span><span>Системная программа должна лежать в системной папке, а не в Public</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет, вопрос именно в месте запуска."><span class="qz-mark" aria-hidden="true"></span><span>Такой процесс вообще запрещён</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет, обычная общая папка."><span class="qz-mark" aria-hidden="true"></span><span>Public — вирусная папка</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="5"><div class="qz-q">Что делает DNS?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да, как телефонная книга: по имени — номер."><span class="qz-mark" aria-hidden="true"></span><span>Переводит имя вроде <code>example.com</code> в IP-адрес</span></button><button type="button" class="qz-o" data-ok="0" data-why="Это TLS (HTTPS)."><span class="qz-mark" aria-hidden="true"></span><span>Шифрует трафик между браузером и сайтом</span></button><button type="button" class="qz-o" data-ok="0" data-why="Это DHCP."><span class="qz-mark" aria-hidden="true"></span><span>Выдаёт компьютеру адрес при подключении к сети</span></button></div><div class="qz-why" role="status"></div></div>
+<h1 id="s2" class="anchored">Пролог: украли не файлы, а пароли</h1>
+<blockquote>
+<p><strong>02:40, ночная смена. Та же учебная фирма Kranich Druck GmbH (типография в Фюрте, выдумана).</strong> Неделю назад кто-то с адреса <code>203.0.113.45</code> пролез через открытый FTP-сервер (прошлый учебник: скан → перебор → утечка файлов). IT-команда фирмы закрыла FTP, но гость успел зацепиться за внутренний Linux-сервер. Сегодня ночью SIEM снова ожил.</p>
+</blockquote>
+<p>Фирма, машины и учётки выдуманы. Внутренние адреса — из частных диапазонов, внешний злоумышленник — из <code>203.0.113.0/24</code> (диапазон, отведённый для примеров). Настоящие хэши и команды будут в главах и в практике, и там всегда сказано, что они настоящие.</p>
+<p>Три слова, без которых пролог не понять. <strong>Хэш</strong> (hash) — короткий «отпечаток» файла или пароля: по самому файлу он считается легко, а обратно файл из него не вернуть (вся глава 3 про это). <strong>IOC</strong> (Indicator of Compromise, признак компрометации) — улика, по которой узнают заражение: например, хэш вредоносного файла. <strong>Credential access</strong> (доступ к учётным данным) — этап атаки, когда гость охотится не за файлами, а за паролями и ключами, чтобы ходить по сети как свой.</p>
+<p>Этой ночью три алерта — и это один и тот же гость, который за неделю прошёл путь от «пролез» до «хочу остаться навсегда»:</p>
+<ul>
+<li><strong>02:40 — «обращение к файлу паролей».</strong> На внутреннем сервере кто-то прочитал <code>/etc/shadow</code> — файл, где лежат хэши паролей всех учёток (глава 3).</li>
+<li><strong>02:41 — «файл ушёл наружу».</strong> Этот самый файл с хэшами утёк на внешний адрес. Дома у атакующего он будет <strong>ломать</strong> хэши офлайн — своим john и hashcat, не трогая нашу сеть (глава 4).</li>
+<li><strong>03:05 — «вход по SSH-ключу под служебной учёткой».</strong> Гость вернулся — но уже не перебором, а по украденному <strong>SSH-ключу</strong> (глава 2). Пароль можно сменить, ключ — надо найти и отозвать.</li>
+</ul>
+<p>Чтобы разобрать эти три алерта, сперва нужно понять три кирпича: чем шифрование отличается от хэша (главы 1 и 3), как работает ключ, которым гость вошёл (глава 2), и почему украденные хэши вообще можно «сломать» (главы 3 и 4). С первого кирпича и начнём.</p>
+<h1 id="s3" class="anchored">Глава 1. Основы: шифр, ключ, симметрия (Cryptography Basics)</h1>
+<div class="ch-level" data-l="must"><span class="ic">🔥</span>Обязательно <span class="why">— на этих словах стоит весь модуль: без «ключа», «шифртекста» и разницы симметрии и асимметрии не понять ни SSH, ни хэши</span></div>
+<div class="thm-verdict" data-v="skip"><span class="ic">⏭</span><div><b class="v">Пропусти</b> <b>Cryptography Basics</b> — теория без своей машины, всё её содержание закрыто этой главой и практикой на маке. Ради галочки пути SEC1 прокликай за ~10 мин. Экономия ~35 мин.</div></div>
+<h2 id="s4">Аналогия: сейф с кодовым замком</h2>
+<p>Шифрование — это сейф. Кладёшь внутрь письмо, крутишь код. Сейф можно отдать почтальону или оставить на улице — письмо никто не прочитает. Откроет только тот, кто знает код.</p>
+<p>Устройство сейфа не секрет: чертежи есть у всех. Секрет — только код. В криптографии так же: способ шифрования публичный, секретен только <strong>ключ</strong>.</p>
+<h2 id="s5">Ты на смене</h2>
+<p>Шифрование на смене встречается в очень конкретных местах:</p>
+<ol>
+<li><strong>HTTPS-трафик.</strong> В прошлом учебнике в захвате было видно, куда шёл компьютер, но не что он просил.</li>
+<li><strong>Зашифрованный диск.</strong> Тикет: «сотрудник потерял ноутбук». Первый вопрос L1 — был ли диск зашифрован (BitLocker на Windows, FileVault на маке). Да — данные не утекли, инцидент маленький. Нет — всё, что на диске, считается утёкшим.</li>
+<li><strong>Алерт на массовое переименование файлов.</strong> Тысячи файлов за минуты сменили расширение — так выглядит работа шифровальщика (вредоноса, который шифрует файлы фирмы и требует выкуп за ключ). Это сразу высокий приоритет и эскалация.</li>
+</ol>
+<p>Чтобы про любой из этих случаев сказать в тикете что-то точное, нужны слова этой главы.</p>
+<h2 id="s6">Сначала слова, без которых дальше не понять</h2>
+<p><strong>Бит и байт.</strong> Бит — самая маленькая единица данных: 0 или 1, как выключатель. Байт — 8 бит подряд, например <code>01001000</code>. Одна латинская буква в файле обычно занимает один байт.</p>
+<p><strong>Открытый текст</strong> (plaintext). Данные как есть, до шифрования: письмо, пароль, файл.</p>
+<p><strong>Шифртекст</strong> (ciphertext). Те же данные после шифрования. Без ключа выглядит как мусор.</p>
+<p><strong>Шифр</strong> (cipher). Набор правил, как из открытого текста сделать шифртекст и обратно. Например, «сдвинь каждую букву на N». В аналогии — устройство сейфа.</p>
+<p><strong>Ключ</strong> (key). Секрет, которым настраивают шифр. Тот самый код от сейфа. Шифр у всех один, ключи разные.</p>
+<p><strong>Шифрование</strong> (encryption) — открытый текст + ключ → шифртекст. <strong>Расшифрование</strong> (decryption) — шифртекст + ключ → открытый текст.</p>
+<p><strong>Перебор ключей</strong> (brute force). Пробовать ключи по очереди, пока один не подойдёт. Стойкость шифра измеряется тем, сколько ключей пришлось бы перебрать.</p>
+<h2 id="s7">Что защищает криптография</h2>
+<p><strong>На смене:</strong> в тикете ты пишешь, какое свойство защиты сломалось. Это общий язык с L2 и с IT фирмы.</p>
+<p><strong>Аналогия:</strong> заказное письмо с печатью. По дороге его не прочитают, не подменят незаметно, и видно, от кого оно.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Свойство</th>
+<th>Простыми словами</th>
+<th>Пример</th>
+<th>Когда увидишь</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Конфиденциальность</strong> (confidentiality)</td>
+<td>чужой не прочитает</td>
+<td>HTTPS, шифрование диска</td>
+<td>«потерян ноутбук», «перехват трафика»</td>
+</tr>
+<tr>
+<td><strong>Целостность</strong> (integrity)</td>
+<td>данные не поменяли по дороге</td>
+<td>хэш скачанного файла (глава 3)</td>
+<td>«файл обновления подменили»</td>
+</tr>
+<tr>
+<td><strong>Подлинность</strong> (authenticity)</td>
+<td>данные от того, кто назвался</td>
+<td>подпись, сертификат сайта (глава 2)</td>
+<td>«письмо от банка» с чужого домена</td>
+</tr>
+</tbody>
+</table></div>
+<p>Где это работает каждый день: сайты по HTTPS, онлайн-банк, мессенджеры, VPN из дома, оплата картой. Для данных платёжных карт есть свой отраслевой стандарт безопасности — <strong>PCI DSS</strong>: тот, кто принимает карты, обязан эти данные защищать. В SOC слово всплывает, когда алерт касается кассовых или платёжных систем — такой инцидент сразу важнее.</p>
+<p><strong>Ошибка новичка:</strong> думать, что шифрование защищает от всего. Оно защищает данные <strong>в пути и на выключенном диске</strong>. Если вредонос уже работает под учёткой пользователя, он видит файлы расшифрованными — так же, как сам пользователь.</p>
+<h2 id="s8">Как выглядит шифртекст вживую</h2>
+<p><strong>На смене:</strong> по виду файла надо понимать, зашифрован он или нет. От этого зависит, можно ли его прочитать и что писать в тикет.</p>
+<p><strong>Аналогия:</strong> письмо и оно же после шредера с кодом: объём похожий, смысла нет.</p>
+<p>Зашифруем учебный файл программой <strong>OpenSSL</strong> — стандартный набор криптографических инструментов, есть в Linux и на маке. Алгоритм — AES (о нём ниже).</p>
+<pre><code class="language-bash">echo &quot;Auftrag 4711: Preis 1200 EUR&quot; &gt; secret.txt
+openssl enc -aes-256-cbc -pbkdf2 -salt -in secret.txt -out secret.enc -pass pass:Kranich2026
+</code></pre>
+<ul>
+<li><code>enc</code> — «шифровать»;</li>
+<li><code>-aes-256-cbc</code> — шифр AES с ключом 256 бит (CBC — способ, которым шифр проходит длинный файл кусками);</li>
+<li><code>-pbkdf2</code> — как из пароля <code>Kranich2026</code> сделать настоящий ключ (подробнее в главе 3);</li>
+<li><code>-salt</code> — добавить <strong>соль</strong>, случайную добавку: одинаковые файлы с одинаковым паролем дадут разный шифртекст;</li>
+<li><code>-in</code> / <code>-out</code> — откуда читать и куда писать.</li>
+</ul>
+<pre><code class="language-bash">ls -l secret.txt secret.enc
+file secret.enc
+</code></pre>
+<pre><code>-rw-r--r-- 1 root root 29 Nov 16 13:56 secret.txt
+-rw-r--r-- 1 root root 48 Nov 16 13:56 secret.enc
+secret.enc: openssl enc'd data with salted password
+</code></pre>
+<ul>
+<li>29 байт текста стали 48: добавилась соль, и данные дополнены до целых блоков.</li>
+<li><code>file</code> смотрит на первые байты и угадывает тип файла — здесь он узнал метку OpenSSL.</li>
+</ul>
+<p>Заглянем внутрь. <strong>Шестнадцатеричный вид</strong> (hex) — запись байтов двумя символами от <code>00</code> до <code>ff</code>:</p>
+<pre><code class="language-bash">od -A x -t x1z secret.enc | head -2
+</code></pre>
+<pre><code>000000 53 61 6c 74 65 64 5f 5f d2 fb 17 f9 12 42 2a 8d  &gt;Salted__.....B*.&lt;
+000010 ee 5c cd 76 cd 0b f9 2e 84 c8 22 b6 d3 87 64 b1  &gt;.\.v......&quot;...d.&lt;
+</code></pre>
+<p>Первые 8 байт — метка <code>Salted__</code>, следующие 8 — соль, дальше шифртекст: ни слова <code>Auftrag</code>, ни цифр. У тебя байты будут другие — соль случайная.</p>
+<pre><code class="language-bash">openssl enc -d -aes-256-cbc -pbkdf2 -in secret.enc -pass pass:Kranich2026
+openssl enc -d -aes-256-cbc -pbkdf2 -in secret.enc -pass pass:wrong
+</code></pre>
+<pre><code>Auftrag 4711: Preis 1200 EUR
+bad decrypt
+</code></pre>
+<p><code>-d</code> — «расшифровать». Правильный ключ вернул текст, неправильный — ошибку <code>bad decrypt</code>.</p>
+<p><strong>Признаки зашифрованного файла:</strong></p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Признак</th>
+<th>Как проверить</th>
+<th>Когда увидишь</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>file</code> пишет <code>data</code> или узнаёт контейнер (<code>openssl enc'd data</code>, <code>GPG encrypted data</code>)</td>
+<td><code>file имя</code></td>
+<td>подозрительный файл во вложении или на хосте</td>
+</tr>
+<tr>
+<td>в байтах нет ни одного осмысленного слова</td>
+<td><code>od -c имя | head</code></td>
+<td>любой «непонятный» файл</td>
+</tr>
+<tr>
+<td>архив просит пароль, пароль написан в тексте письма</td>
+<td>попытка распаковки в песочнице</td>
+<td>фишинг: так вложение прячут от проверки почты</td>
+</tr>
+<tr>
+<td>новое расширение у тысяч файлов и записка с требованием</td>
+<td>список файлов на сервере</td>
+<td>шифровальщик — сразу эскалация</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Если не получилось:</strong></p>
+<ul>
+<li>на маке <code>openssl</code> — это <strong>LibreSSL</strong>, родственная программа от Apple. <code>openssl version</code> покажет. Если ругается <code>unknown option -pbkdf2</code>, поставь настоящий OpenSSL: <code>brew install openssl</code>, запускай <code>$(brew --prefix openssl)/bin/openssl</code>;</li>
+<li><code>No such file or directory</code> — ты не в той папке: <code>pwd</code>, <code>ls</code>.</li>
+</ul>
+<p><strong>Ошибка новичка:</strong> распаковать запароленный архив из письма «просто посмотреть» на рабочем компьютере. Его зашифровали, чтобы проверка почты не заглянула внутрь. Такие файлы открывают только в песочнице у L2.</p>
+<p><strong>В тикет:</strong> «Вложение <code>Rechnung.zip</code> зашифровано паролем из тела письма — содержимое проверкой почты не просканировано. Передаю на анализ в песочнице.»</p>
+<h2 id="s9">Шифр Цезаря: почему важен размер ключа</h2>
+<p><strong>На смене:</strong> сам Цезарь не встретится. Но на нём видна главная мысль: <strong>стойкость шифра = сколько ключей надо перебрать</strong>. Отсюда понятно, почему старый DES считается сломанным, а AES — нет.</p>
+<p><strong>Аналогия:</strong> кодовый замок с одним колёсиком на 26 положений. Его откроет любой за минуту, просто прокрутив все положения.</p>
+<p><strong>Как устроено.</strong> Каждая буква сдвигается по алфавиту на одно и то же число — это число и есть ключ. Сдвиг 3: A→D, B→E, H→K. Дошли до Z — начинаем с A. Возможных ключей всего 25 (сдвиг 26 вернёт исходный текст).</p>
+<pre><code class="language-bash">python3 -c &quot;
+def caesar(s,k): return ''.join(chr((ord(c)-65+k)%26+65) if c.isalpha() else c for c in s.upper())
+print(caesar('HELLO',3))
+print(caesar('KHOOR',-3))&quot;
+</code></pre>
+<pre><code>KHOOR
+HELLO
+</code></pre>
+<p><code>python3 -c "..."</code> — запустить короткую программу на Python прямо из терминала; на маке python3 уже есть (при первом запуске может предложить поставить инструменты разработчика — соглашайся).</p>
+<p>Раз ключей 25, шифртекст ломается перебором всех сразу. Учебный шифртекст <code>RYHUPJO</code>:</p>
+<pre><code class="language-bash">python3 -c &quot;
+def caesar(s,k): return ''.join(chr((ord(c)-65+k)%26+65) if c.isalpha() else c for c in s.upper())
+for k in range(1,26): print(k, caesar('RYHUPJO',-k))&quot; | head -8
+</code></pre>
+<pre><code>1 QXGTOIN
+2 PWFSNHM
+3 OVERMGL
+4 NUDQLFK
+5 MTCPKEJ
+6 LSBOJDI
+7 KRANICH
+8 JQZMHBG
+</code></pre>
+<p>На сдвиге 7 появилось осмысленное слово — ключ найден. Человек узнаёт его глазами, программа — по словарю.</p>
+<p><strong>Если не получилось:</strong> <code>SyntaxError</code> — сбились кавычки; скопируй команду целиком. Вывод «как был» — проверь знак сдвига: шифруешь плюсом, расшифровываешь минусом.</p>
+<p><strong>Ошибка новичка:</strong> думать, что шифр надёжен, раз «непонятно, как он устроен». Надёжность держится только на числе ключей — устройство шифра всегда считается известным.</p>
+<p><strong>Сделай сам:</strong> в задании комнаты есть слово, зашифрованное Цезарем. Подставь его вместо <code>RYHUPJO</code> в цикл выше и найди строку со смыслом.</p>
+<h2 id="s10">Симметричное шифрование: один ключ на двоих</h2>
+<p><strong>На смене:</strong> почти всё «шифрование данных», которое ты встретишь (диск, архив, VPN, внутренность HTTPS), — симметричное. В тикете важно, каким алгоритмом: старый — это уже находка.</p>
+<p><strong>Аналогия:</strong> обычный ключ от квартиры. Закрываешь и открываешь одним и тем же, и у каждого, кто должен войти, есть копия.</p>
+<p><strong>Как устроено.</strong> <strong>Симметричное шифрование</strong> (symmetric encryption) — один и тот же ключ шифрует и расшифровывает. Его ещё называют шифрованием с закрытым ключом. Быстрое, годится для гигабайт. Пример выше с <code>openssl enc</code> — симметричный.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Алгоритм</th>
+<th>Ключ</th>
+<th>Статус сегодня</th>
+<th>Когда увидишь</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>DES</strong></td>
+<td>56 бит</td>
+<td>сломан: ключи перебираются полностью, давно не стандарт</td>
+<td>старое оборудование, старые настройки — пиши как находку</td>
+</tr>
+<tr>
+<td><strong>3DES</strong> (Triple DES)</td>
+<td>DES три раза подряд</td>
+<td>устарел, NIST запретил его для новых систем</td>
+<td>старые VPN и банковские системы, отчёты сканеров уязвимостей</td>
+</tr>
+<tr>
+<td><strong>AES</strong></td>
+<td>128, 192 или 256 бит</td>
+<td>стандарт, принят NIST в начале 2000-х на смену DES</td>
+<td>диски, архивы, VPN, HTTPS — почти везде</td>
+</tr>
+</tbody>
+</table></div>
+<p>Почему 56 бит — мало, а 128 — много. Каждый лишний бит удваивает число ключей. 56 бит — около 72 квадриллионов ключей: для современных машин перебираемо. 128 бит — в 2^72 раза больше: столько не переберёт никакая техника, ни сейчас, ни в обозримом будущем.</p>
+<p><strong>Варианты, которые встретятся:</strong> в настройках и отчётах алгоритм пишут вместе с длиной ключа и режимом — <code>AES-256-GCM</code>, <code>aes128-ctr</code>, <code>AES-256-CBC</code>. Первые два куска — алгоритм и ключ, последний — режим. Для L1 главное — узнать слабые имена: <code>DES</code>, <code>3DES</code>, <code>RC4</code>.</p>
+<p><strong>Слабое место симметрии — передача ключа.</strong> Ключ нужен обеим сторонам. Как передать его через интернет, где всё могут подслушать? Отправить открыто — его перехватят. Эту задачу решает асимметричная криптография.</p>
+<p><strong>Ошибка новичка:</strong> писать в тикете «данные зашифрованы, значит в безопасности», не глянув алгоритм. Зашифровано DES — почти то же, что не зашифровано.</p>
+<p><strong>В тикет:</strong> «Сканер нашёл на VPN-шлюзе разрешённый 3DES — устаревший алгоритм. Рекомендация: оставить только AES.»</p>
+<h2 id="s11">Асимметричное шифрование: замок и ключ раздельно</h2>
+<p><strong>На смене:</strong> асимметрия — это SSH-ключи, сертификаты сайтов, подписи писем. Ей посвящена глава 2; здесь — сама идея, без которой глава 2 не читается.</p>
+<p><strong>Аналогия:</strong> почтовый ящик с прорезью. Бросить письмо может любой прохожий — прорезь открыта всем. Достать письма может только хозяин, у него ключ от дверцы.</p>
+<p><strong>Как устроено.</strong> <strong>Асимметричное шифрование</strong> (asymmetric encryption), или <strong>шифрование с открытым ключом</strong> (public key cryptography), использует пару ключей:</p>
+<ul>
+<li><strong>открытый ключ</strong> (public key) — прорезь в ящике. Его раздают всем: им шифруют;</li>
+<li><strong>закрытый ключ</strong> (private key) — ключ от дверцы. Хранится только у хозяина: им расшифровывают.</li>
+</ul>
+<p>Что зашифровано открытым ключом, расшифрует только парный закрытый. Поэтому открытый можно хоть публиковать на сайте — проблема передачи ключа исчезает.</p>
+<p>Минус — асимметрия медленная. Поэтому на практике их совмещают: асимметрией безопасно договариваются о ключе, а сами данные гонят быстрой симметрией (AES). Так работает HTTPS — подробно в главе 2.</p>
+<p><strong>Ошибка новичка:</strong> путать, какой ключ можно отдавать. Открытый — кому угодно. Закрытый — никому и никогда. Закрытый ключ в письме, в чате или в общей папке — это инцидент.</p>
+<h2 id="s12">Немного математики: XOR и остаток от деления</h2>
+<p><strong>На смене:</strong> напрямую не считаешь. Но XOR постоянно всплывает в разборах вредоносов: простые вредоносы прячут свои строки XOR-ом с одним байтом, и в CyberChef (инструмент для раскодирования, будет в следующих модулях) это снимается одной операцией «XOR». Понимать, что это, — значит не бояться слова в отчёте L2.</p>
+<p><strong>XOR</strong> (исключающее «или», знак ⊕). Сравнивает два бита: одинаковые → 0, разные → 1.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>A</th>
+<th>B</th>
+<th>A ⊕ B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+</tr>
+</tbody>
+</table></div>
+<p>Числа XOR-ятся побитно, столбик за столбиком. Главное свойство: <strong>дважды применить тот же ключ — получить исходное</strong>. Это готовый простейший шифр.</p>
+<pre><code class="language-bash">python3 -c &quot;
+a,k=0b1011,0b0110; c=a^k
+print(format(a,'04b'), format(k,'04b'), format(c,'04b'), format(c^k,'04b'))&quot;
+</code></pre>
+<pre><code>1011 0110 1101 1011
+</code></pre>
+<p>Читаем: данные <code>1011</code>, ключ <code>0110</code>, после XOR <code>1101</code> (зашифровали), ещё раз XOR с ключом — снова <code>1011</code> (расшифровали). <code>^</code> в Python — это XOR, <code>0b</code> — «дальше двоичное число», <code>format(…,'04b')</code> — показать как 4 двоичные цифры.</p>
+<p><strong>Остаток от деления</strong> (modulo, mod, знак <code>%</code>). Что остаётся после деления нацело: 17 mod 5 = 2, потому что 17 = 3×5 + 2. <strong>Аналогия:</strong> часы. 22:00 плюс 5 часов — не 27, а 3 часа ночи: (22+5) mod 24 = 3.</p>
+<pre><code class="language-bash">python3 -c &quot;print(17%5, 25%7, (22+5)%24)&quot;
+</code></pre>
+<pre><code>2 4 3
+</code></pre>
+<p>Остаток нужен, чтобы числа «заворачивались по кругу» и не росли бесконечно — на нём держатся RSA и Diffie-Hellman в главе 2. Сдвиг Цезаря тоже работает по модулю 26.</p>
+<p><strong>Если не получилось:</strong> если в задании комнаты знак ⊕, в Python пиши <code>^</code>. Большие числа Python считает сам, калькулятор не нужен.</p>
+<p><strong>Сделай сам:</strong> в комнате есть задачи на XOR двух 4-битных чисел и на остаток. Посчитай их этими же командами, подставив свои числа.</p>
+<div class="qz" data-q="6"><div class="qz-q">Файл зашифрован DES. Что писать в тикете?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Ключ 56 бит перебирается полностью; такой алгоритм отмечают как устаревший."><span class="qz-mark" aria-hidden="true"></span><span>Данные защищены слабо: DES перебирается, это находка</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет. Важно, каким алгоритмом: DES давно сломан перебором."><span class="qz-mark" aria-hidden="true"></span><span>Данные в безопасности, раз зашифрованы</span></button><button type="button" class="qz-o" data-ok="0" data-why="Важен — стойкость держится на алгоритме и длине ключа."><span class="qz-mark" aria-hidden="true"></span><span>Ничего, алгоритм не важен</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="7"><div class="qz-q">Коллега прислал в чат файл <code>id_ed25519</code> — «закрытый ключ, чтобы ты тоже мог зайти на сервер». Что это?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Закрытый ключ хранится только у хозяина. Попал в чат — считается скомпрометированным."><span class="qz-mark" aria-hidden="true"></span><span>Инцидент: закрытый ключ нельзя передавать, его надо заменить</span></button><button type="button" class="qz-o" data-ok="0" data-why="Раздают только открытый ключ, не закрытый."><span class="qz-mark" aria-hidden="true"></span><span>Нормально, ключи для того и нужны</span></button><button type="button" class="qz-o" data-ok="0" data-why="Чат хранит историю, его читают другие люди и программы. Ключ скомпрометирован."><span class="qz-mark" aria-hidden="true"></span><span>Нормально, если чат внутренний</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="8"><div class="qz-q">Какое свойство защиты нарушено, если файл обновления подменили по дороге?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Данные поменяли — нарушена целостность. Проверяют её хэшем (глава 3)."><span class="qz-mark" aria-hidden="true"></span><span>Целостность</span></button><button type="button" class="qz-o" data-ok="0" data-why="Конфиденциальность — про «прочитали», а здесь «подменили»."><span class="qz-mark" aria-hidden="true"></span><span>Конфиденциальность</span></button><button type="button" class="qz-o" data-ok="0" data-why="Доступность — про «не работает», здесь другое."><span class="qz-mark" aria-hidden="true"></span><span>Доступность</span></button></div><div class="qz-why" role="status"></div></div>
+<h2 id="s13">Копнуть глубже</h2>
+<details>
+<summary>Шифрование, кодирование, хэш — три разных вещи</summary>
+<p>Их путают постоянно, поэтому сразу разведём, подробно — в главе 3.</p>
+<ul>
+<li><strong>Шифрование</strong> — нужен ключ, обратимо только с ключом. Цель — скрыть.</li>
+<li><strong>Кодирование</strong> (encoding, например Base64) — ключа нет, обратимо любым. Цель — передать данные в удобном виде, не скрыть. <code>SGVsbG8=</code> — это не шифр, а <code>Hello</code>, раскодированное любым.</li>
+<li><strong>Хэш</strong> — ключа нет, необратимо вообще. Цель — отпечаток для сравнения.</li>
+</ul>
+<p>Если в отчёте написано «пароль зашифрован в Base64» — это ошибка: Base64 ничего не прячет.</p>
+</details>
+<details>
+<summary>Почему соль меняет шифртекст</summary>
+<p>В примере с OpenSSL одинаковый файл и одинаковый пароль каждый раз дают разные байты. Причина — случайная соль: её смешивают с паролем перед тем, как получить ключ. Соль не секрет (лежит прямо в начале файла после <code>Salted__</code>), её задача — чтобы одинаковые входы не давали одинаковых выходов. Та же идея защищает хранимые пароли — глава 3.</p>
+</details>
+<h2 id="s14">Термины главы</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>EN</th>
+<th>RU</th>
+<th>DE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>plaintext</td>
+<td>открытый текст</td>
+<td>der Klartext</td>
+</tr>
+<tr>
+<td>ciphertext</td>
+<td>шифртекст</td>
+<td>der Geheimtext</td>
+</tr>
+<tr>
+<td>key</td>
+<td>ключ</td>
+<td>der Schlüssel</td>
+</tr>
+<tr>
+<td>encryption</td>
+<td>шифрование</td>
+<td>die Verschlüsselung</td>
+</tr>
+<tr>
+<td>decryption</td>
+<td>расшифрование</td>
+<td>die Entschlüsselung</td>
+</tr>
+<tr>
+<td>symmetric encryption</td>
+<td>симметричное шифрование</td>
+<td>symmetrische Verschlüsselung</td>
+</tr>
+<tr>
+<td>public / private key</td>
+<td>открытый / закрытый ключ</td>
+<td>öffentlicher / privater Schlüssel</td>
+</tr>
+<tr>
+<td>brute force</td>
+<td>перебор</td>
+<td>Brute-Force, das Durchprobieren</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="s15">Как сказать на смене</h2>
+<p>«Der Laptop war mit BitLocker verschlüsselt — die Daten sind nicht abgeflossen.» — Ноутбук был зашифрован BitLocker, данные не утекли.</p>
+<p>«Auf dem VPN-Gateway ist noch 3DES erlaubt. Empfehlung: nur AES zulassen.» — На VPN-шлюзе ещё разрешён 3DES. Рекомендация: разрешить только AES.</p>
+<h2 id="s16">Выжимка</h2>
+<ul>
+<li>Шифр публичный, секрет — только ключ. Стойкость = сколько ключей перебирать.</li>
+<li>Симметрия: один ключ, быстро (AES — стандарт; DES сломан, 3DES устарел). Слабое место — передать ключ.</li>
+<li>Асимметрия: пара ключей; открытый раздают, закрытый никому. Медленная, поэтому ею договариваются о ключе, а данные шифруют AES.</li>
+<li>Шифрование ≠ кодирование ≠ хэш: ключ есть / ключа нет и обратимо / необратимо.</li>
+<li>XOR дважды тем же ключом возвращает исходное; mod — остаток, «часы».</li>
+</ul>
+<h2 id="s17">Связи</h2>
+<ul>
+<li><strong>Глава 2</strong> — асимметрия подробно: RSA, Diffie-Hellman, SSH, сертификаты.</li>
+<li><strong>Глава 3</strong> — хэши и почему пароли не шифруют.</li>
+<li><strong>Networking Secure Protocols</strong> (прошлый модуль) — TLS, который в HTTPS совмещает асимметрию и AES.</li>
+<li><strong>CyberChef: The Basics</strong> (модуль Defensive Security Tooling) — XOR и Base64 на практике.</li>
+</ul>
+<h1 id="s18" class="anchored">Глава 2. Открытый ключ: RSA, Diffie-Hellman, SSH, сертификаты (Public Key Cryptography Basics)</h1>
+<div class="ch-level" data-l="must"><span class="ic">🔥</span>Обязательно <span class="why">— SSH-ключи и сертификаты ты будешь видеть в логах и алертах каждую неделю; третий алерт сюжета — как раз вход по SSH-ключу</span></div>
+<div class="thm-verdict" data-v="maybe"><span class="ic">🤔</span><div><b class="v">По желанию</b> <b>Public Key Cryptography Basics</b> — <code>ssh-keygen</code> и <code>gpg</code> есть на маке — всё из комнаты повторишь по главе. Комнату пройди по желанию ради задач на её машине и галочки SEC1. ~60 мин.</div></div>
+<h2 id="s19">Аналогия: ящик с прорезью</h2>
+<p>Почтовый ящик с прорезью. Бросить письмо в прорезь может любой прохожий — она открыта всем. Достать письма может только хозяин: у него ключ от дверцы.</p>
+<p>Прорезь — это <strong>открытый ключ</strong> (его раздают всем, им «кладут»). Ключ от дверцы — <strong>закрытый ключ</strong> (он у хозяина, им «достают»). Это и есть вся асимметрия из главы 1, теперь подробно.</p>
+<h2 id="s20">Ты на смене</h2>
+<p>Тебе прилетает алерт: «вход по SSH под служебной учёткой <code>svc-backup</code> в 03:05, с внешнего адреса». Пароль эта учётка не спрашивала — вошли <strong>по ключу</strong>. Вопросы, на которые ты отвечаешь: чей это ключ, откуда он у внешнего адреса, и не украли ли закрытый ключ. Чтобы это разобрать, надо понимать, как устроен вход по ключу — вся эта глава про механику, которой ты пользуешься на таком алерте.</p>
+<h2 id="s21">Сначала слова, без которых дальше не понять</h2>
+<p><strong>Пара ключей</strong> (key pair). Открытый и закрытый ключ, созданные вместе. Что зашифровано одним, разбирается только вторым. Порознь бесполезны.</p>
+<p><strong>RSA, Diffie-Hellman, Ed25519</strong> — конкретные способы (алгоритмы) асимметричной криптографии. Как AES в прошлой главе был именем симметричного шифра, так это — имена асимметричных. Их названия ты увидишь в логах и настройках.</p>
+<p><strong>SSH</strong> (Secure Shell). Защищённый способ управлять сервером через сеть текстом (встречали в прошлых учебниках). Вход — по паролю или по ключу.</p>
+<p><strong>Сертификат</strong> (certificate). Электронное удостоверение сервера: доказывает, что сайт — тот, за кого себя выдаёт. Выдаёт доверенный центр.</p>
+<p><strong>Подпись</strong> (digital signature). Крипто-печать под данными: подтверждает, кто автор и что данные не меняли.</p>
+<h2 id="s22">RSA: самый известный асимметричный алгоритм</h2>
+<p><strong>На смене:</strong> имя RSA ты встретишь в типах SSH-ключей, в сертификатах сайтов и в отчётах сканеров («ключ RSA 1024 бита — слабый»). Понимать, на чём держится его стойкость, нужно, чтобы читать такие находки.</p>
+<p><strong>Аналогия:</strong> перемножить два числа легко, а разложить результат обратно на множители — тяжело. 17 × 23 посчитаешь в уме за секунды. А какие два простых числа дали 391 — уже нет, надо перебирать. RSA стоит на этой разнице.</p>
+<p><strong>Как устроено.</strong> Ключи RSA строят из двух больших простых чисел <code>p</code> и <code>q</code> (простое — делится только на 1 и само на себя). Из них считают:</p>
+<ul>
+<li><code>n = p × q</code> — часть и открытого, и закрытого ключа;</li>
+<li><code>ϕ(n) = (p − 1) × (q − 1)</code> — вспомогательное число (греческая «фи»), нужное, чтобы вычислить закрытый ключ.</li>
+</ul>
+<p>Открытый ключ знает <code>n</code>, но не знает <code>p</code> и <code>q</code>. Чтобы вычислить закрытый ключ, нужно <code>ϕ(n)</code>, а для него — именно <code>p</code> и <code>q</code>. Разложить большое <code>n</code> обратно на <code>p</code> и <code>q</code> на нынешних машинах невозможно за разумное время — в этом вся защита.</p>
+<p>Посчитаем на маленьких числах (в реальности <code>p</code> и <code>q</code> — сотни цифр):</p>
+<pre><code class="language-bash">python3 -c &quot;
+p, q = 11, 13
+n = p*q
+phi = (p-1)*(q-1)
+print('n =', n, ' phi =', phi)&quot;
+</code></pre>
+<pre><code>n = 143  phi = 132
+</code></pre>
+<p><code>n</code> открыт всем, <code>ϕ(n) = 132</code> вычисляется только если знаешь, что 143 = 11 × 13. В этом и смысл: публичное <code>n</code> не выдаёт секрет.</p>
+<p>В заданиях комнаты <code>p</code> и <code>q</code> дают готовыми и просят <code>n</code> и <code>ϕ(n)</code> — это ровно <code>p*q</code> и <code>(p-1)*(q-1)</code>. Подставь свои числа в команду выше.</p>
+<p><strong>Варианты:</strong> в SSH и сертификатах рядом с RSA всегда стоит длина: <code>RSA 2048</code>, <code>RSA 3072</code>, <code>RSA 4096</code>. Чем больше — тем надёжнее. <strong>RSA 1024 и меньше</strong> сканер пометит как слабый — это тебе и надо заметить в отчёте.</p>
+<p><strong>Ошибка новичка:</strong> считать, что раз <code>n</code> публичное, то и <code>p</code>, <code>q</code> легко найти. Легко — только на игрушечных числах, как 143. На числах из сотен цифр разложение не по силам никакой технике.</p>
+<h2 id="s23">Diffie-Hellman: договориться о ключе на виду у всех</h2>
+<p><strong>На смене:</strong> Diffie-Hellman (сокращённо DH) — это то, как два компьютера в начале HTTPS- или SSH-соединения заводят себе общий секретный ключ, даже если весь их разговор подслушивают. Имя DH ты увидишь в деталях TLS-рукопожатия в Wireshark и в отчётах сканеров.</p>
+<p><strong>Аналогия:</strong> смешивание красок. У каждого есть общая краска (её все видят) и своя тайная. Каждый смешивает общую со своей и обменивается результатом. Получив чужую смесь, каждый домешивает в неё свою тайную — и у обоих выходит один цвет. Подслушавший видел только смеси, а разделить смесь на исходные краски не может.</p>
+<p><strong>Как устроено.</strong> Стороны публично договариваются о двух числах — <code>p</code> и <code>g</code> (их видно всем). Каждый задумывает своё тайное число: Алиса <code>a</code>, Боб <code>b</code>. Дальше:</p>
+<ul>
+<li>Алиса считает <code>A = g^a mod p</code> и шлёт <code>A</code> Бобу;</li>
+<li>Боб считает <code>B = g^b mod p</code> и шлёт <code>B</code> Алисе;</li>
+<li>Алиса из <code>B</code> считает <code>B^a mod p</code>, Боб из <code>A</code> считает <code>A^b mod p</code> — получается <strong>одно и то же число</strong>, общий секрет.</li>
+</ul>
+<p><code>mod</code> — остаток от деления из главы 1, <code>g^a</code> — «g в степени a». Подслушавший знает <code>p</code>, <code>g</code>, <code>A</code>, <code>B</code>, но тайные <code>a</code> и <code>b</code> из них не вытащить — та же тяжёлая задача, что в RSA.</p>
+<pre><code class="language-bash">python3 -c &quot;
+p, g = 23, 5
+a, b = 6, 15
+A = pow(g, a, p)
+B = pow(g, b, p)
+print('A =', A, ' B =', B)
+print('секрет у Алисы =', pow(B, a, p), ' у Боба =', pow(A, b, p))&quot;
+</code></pre>
+<pre><code>A = 8  B = 19
+секрет у Алисы = 2  у Боба = 2
+</code></pre>
+<p><code>pow(g, a, p)</code> — это <code>g^a mod p</code> одной функцией (Python считает большие степени сам). У обоих вышло <code>2</code> — это их общий ключ, и по сети он ни разу не пролетел.</p>
+<p>В комнате дают <code>p</code>, <code>g</code>, <code>a</code>, <code>b</code> и просят посчитать <code>A</code>, <code>B</code> и общий ключ — той же командой <code>pow(база, степень, модуль)</code>, подставив свои числа.</p>
+<p><strong>Ошибка новичка:</strong> путать <code>A</code> (то, что летит по сети) и общий секрет (то, что получается в конце и по сети не ходит). Спрашивают обычно оба — не перепутай, где какое.</p>
+<h2 id="s24">SSH-ключи: вход без пароля</h2>
+<p><strong>На смене:</strong> это центр главы для L1. Админы заходят на серверы по SSH-ключу, и по нему же возвращается гость из нашего сюжета. Надо понимать, из чего состоит вход по ключу, чтобы на алерте сказать, чей ключ и можно ли ему верить.</p>
+<p><strong>Аналогия:</strong> именной пропуск вместо пароля. Пароль можно подсмотреть и подобрать; пропуск-ключ подделать нельзя, но его можно украсть физически — поэтому вопрос всегда «у кого на руках закрытая половина».</p>
+<p><strong>Как устроено.</strong> У пользователя — пара ключей. <strong>Открытый</strong> ключ заранее кладут на сервер, в файл <code>~/.ssh/authorized_keys</code> (список «кому можно входить»). <strong>Закрытый</strong> остаётся только на компьютере пользователя. При входе сервер проверяет: сходится ли предъявленный закрытый ключ с лежащим у него открытым. Пароль при этом не нужен и по сети не идёт.</p>
+<p>Создаются ключи командой <code>ssh-keygen</code> (есть и на маке):</p>
+<pre><code class="language-bash">ssh-keygen -t ed25519 -C &quot;ilya@macbook&quot;
+</code></pre>
+<ul>
+<li><code>-t ed25519</code> — тип ключа (алгоритм). <strong>Ed25519</strong> — современный, короткий, быстрый; выбор по умолчанию сегодня. Другие типы: <strong>RSA</strong> (надёжен при 3072+ бит), <strong>ECDSA</strong>; старый <strong>DSA</strong> использовать нельзя;</li>
+<li><code>-C "..."</code> — комментарий-метка, обычно кто и где создал.</li>
+</ul>
+<p>Команда делает два файла: <code>id_ed25519</code> (закрытый — беречь) и <code>id_ed25519.pub</code> (открытый — раздавать). Открытый ключ — одна строка:</p>
+<pre><code>ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMQ+I8q9cnwVyPwsMg3OEjeqFRmDO6T5EbK8unyBMybg ilya@macbook
+</code></pre>
+<p>Читается слева направо: тип ключа, сам ключ, комментарий. Закрытый файл начинается строкой <code>-----BEGIN OPENSSH PRIVATE KEY-----</code> — его содержимое никому не показывают.</p>
+<p>У каждого ключа есть <strong>отпечаток</strong> (fingerprint) — короткий хэш, которым ключ узнают, не показывая целиком:</p>
+<pre><code class="language-bash">ssh-keygen -lf id_ed25519.pub
+</code></pre>
+<pre><code>256 SHA256:iA02gclicLn0TmGux6Z5VmmUsDD4jMnDeu9hsDLiZds ilya@macbook (ED25519)
+</code></pre>
+<p><code>256</code> — длина, дальше отпечаток и тип. В логах и тикетах ключ называют именно отпечатком.</p>
+<p><strong>Права на закрытый ключ.</strong> SSH откажется работать с закрытым ключом, который виден другим учёткам, — и это правильная защита. Поэтому на закрытый ключ ставят права <code>600</code> (читать может только хозяин):</p>
+<pre><code class="language-bash">chmod 600 id_ed25519
+</code></pre>
+<p><code>chmod</code> задаёт права доступа к файлу, <code>600</code> — «хозяину читать-писать, остальным ничего». Если не выставить, при входе получишь предупреждение:</p>
+<pre><code>Permissions 0644 for 'id_ed25519' are too open.
+</code></pre>
+<p><strong>SOC-угол (коротко).</strong> Гость из сюжета вошёл по ключу, который сам же дописал в <code>authorized_keys</code> на прошлом визите, — классический способ закрепиться: пароль сменят, а оставленный открытый ключ останется пускать. Поэтому на алерте «вход по ключу под служебной учёткой» L1 смотрит: что за отпечаток, знаком ли он, и когда в <code>authorized_keys</code> появилась эта строка. Чужой ключ в <code>authorized_keys</code> — находка для эскалации.</p>
+<p><strong>Если не получилось:</strong> <code>command not found: ssh-keygen</code> на маке почти не бывает (идёт с системой). <code>Permission denied</code> при входе по ключу — чаще всего права на закрытый ключ не <code>600</code> или открытого ключа нет в <code>authorized_keys</code> на сервере.</p>
+<p><strong>В тикет:</strong> «Вход по SSH-ключу под <code>svc-backup</code> с внешнего адреса, 03:05 MEZ. Отпечаток <code>SHA256:iA02…</code> в нашей базе ключей не значится — похоже на оставленный доступ. Эскалация на L2, проверить <code>authorized_keys</code>.»</p>
+<h2 id="s25">Подписи и сертификаты: как сайт доказывает, что он настоящий</h2>
+<p><strong>На смене:</strong> когда разбираешь фишинговый или просто подозрительный сайт, сертификат — одна из первых улик: кому выдан, кем, когда. А «самоподписанный сертификат» в отчёте — повод насторожиться.</p>
+<p><strong>Аналогия:</strong> паспорт с печатью. Ты веришь паспорту не потому, что человек сам написал своё имя, а потому, что его заверил орган, которому ты доверяешь. Сертификат сайта — такой паспорт, а «орган» — удостоверяющий центр.</p>
+<p><strong>Как устроено.</strong> Асимметрию используют не только чтобы шифровать, но и чтобы <strong>подписывать</strong>. Владелец закрытого ключа ставит подпись, а любой с открытым ключом проверяет: подпись сходится — значит, автор тот и данные не меняли.</p>
+<p>На этом стоят <strong>сертификаты</strong>. Когда ты заходишь на сайт по HTTPS, сервер предъявляет сертификат — свой открытый ключ плюс подпись <strong>удостоверяющего центра</strong> (Certificate Authority, CA). Браузер проверяет подпись CA, которому доверяет, и только тогда показывает замочек. Так ты знаешь, что говоришь с настоящим сайтом, а не с подделкой.</p>
+<p>Бесплатный сертификат сегодня любой сайт получает в CA под названием <strong>Let's Encrypt</strong> — это стандартный ответ на вопрос «где взять TLS-сертификат даром».</p>
+<p>Посмотреть сертификат можно той же OpenSSL (здесь — учебный, сделанный на месте):</p>
+<pre><code class="language-bash">openssl x509 -in cert.pem -noout -subject -issuer -dates
+</code></pre>
+<pre><code>subject=CN = portal.kranich-druck.example
+issuer=CN = portal.kranich-druck.example
+notBefore=Nov 16 13:12:08 2026 GMT
+notAfter=Nov 16 13:12:08 2027 GMT
+</code></pre>
+<ul>
+<li><code>subject</code> — кому выдан (какому сайту);</li>
+<li><code>issuer</code> — кто выдал;</li>
+<li><code>notBefore</code>/<code>notAfter</code> — срок действия.</li>
+</ul>
+<p>Здесь <code>subject</code> и <code>issuer</code> <strong>совпадают</strong> — сертификат выдал сам себе. Это <strong>самоподписанный</strong> (self-signed) сертификат: его никакой центр не удостоверял, поэтому доверять ему нельзя — подделать такой может кто угодно. На внутренних тестовых серверах это норма, на настоящем сайте в интернете — повод насторожиться.</p>
+<p><strong>Ошибка новичка:</strong> видеть замочек в браузере и делать вывод «сайт безопасный». Замочек значит только «соединение зашифровано». Фишинговый сайт тоже получает бесплатный сертификат и тоже показывает замочек. Сертификат говорит о шифровании канала, а не о честности владельца.</p>
+<p><strong>В тикет:</strong> «Подозрительный домен отдаёт самоподписанный сертификат (<code>subject</code> = <code>issuer</code>), выдан вчера. Для публичного сервиса нетипично — рекомендую заблокировать до выяснения.»</p>
+<h2 id="s26">PGP и GPG: подписать и зашифровать письмо</h2>
+<p><strong>На смене:</strong> встречается реже, но знать надо: GPG-зашифрованное вложение в почте ты не прочитаешь без ключа получателя, а в задании комнаты надо расшифровать сообщение именно им.</p>
+<p><strong>Аналогия:</strong> та же почта с ящиком-прорезью, только для писем. Пишешь коллеге — шифруешь его открытым ключом (прочтёт только он); хочешь доказать, что письмо от тебя — подписываешь своим закрытым.</p>
+<p><strong>Как устроено.</strong> <strong>PGP</strong> (Pretty Good Privacy) — стандарт шифрования и подписи писем и файлов. <strong>GPG</strong> (GNU Privacy Guard) — бесплатная программа, которая его выполняет; команда называется <code>gpg</code>. Работает на той же асимметрии: у каждого пара ключей, открытыми обмениваются, закрытый держат при себе.</p>
+<p>Чтобы прочитать зашифрованное для тебя сообщение, его расшифровывают своим закрытым ключом:</p>
+<pre><code class="language-bash">gpg --decrypt message.gpg
+</code></pre>
+<pre><code>gpg: encrypted with cv25519 key, ID F190B6B4FC9BEEE1
+Treffen 15 Uhr
+</code></pre>
+<p><code>--decrypt</code> расшифровал — внизу открытый текст (<code>Treffen 15 Uhr</code>). Если нужного закрытого ключа в системе нет, gpg скажет <code>decryption failed: No secret key</code>. В задании комнаты сначала импортируют данный ключ (<code>gpg --import</code>), потом расшифровывают.</p>
+<p><strong>Если не получилось:</strong> <code>No secret key</code> — не импортирован закрытый ключ получателя. <code>gpg: command not found</code> на маке — поставь через <code>brew install gnupg</code>.</p>
+<p><strong>Сделай сам:</strong> на маке сделай свою пару (<code>gpg --full-generate-key</code>), зашифруй себе короткий файл и расшифруй обратно — увидишь весь путь без чужих ключей.</p>
+<div class="qz" data-q="9"><div class="qz-q">Алерт: вход по SSH-ключу под служебной учёткой с внешнего адреса, пароль не запрашивался. С чего начать?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Вход по ключу — вопрос «чей ключ и откуда». Незнакомый отпечаток или свежая строка в `authorized_keys` — находка."><span class="qz-mark" aria-hidden="true"></span><span>Проверить отпечаток ключа и когда он попал в <code>authorized_keys</code></span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет. По ключу заходят и админы, и тот, кто ключ оставил или украл."><span class="qz-mark" aria-hidden="true"></span><span>Закрыть алерт: вход по ключу всегда легитимен</span></button><button type="button" class="qz-o" data-ok="0" data-why="Пароль тут ни при чём — вошли по ключу. Менять надо ключ."><span class="qz-mark" aria-hidden="true"></span><span>Сменить пароль учётки</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="10"><div class="qz-q">Подозрительный сайт отдаёт сертификат, где <code>subject</code> и <code>issuer</code> совпадают. Что это значит?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Сам себе выдал. Доверия нет; для публичного сайта — повод копать."><span class="qz-mark" aria-hidden="true"></span><span>Сертификат самоподписанный — никакой центр его не удостоверял</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет, тогда `issuer` был бы именем центра, а не самим сайтом."><span class="qz-mark" aria-hidden="true"></span><span>Сайт проверен удостоверяющим центром</span></button><button type="button" class="qz-o" data-ok="0" data-why="Про срок говорят `notBefore`/`notAfter`, а не совпадение subject и issuer."><span class="qz-mark" aria-hidden="true"></span><span>Сертификат просрочен</span></button></div><div class="qz-why" role="status"></div></div>
+<h2 id="s27">Копнуть глубже</h2>
+<details>
+<summary>Почему HTTPS — это асимметрия и симметрия вместе</summary>
+<p>Асимметрия надёжна, но медленная; симметрия (AES) быстрая, но требует общего ключа. HTTPS берёт лучшее от обеих: в начале соединения через Diffie-Hellman (асимметрия) стороны заводят общий секретный ключ, а дальше весь трафик шифруют быстрым AES (симметрия) на этом ключе. Поэтому в деталях TLS-рукопожатия в Wireshark видно и обмен ключами, и выбранный симметричный шифр.</p>
+</details>
+<h2 id="s28">Термины главы</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>EN</th>
+<th>RU</th>
+<th>DE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>key pair</td>
+<td>пара ключей</td>
+<td>das Schlüsselpaar</td>
+</tr>
+<tr>
+<td>public key infrastructure</td>
+<td>инфраструктура открытых ключей</td>
+<td>die Public-Key-Infrastruktur</td>
+</tr>
+<tr>
+<td>fingerprint</td>
+<td>отпечаток</td>
+<td>der Fingerabdruck</td>
+</tr>
+<tr>
+<td>certificate authority (CA)</td>
+<td>удостоверяющий центр</td>
+<td>die Zertifizierungsstelle</td>
+</tr>
+<tr>
+<td>self-signed</td>
+<td>самоподписанный</td>
+<td>selbstsigniert</td>
+</tr>
+<tr>
+<td>digital signature</td>
+<td>цифровая подпись</td>
+<td>die digitale Signatur</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="s29">Как сказать на смене</h2>
+<p>«Der SSH-Login lief über einen Schlüssel, dessen Fingerabdruck wir nicht kennen — möglicher hinterlassener Zugang.» — Вход по SSH шёл по ключу, отпечаток которого мы не знаем, — возможен оставленный доступ.</p>
+<h2 id="s30">Выжимка</h2>
+<ul>
+<li>Асимметрия = пара ключей: открытый раздают, закрытый не отдают никому.</li>
+<li>RSA стоит на том, что перемножить <code>p</code> и <code>q</code> легко, а разложить <code>n</code> обратно — нет; <code>n = p×q</code>, <code>ϕ(n) = (p−1)(q−1)</code>.</li>
+<li>Diffie-Hellman даёт двум сторонам общий секрет на виду у всех; по сети летят <code>A</code> и <code>B</code>, сам секрет — нет.</li>
+<li>SSH-вход по ключу: открытый лежит в <code>authorized_keys</code> на сервере, закрытый (права <code>600</code>) — у пользователя. На алерте смотри отпечаток и свежесть строки.</li>
+<li>Сертификат доказывает подлинность сайта подписью CA (бесплатный — Let's Encrypt); самоподписанному доверия нет. Замочек = шифрование, не честность.</li>
+</ul>
+<h2 id="s31">Связи</h2>
+<ul>
+<li><strong>Глава 1</strong> — симметрия и сама идея двух видов ключей.</li>
+<li><strong>Глава 4</strong> — что бывает, когда закрытый ключ или пароль к нему слабый.</li>
+<li><strong>Networking Secure Protocols</strong> (прошлый модуль) — TLS, SSH и VPN в трафике.</li>
+<li><strong>Public Key Cryptography Basics</strong> на THM — RSA, Diffie-Hellman, SSH-ключ и GPG-расшифровка на машине комнаты.</li>
+</ul>
+<h1 id="s32" class="anchored">Глава 3. Хэши: отпечаток, IOC, хранение паролей (Hashing Basics)</h1>
+<div class="ch-level" data-l="must"><span class="ic">🔥</span>Обязательно <span class="why">— хэш — рабочий инструмент L1 каждый день: пробить файл по threat intel, проверить целостность, опознать хэш пароля в алерте</span></div>
+<div class="thm-verdict" data-v="go"><span class="ic">🧪</span><div><b class="v">Пройди</b> <b>Hashing Basics</b> — прочитай главу → пройди комнату → вернись к практике. В комнате живая работа с hashcat и реальными хэшами на её машине — текстом не заменить. ~75 мин.</div></div>
+<h2 id="s33">Аналогия: отпечаток пальца</h2>
+<p>Хэш — это отпечаток пальца файла. По человеку отпечаток снимается легко и всегда одинаковый. Но по отпечатку нельзя восстановить человека. И двух людей с одинаковым отпечатком практически не бывает — поэтому по нему и опознают.</p>
+<p>С файлом так же: хэш считается мгновенно, всегда один и тот же для одного файла, обратно файл из него не вернуть, и у двух разных файлов хэши практически никогда не совпадают.</p>
+<h2 id="s34">Ты на смене</h2>
+<p>Приходит письмо от <strong>threat intel</strong> (это поставщики данных об угрозах — рассылают признаки свежих атак): «во вложениях ищите файл с SHA256 <code>9eb7ee…</code>». У тебя на карантине почтового шлюза лежит подозрительный <code>rechnung.exe</code>. Ты считаешь его хэш, сравниваешь — совпал. Теперь ты знаешь: это именно тот вредонос, про который предупреждали, и можешь искать его по всей сети. Это самое частое, что L1 делает с хэшами, и всё в этой главе — ради таких задач.</p>
+<h2 id="s35">Сначала слова, без которых дальше не понять</h2>
+<p><strong>Хэш-функция</strong> (hash function). Способ посчитать отпечаток: на входе любые данные, на выходе всегда строка одной длины. MD5, SHA-1, SHA-256 — конкретные хэш-функции.</p>
+<p><strong>Хэш</strong> (hash, ещё называют <strong>дайджест</strong>, digest). Сам результат — та самая строка-отпечаток.</p>
+<p><strong>Односторонняя</strong> (one-way). Про хэш-функцию: вперёд (файл → хэш) считается легко, назад (хэш → файл) — никак. В этом вся разница с шифрованием, где назад можно с ключом.</p>
+<p><strong>Коллизия</strong> (collision). Редчайший случай, когда у двух разных файлов совпал хэш. У хорошей функции найти такую пару практически невозможно; если для функции научились находить — функцию считают сломанной.</p>
+<p><strong>IOC</strong> (Indicator of Compromise, признак компрометации). Улика заражения: хэш вредоносного файла, адрес, домен. Хэш-IOC — самый надёжный: адрес сменить легко, а хэш у файла один.</p>
+<h2 id="s36">Что такое хэш-функция вживую</h2>
+<p><strong>На смене:</strong> прежде чем сравнивать хэши, надо уметь их считать. Команда одна и та же для файла-вложения, для скачанного обновления, для чего угодно.</p>
+<p><strong>Аналогия:</strong> мясорубка. Прокрутить фарш легко, собрать обратно кусок мяса — нельзя. И одинаковое мясо даёт одинаковый фарш.</p>
+<p>Считаем хэш строки или файла. В Linux — <code>sha256sum</code>:</p>
+<pre><code class="language-bash">echo -n &quot;Kranich&quot; &gt; f.txt
+sha256sum f.txt
+md5sum f.txt
+</code></pre>
+<pre><code>3d531ae748ba310d86014d779b1e3b649d7f799cab5021a1fadaab70ab85b4c3  f.txt
+2496abbaacba5a0afb01e0e4b25e8b06  f.txt
+</code></pre>
+<p>Слева хэш, справа имя файла. <code>echo -n</code> кладёт в файл текст без перевода строки в конце (иначе хэш посчитается с лишним невидимым символом — частая причина «у меня не сошлось»).</p>
+<p><strong>Лавинный эффект:</strong> поменяй один символ — хэш меняется целиком, а не чуть-чуть.</p>
+<pre><code class="language-bash">echo -n &quot;Kranjch&quot; | sha256sum
+</code></pre>
+<pre><code>579b24de868f7f8d7673e28a8adf0e70b0a1b31a4a8222032c830bcfa56fabd7  -
+</code></pre>
+<p><code>Kranich</code> и <code>Kranjch</code> различаются одной буквой, а хэши — полностью. Поэтому хэш и годится как отпечаток: подменят в файле хоть байт — отпечаток не сойдётся.</p>
+<p><strong>Варианты (мак):</strong> на маке нет <code>sha256sum</code>, там команда <strong><code>shasum -a 256</code></strong> (BSD-версия). <code>md5</code> на маке вместо <code>md5sum</code>. Результат тот же:</p>
+<pre><code class="language-bash">shasum -a 256 f.txt
+</code></pre>
+<p><strong>Если не получилось:</strong></p>
+<ul>
+<li>хэши не сходятся, хотя файл «тот же» — чаще всего лишний перевод строки: сравни через <code>echo -n</code>, или считай хэш файла, а не строки;</li>
+<li><code>command not found: sha256sum</code> на маке — используй <code>shasum -a 256</code>.</li>
+</ul>
+<p><strong>Ошибка новичка:</strong> считать, что одинаковое имя файла = одинаковый файл. Имя ничего не доказывает, отпечаток — доказывает. Два <code>update.exe</code> с разными хэшами — два разных файла.</p>
+<h2 id="s37">Размер хэша: он всегда одинаковый</h2>
+<p><strong>На смене:</strong> по длине строки ты с ходу прикидываешь, какой функцией её посчитали, — первый шаг к опознанию хэша (следующая тема).</p>
+<p><strong>Как устроено.</strong> Сколько ни подавай на вход — хоть одну букву, хоть фильм на 2 ГБ, — выход у каждой функции всегда одной длины. Длину меряют в битах или в шестнадцатеричных символах (каждый символ hex = 4 бита, каждый байт = 2 символа).</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Функция</th>
+<th>Длина (бит / байт)</th>
+<th>Длина строки (hex)</th>
+<th>Когда увидишь</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>MD5</strong></td>
+<td>128 бит / 16 байт</td>
+<td>32 символа</td>
+<td>старые контрольные суммы, часть IOC</td>
+</tr>
+<tr>
+<td><strong>SHA-1</strong></td>
+<td>160 бит / 20 байт</td>
+<td>40 символов</td>
+<td>git, старые сертификаты; считается слабым</td>
+</tr>
+<tr>
+<td><strong>SHA-256</strong></td>
+<td>256 бит / 32 байта</td>
+<td>64 символа</td>
+<td>стандарт сегодня: IOC, контрольные суммы</td>
+</tr>
+<tr>
+<td><strong>SHA-512</strong></td>
+<td>512 бит / 64 байта</td>
+<td>128 символов</td>
+<td>там, где нужен запас прочности</td>
+</tr>
+</tbody>
+</table></div>
+<p>Отсюда правило на глаз: строка из 32 hex-символов — скорее MD5, из 64 — SHA-256. Это только подсказка по длине, точное опознание — дальше.</p>
+<p><strong>Про число значений.</strong> У хэша фиксированной длины конечное число возможных значений. Для <code>n</code> бит это <code>2^n</code>. 8-битный хэш даёт всего <code>2^8 = 256</code> разных значений — поэтому короткие хэши плохи: значений мало, коллизии неизбежны. У SHA-256 значений <code>2^256</code> — столько, что совпадения не встретишь.</p>
+<p><strong>Ошибка новичка:</strong> путать «длину хэша» и «длину входных данных». Хэш гигабайтного файла и хэш одной буквы — одинаковой длины. Меняется содержимое строки, не её длина.</p>
+<h2 id="s38">Хэш файла как IOC — главный приём L1</h2>
+<p><strong>На смене:</strong> это ты будешь делать чаще всего. Пришёл хэш в рассылке threat intel или в тикете — проверь, нет ли такого файла у вас, и узнай, что про него известно.</p>
+<p><strong>Аналогия:</strong> ориентировка с отпечатком пальца. Разослали отпечаток — каждый пост сверяет своих задержанных.</p>
+<p><strong>Как устроено.</strong> Threat intel (поставщики данных об угрозах) публикуют хэши известных вредоносов. Ты берёшь хэш своего подозрительного файла и:</p>
+<ol>
+<li><strong>сравниваешь</strong> с хэшами из рассылки/тикета — совпал, значит это тот самый файл;</li>
+<li><strong>пробиваешь</strong> хэш в сервисе threat intel (например, VirusTotal — сайт, где файл или его хэш проверяют десятками антивирусов). Вводишь <strong>хэш</strong>, а не сам файл: по хэшу сервис скажет, знают ли этот файл и сколько антивирусов считают его вредоносным, и при этом ты не выгружаешь, возможно, секретный файл фирмы наружу.</li>
+</ol>
+<pre><code class="language-bash">sha256sum rechnung.exe
+</code></pre>
+<pre><code>9eb7ee7f551d2f0ac684981bd1f1e2fa4a37590199636753efe614d4db30e8e1  rechnung.exe
+</code></pre>
+<p>Эту строку ты и пробиваешь. Совпала с IOC из рассылки — пишешь в тикет, что подтверждён известный вредонос, и ищешь его по остальным машинам.</p>
+<p><strong>Ошибка новичка:</strong> загружать сам подозрительный файл на публичный сервис. Если файл содержит данные фирмы — ты только что слил их наружу. Сначала всегда пробуют по <strong>хэшу</strong>; сам файл грузят, только когда его там не знают и это разрешено правилами фирмы.</p>
+<p><strong>В тикет:</strong> «<code>rechnung.exe</code> с карантина почты: SHA256 <code>9eb7ee…</code> совпал с IOC из рассылки CERT от сегодня. Подтверждён известный вредонос. Ищу этот хэш по конечным точкам, эскалация на L2.»</p>
+<h2 id="s39">Проверка целостности: тот же хэш, другая цель</h2>
+<p><strong>На смене:</strong> когда скачиваешь инструмент для разбора (или проверяешь, не подменили ли обновление), хэш отвечает на вопрос «это ровно тот файл, что выложил автор, или по дороге подменили».</p>
+<p><strong>Аналогия:</strong> пломба на посылке. Производитель называет номер пломбы, ты сверяешь свою. Совпал — не вскрывали.</p>
+<p><strong>Как устроено.</strong> Автор файла публикует рядом его правильный хэш (часто в файле <code>CHECKSUM</code> или <code>*.sha256</code>). Ты считаешь хэш своей копии и сравниваешь:</p>
+<pre><code class="language-bash">sha256sum tool.tar.gz
+</code></pre>
+<p>Полученную строку сверяешь с опубликованной. Совпала — файл целый и не подменён. Не совпала — файл битый или в него что-то вписали; такой не запускают.</p>
+<p><strong>HMAC — хэш с ключом.</strong> Обычный хэш доказывает только «файл не менялся». Но если злоумышленник подменит и файл, и опубликованный хэш — проверка пройдёт. Чтобы закрыть эту дыру, берут <strong>HMAC</strong> (хэш, в который подмешан секретный ключ): без ключа подделать его нельзя. HMAC считают той же OpenSSL:</p>
+<pre><code class="language-bash">echo -n &quot;wichtig&quot; | openssl dgst -sha256 -hmac &quot;geheim&quot;
+</code></pre>
+<pre><code>SHA2-256(stdin)= 0926925caa4e5b4c3dfd5cc973cf8f221fc6f24d588dae0aad895ce745354bba
+</code></pre>
+<p><code>-hmac "geheim"</code> — тот самый секретный ключ. У кого нет ключа <code>geheim</code>, правильный HMAC не посчитает. HMAC встречается внутри TLS и в API-подписях.</p>
+<p><strong>Если не получилось:</strong> строки хэшей длинные, глазами сверять тяжело — сравни первые и последние 6 символов, этого хватает. Или в комнате просто подставь ожидаемый хэш рядом и смотри, одинаковы ли.</p>
+<p><strong>В тикет:</strong> «Хэш скачанного обновления не совпал с опубликованным вендором — файл не целостен, в оборот не брал, запросил у вендора верную копию.»</p>
+<div class="qz" data-q="11"><div class="qz-q">Тебе прислали SHA256 известного вредоноса. У тебя есть подозрительный файл. Что безопаснее сделать первым?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. По хэшу узнаешь файл, не выгружая наружу, возможно, секретное содержимое."><span class="qz-mark" aria-hidden="true"></span><span>Посчитать хэш своего файла и пробить по threat intel именно хэш</span></button><button type="button" class="qz-o" data-ok="0" data-why="Рискованно: если в файле данные фирмы, ты сольёшь их. Сначала по хэшу."><span class="qz-mark" aria-hidden="true"></span><span>Загрузить сам файл на публичный сервис</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет. Запускать/открывать подозрительный файл на рабочей машине нельзя."><span class="qz-mark" aria-hidden="true"></span><span>Открыть файл и посмотреть, что внутри</span></button></div><div class="qz-why" role="status"></div></div>
+<h2 id="s40">Как хранят пароли (и почему не шифруют)</h2>
+<p><strong>На смене:</strong> это основа следующей темы — распознавания хэшей в алертах про <code>/etc/shadow</code> и утечки баз. Надо понимать, как пароль должен храниться, чтобы увидеть, когда хранили плохо.</p>
+<p><strong>Аналогия:</strong> камера хранения. Правильно — хранить не ключ от ячейки клиента, а его отпечаток: пришёл клиент — сверили отпечаток, а подсмотреть исходный ключ нельзя даже у работника. Хранить сами ключи (или их шифровать и держать рядом «мастер-ключ») — значит, укравший базу получит всё.</p>
+<p><strong>Как устроено.</strong> Правильная система <strong>не хранит пароль</strong> — ни открытым текстом, ни зашифрованным. Она хранит его <strong>хэш</strong>. При входе считает хэш введённого пароля и сравнивает с сохранённым. Исходный пароль из базы не достать — он односторонний.</p>
+<p>Три способа хранить пароли <strong>неправильно</strong> (их спрашивают в комнате):</p>
+<ol>
+<li><strong>Открытым текстом</strong> — утекла база, утекли все пароли. Худший вариант.</li>
+<li><strong>Зашифрованными</strong> — кажется надёжным, но ключ расшифровки лежит на том же сервере; взломавший сервер получает и базу, и ключ. Поэтому пароли <strong>не шифруют</strong>, а хэшируют.</li>
+<li><strong>Слабой или бессолевой хэш-функцией</strong> — об этом ниже.</li>
+</ol>
+<p><strong>Радужные таблицы и соль.</strong> Если все хэшируют пароль <code>password</code> одной функцией, хэш у всех одинаковый. Злоумышленники заранее считают огромные таблицы «пароль → хэш» — <strong>радужные таблицы</strong> (rainbow tables) — и по готовому хэшу мгновенно находят пароль, ничего не вычисляя.</p>
+<p>Защита — <strong>соль</strong> (salt): к каждому паролю перед хэшированием добавляют случайную строку, свою у каждого пользователя. Тогда одинаковые пароли дают разные хэши, и готовая таблица бесполезна — под каждую соль её пришлось бы строить заново. Соль не секрет, её хранят рядом с хэшем. Та же идея, что у соли в OpenSSL из главы 1.</p>
+<!--thv::store--><figure class="thv" data-v="diff" id="thv-:store"><figcaption><b>Как база выглядит при утечке</b><span>Учебный пример</span></figcaption><script type="application/json">{"a":{"title":"Плохо: открытым текстом","lines":[
+"kuno:herbst2026",
+"m.weber:Kranich!",
+"admin:admin123",
+"утечка базы = сразу все пароли"
+]},
+"b":{"title":"Хорошо: хэш + соль ($6$)","lines":[
+"kuno:$6$K7xQ2mPq$cph0Feoh…",
+"m.weber:$6$9bFzQ1aa$Le93r…",
+"admin:$6$Qd1pLm7x$Rb77k…",
+"из базы пароль напрямую не достать"
+]}}</script></figure><!--/thv::store-->
+<p><strong>Ошибка новичка:</strong> написать в тикете «пароли надо шифровать». Пароли в системах проверки <strong>хэшируют с солью</strong>, а не шифруют. Шифрование подразумевает, что кто-то может расшифровать обратно, — а это как раз то, чего не должно быть.</p>
+<h2 id="s41">Распознать хэш пароля по виду</h2>
+<p><strong>На смене:</strong> в алерте «обращение к <code>/etc/shadow</code>» или в утёкшей базе ты видишь строки хэшей. Первый шаг — понять, какой это алгоритм: от этого зависит, насколько быстро пароли могут вскрыть и насколько всё срочно.</p>
+<p><strong>Аналогия:</strong> по форме и клейму монеты узнаёшь, что это за монета, не читая надписи. У хэшей паролей есть такие «клейма».</p>
+<p><strong>Как устроено.</strong> В Linux хэши паролей лежат в файле <code>/etc/shadow</code> (читать его может только администратор). Одна строка — один пользователь:</p>
+<pre><code>kuno:$6$K7xQ2mPq$cph0FeohxPWSYrBvokwZB33adRCZpJL/...:19000:0:99999:7:::
+</code></pre>
+<p><em>(учебная строка)</em></p>
+<p>Между первыми двоеточиями — сам хэш, и у него говорящий формат <code>$id$соль$хэш</code>:</p>
+<ul>
+<li><code>$6$</code> — <strong>id</strong>, какой алгоритм;</li>
+<li><code>K7xQ2mPq</code> — соль;</li>
+<li>дальше — собственно хэш.</li>
+</ul>
+<p>Разбери хэш по частям — наведи на каждую:</p>
+<figure class="fb"><div class="fb-cap">Хэш пароля из /etc/shadow по частям (учебный)</div><div class="fb-line"><span class="fld" tabindex="0" role="button" data-k="$6$" data-d="id алгоритма: 6 = sha512crypt">$6$</span> <span class="fld" tabindex="0" role="button" data-k="K7xQ2mPq" data-d="соль: случайная, у каждого своя, не секрет">K7xQ2mPq</span> <span class="fld" tabindex="0" role="button" data-k="$" data-d="разделитель перед самим хэшем">$</span> <span class="fld" tabindex="0" role="button" data-k="cph0FeohxPWSYrBvokwZB33" data-d="сам хэш: пароль + соль, прогнанные sha512crypt">cph0FeohxPWSYrBvokwZB33…</span></div><div class="fb-out fb-hint">Наведи на поле или нажми на него.</div></figure>
+<p>Таблица «клейм» (префиксов) — её спрашивают в комнате:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Префикс</th>
+<th>Алгоритм</th>
+<th>Стойкость</th>
+<th>Когда увидишь</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>$1$</code></td>
+<td>md5crypt</td>
+<td>слабый, устарел</td>
+<td>старые системы — пиши как находку</td>
+</tr>
+<tr>
+<td><code>$2a$</code>/<code>$2b$</code>/<code>$2y$</code></td>
+<td>bcrypt</td>
+<td>стойкий</td>
+<td>многие веб-приложения</td>
+</tr>
+<tr>
+<td><code>$5$</code></td>
+<td>sha256crypt</td>
+<td>нормально</td>
+<td>Linux</td>
+</tr>
+<tr>
+<td><code>$6$</code></td>
+<td>sha512crypt</td>
+<td>нормально, частый</td>
+<td>современные Linux по умолчанию</td>
+</tr>
+<tr>
+<td><code>$y$</code></td>
+<td>yescrypt</td>
+<td>стойкий, новый</td>
+<td>свежие Debian/Ubuntu по умолчанию</td>
+</tr>
+</tbody>
+</table></div>
+<p>Windows хранит хэши паролей иначе — в базе <strong>SAM</strong>, в виде <strong>NT-хэшей</strong> (NTLM). У них нет <code>$</code>-префикса, это просто 32 hex-символа, и, в отличие от Linux, <strong>без соли</strong> — поэтому к ним и применимы радужные таблицы.</p>
+<p><strong>Варианты:</strong> одну и ту же базу хэшей инструменты называют по-своему. То, что надо для опознания, — это префикс <code>$id$</code> в Linux и «32 hex без соли, из Windows» для NT.</p>
+<p><strong>Ошибка новичка:</strong> принять NT-хэш (32 hex) за MD5 (тоже 32 hex) — по длине они одинаковы. Различает контекст: откуда взяли (Windows SAM → NT) и формат (<code>$1$…</code> → md5crypt). Поэтому опознают не только по длине, но и по источнику.</p>
+<p><strong>В тикет:</strong> «В дампе <code>/etc/shadow</code> хэши в формате <code>$6$</code> (sha512crypt с солью) — радужные таблицы не применимы, но слабые пароли всё равно уязвимы к перебору. Рекомендую принудительную смену паролей.»</p>
+<h2 id="s42">Взлом хэшей: что это и как видит L1</h2>
+<p><strong>На смене:</strong> ты сам ничего не ломаешь. Но ты должен понимать, что происходит, когда украденную базу хэшей уносят, — потому что это и есть третий шаг нашего сюжета, и об этом будет алерт.</p>
+<p><strong>Как это устроено — коротко.</strong> Вернуть пароль из хэша напрямую нельзя (он односторонний). Поэтому украденную базу хэшей атакующий забирает к себе и <strong>перебирает</strong>: берёт огромный список частых паролей, хэширует каждый той же функцией и сравнивает с украденными хэшами. Совпало — пароль найден. Делается это <strong>офлайн</strong>, на машине атакующего, не трогая сеть фирмы, — инструментами hashcat и John the Ripper (john — вся глава 4).</p>
+<p>Слабый короткий пароль так находится за секунды, длинный случайный — практически никогда. Поэтому длина и случайность пароля важнее всего.</p>
+<p><strong>Что из этого видит L1:</strong></p>
+<ul>
+<li>не сам перебор (он идёт у атакующего дома, в логах фирмы его нет), а <strong>шаги до него</strong>: обращение к <code>/etc/shadow</code> или к базе SAM, выгрузку этого файла наружу;</li>
+<li>поэтому алерт «чтение <code>/etc/shadow</code> нетипичным процессом» или «доступ к SAM» — это сигнал, что кто-то собрался красть и ломать пароли. Реакция: эскалация и <strong>смена паролей всех затронутых учёток</strong>, пока их не вскрыли.</li>
+</ul>
+<p>Инструмент перебора на своей машине запускают так (одной строкой, для понимания вывода — подробности в главе 4):</p>
+<pre><code class="language-bash">hashcat -m 1800 -a 0 hashes.txt rockyou.txt
+</code></pre>
+<ul>
+<li><code>-m 1800</code> — <strong>режим</strong>: какой это тип хэша (1800 = sha512crypt, тот самый <code>$6$</code>);</li>
+<li><code>-a 0</code> — атака по словарю (брать пароли из списка);</li>
+<li><code>hashes.txt</code> — файл с хэшами, <code>rockyou.txt</code> — список частых паролей.</li>
+</ul>
+<p>Номер режима под конкретный хэш не помнят наизусть — его <strong>ищут</strong>: на странице hashcat «example_hashes» или командой <code>hashcat --help</code>. Это и есть навык: по виду хэша найти его номер режима.</p>
+<p><strong>Ошибка новичка:</strong> думать, что раз пароли «зашифрованы» в базе, утечка не страшна. Хэши не шифрование: украденную базу уносят и спокойно перебирают офлайн. Утечка хэшей = гонка, кто быстрее: атакующий подберёт пароли или фирма их сменит.</p>
+<p><strong>В тикет:</strong> «Процесс <code>cat</code> обратился к <code>/etc/shadow</code> под учёткой веб-сервера в 02:40 — нетипично, похоже на дамп хэшей перед офлайн-подбором. Эскалация, инициирую смену паролей затронутых учёток.»</p>
+<h2 id="s43">Хэш, кодирование, шифрование — не путать</h2>
+<p><strong>На смене:</strong> в отчётах эти три слова постоянно путают. Сказать «пароль зашифрован в Base64» — выдать свою неграмотность; Base64 ничего не прячет.</p>
+<p><strong>Как устроено.</strong></p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>Нужен ключ?</th>
+<th>Можно вернуть обратно?</th>
+<th>Зачем</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Хэширование</strong></td>
+<td>нет</td>
+<td>нет, никогда</td>
+<td>отпечаток для сравнения</td>
+</tr>
+<tr>
+<td><strong>Кодирование</strong> (Base64)</td>
+<td>нет</td>
+<td>да, кто угодно</td>
+<td>представить данные в удобном виде, не скрыть</td>
+</tr>
+<tr>
+<td><strong>Шифрование</strong></td>
+<td>да</td>
+<td>да, с ключом</td>
+<td>скрыть содержимое</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Base64</strong> — способ записать любые данные обычными буквами и цифрами (нужно, чтобы, например, картинку можно было вставить в текстовое письмо). Это <strong>кодирование</strong>, не шифр: разворачивается кем угодно без ключа.</p>
+<pre><code class="language-bash">echo -n &quot;Kranich Druck&quot; | base64
+echo &quot;S3JhbmljaCBEcnVjaw==&quot; | base64 -d
+</code></pre>
+<pre><code>S3JhbmljaCBEcnVjaw==
+Kranich Druck
+</code></pre>
+<p>Признак Base64 на глаз: буквы, цифры, иногда <code>+</code> и <code>/</code>, в конце часто <code>=</code> или <code>==</code>. Увидел такое в логе или в письме — раскодируй <code>base64 -d</code>, часто внутри прячут команду или адрес. В комнате как раз просят раскодировать такую строку.</p>
+<!--thv::b64--><figure class="thv" data-v="decode" id="thv-:b64"><figcaption><b>Base64 разворачивается без ключа</b><span>Учебный пример</span></figcaption><script type="application/json">{"input":"S3JhbmljaCBEcnVjaw==","steps":[
+{"op":"base64 -d","out":"Kranich Druck","note":"буквы/цифры и == в конце — признак Base64; ключ не нужен"}
+]}</script></figure><!--/thv::b64-->
+<p><strong>Ошибка новичка:</strong> принять Base64 за шифрование и успокоиться. Злоумышленники кодируют вредоносные команды в Base64 не чтобы защитить, а чтобы проскочить мимо простых проверок, — разворачивается это мгновенно.</p>
+<p><strong>Сделай сам:</strong> на маке посчитай <code>shasum -a 256</code> любого файла, измени в нём один символ, посчитай снова — убедись, что хэш сменился целиком. Потом закодируй своё имя в Base64 и разверни обратно.</p>
+<div class="qz" data-q="12"><div class="qz-q">В отчёте написано: «пароли в базе зашифрованы алгоритмом Base64». Что не так?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Пароли не защищены вообще. Правильно — хэшировать с солью."><span class="qz-mark" aria-hidden="true"></span><span>Base64 — это кодирование, не шифрование: разворачивается без ключа кем угодно</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет, Base64 ничего не скрывает, это просто форма записи."><span class="qz-mark" aria-hidden="true"></span><span>Всё так, Base64 — надёжный шифр</span></button><button type="button" class="qz-o" data-ok="0" data-why="MD5 — хэш, но слабый; суть в том, что Base64 вообще не защита."><span class="qz-mark" aria-hidden="true"></span><span>Надо было использовать MD5</span></button></div><div class="qz-why" role="status"></div></div>
+<h2 id="s44">Копнуть глубже</h2>
+<details>
+<summary>Почему bcrypt и yescrypt «медленные» — и это хорошо</summary>
+<p>Для отпечатка файла нужна быстрая функция (SHA-256). Для пароля — наоборот, намеренно <strong>медленная</strong>: bcrypt, sha512crypt, yescrypt считают хэш в тысячи раз медленнее. Легальной системе всё равно — она считает один хэш при входе. А перебор замедляется во столько же раз: вместо миллиардов паролей в секунду — тысячи. Поэтому пароли хэшируют не «быстрым» SHA-256, а «медленными» специальными функциями. Число повторов зашито в самом хэше (поле параметров после префикса).</p>
+</details>
+<h2 id="s45">Термины главы</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>EN</th>
+<th>RU</th>
+<th>DE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hash function</td>
+<td>хэш-функция</td>
+<td>die Hashfunktion</td>
+</tr>
+<tr>
+<td>digest</td>
+<td>дайджест (хэш)</td>
+<td>der Hashwert</td>
+</tr>
+<tr>
+<td>collision</td>
+<td>коллизия</td>
+<td>die Kollision</td>
+</tr>
+<tr>
+<td>salt</td>
+<td>соль</td>
+<td>das Salt</td>
+</tr>
+<tr>
+<td>rainbow table</td>
+<td>радужная таблица</td>
+<td>die Rainbow-Table</td>
+</tr>
+<tr>
+<td>checksum</td>
+<td>контрольная сумма</td>
+<td>die Prüfsumme</td>
+</tr>
+<tr>
+<td>encoding</td>
+<td>кодирование</td>
+<td>die Kodierung</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="s46">Как сказать на смене</h2>
+<p>«Der SHA256-Hash der Datei stimmt mit einem bekannten IOC überein — bestätigte Schadsoftware.» — SHA256-хэш файла совпал с известным IOC — подтверждённый вредонос.</p>
+<p>«Zugriff auf /etc/shadow durch einen untypischen Prozess — mögliches Abgreifen der Passwort-Hashes.» — Доступ к /etc/shadow нетипичным процессом — возможный сбор хэшей паролей.</p>
+<h2 id="s47">Выжимка</h2>
+<ul>
+<li>Хэш — односторонний отпечаток фиксированной длины; меняется весь при любой правке (лавина). MD5 — 32 hex, SHA-256 — 64 hex.</li>
+<li>Главный приём L1: пробить файл по threat intel <strong>по хэшу</strong> (не выгружая сам файл), сверить с IOC.</li>
+<li>Тот же хэш проверяет целостность скачанного; HMAC добавляет секретный ключ, чтобы подделать нельзя было.</li>
+<li>Пароли не шифруют, а <strong>хэшируют с солью</strong> (<code>$6$</code> sha512crypt и т.п.); соль убивает радужные таблицы. Windows — NT-хэши в SAM, без соли.</li>
+<li>Украденную базу хэшей перебирают офлайн; L1 видит не перебор, а дамп <code>/etc/shadow</code>/SAM — реакция: эскалация и смена паролей. Base64 — кодирование, не защита.</li>
+</ul>
+<h2 id="s48">Связи</h2>
+<ul>
+<li><strong>Глава 4</strong> — как именно перебирают хэши (John the Ripper) и почему слабый пароль падает.</li>
+<li><strong>Глава 2</strong> — отпечаток SSH-ключа тоже хэш.</li>
+<li><strong>Hashing Basics</strong> на THM — hashcat, распознавание хэшей и Base64 на машине комнаты.</li>
+<li><strong>CyberChef: The Basics</strong> (Defensive Security Tooling) — Base64 и хэши в графическом инструменте.</li>
+</ul>
+<h1 id="s49" class="anchored">Глава 4. John the Ripper: почему слабый пароль не спасает (John the Ripper: The Basics)</h1>
+<div class="ch-level" data-l="must"><span class="ic">🔥</span>Обязательно <span class="why">— это обратная сторона главы 3: ты увидишь своими глазами, за сколько падает слабый пароль, — и поймёшь, что рекомендовать в тикете</span></div>
+<div class="thm-verdict" data-v="go"><span class="ic">🧪</span><div><b class="v">Пройди</b> <b>John the Ripper: The Basics</b> — прочитай главу → пройди комнату → вернись к практике. Это чистый тренажёр: john работает на машине комнаты по готовым учебным хэшам. Текстом не заменить. ~60 мин.</div></div>
+<h2 id="s50">Зачем L1 вообще знать инструмент взлома</h2>
+<p>Сразу честно: на смене ты никого не взламываешь. John the Ripper нужен тебе для двух законных вещей.</p>
+<p>Первое — <strong>понять противника</strong>. В главе 3 гость унёс базу хэшей, чтобы перебрать её у себя. John — ровно тот инструмент, которым это делают. Посмотрев, как слабый пароль падает за секунды, ты поймёшь, почему дамп <code>/etc/shadow</code> — это срочно и что писать в рекомендации.</p>
+<p>Второе — <strong>проверка стойкости паролей</strong> (password audit) по заданию фирмы: с разрешения прогоняют хэши своих же учёток, чтобы найти слабые пароли раньше злоумышленника и заставить их сменить. Это делают на <strong>своих</strong> системах и только с письменного разрешения — не на чужих.</p>
+<p>Вся работа в этой главе — на учебной машине комнаты по её готовым хэшам. Это безопасный полигон.</p>
+<h2 id="s51">Ты на смене</h2>
+<p>Ты уже отправил на эскалацию дамп <code>/etc/shadow</code> из прошлой главы. L2 спрашивает: «насколько всё плохо — пароли реально вскроют?» Чтобы ответить, надо понимать, что именно сделает атакующий с этими хэшами и от чего зависит, вскроются они за минуту или не вскроются никогда. Эта глава даёт такое понимание.</p>
+<h2 id="s52">Сначала слова, без которых дальше не понять</h2>
+<p><strong>John the Ripper</strong> (в разговоре — <strong>john</strong>). Программа для перебора паролей по хэшу. Берёт список паролей, хэширует каждый той же функцией и сравнивает с заданным хэшем.</p>
+<p><strong>Jumbo John.</strong> Расширенная версия john (community edition) с поддержкой множества типов хэшей и вспомогательными командами. На учебных машинах и в Kali стоит именно она.</p>
+<p><strong>Словарь / wordlist.</strong> Текстовый файл со списком паролей, по одному в строке. Перебор идёт по нему.</p>
+<p><strong>rockyou.txt.</strong> Самый известный словарь — список паролей из старой утечки сайта RockYou. Лежит на учебных машинах в <code>/usr/share/wordlists/rockyou.txt</code>. Содержит миллионы реально использовавшихся паролей.</p>
+<h2 id="s53">Как работает john: базовый запуск</h2>
+<p><strong>На смене:</strong> понимание этой одной команды объясняет, почему слабый пароль обречён.</p>
+<p><strong>Аналогия:</strong> связка из миллиона ключей и один замок. John берёт ключ за ключом (пароль за паролем из словаря), «примеряет» (хэширует и сравнивает) — и так, пока не щёлкнет. Если нужный ключ в связке есть, замок откроется; если пароль в словарь не входит — нет.</p>
+<p><strong>Как устроено.</strong> Самый частый режим — <strong>по словарю</strong>: john берёт пароли из wordlist, хэширует каждый, сравнивает с твоим хэшем.</p>
+<pre><code class="language-bash">john --wordlist=/usr/share/wordlists/rockyou.txt hash.txt
+</code></pre>
+<ul>
+<li><code>--wordlist=…</code> — какой словарь взять;</li>
+<li><code>hash.txt</code> — файл, в котором лежит хэш (или несколько, по одному в строке).</li>
+</ul>
+<p>Пока john работает, он показывает найденные пары. Посмотреть уже разгаданное позже:</p>
+<pre><code class="language-bash">john --show hash.txt
+</code></pre>
+<p>Это выведет строки вида <code>пользователь:пароль</code> для всех, что john успел подобрать. Если ничего — пароля в словаре не было.</p>
+<p><strong>Почему слабый пароль падает мгновенно.</strong> <code>123456</code>, <code>password</code>, <code>qwerty</code>, <code>sommer2026</code> стоят в начале rockyou.txt — john доходит до них за доли секунды. Длинный случайный (<code>k9#Lм2!qР7vz</code>) в словаре не встречается вообще — его john по словарю не найдёт никогда. Вот почему в рекомендациях L1 всегда «длинные, непредсказуемые пароли»: короткое и частое перебирается, длинное и случайное — нет.</p>
+<p><strong>Если не получилось:</strong></p>
+<ul>
+<li><code>No password hashes loaded</code> — john не понял формат хэша. Нужно подсказать тип (следующая тема);</li>
+<li><code>command not found: john</code> — на учебной машине он есть; на маке ставится <code>brew install john-jumbo</code>, но для комнаты это не нужно.</li>
+</ul>
+<h2 id="s54">Подсказать john тип хэша</h2>
+<p><strong>На смене:</strong> john часто сам угадывает тип хэша, но не всегда. Если не угадал — говоришь явно. А чтобы сказать, тип надо сначала <strong>опознать</strong> — ровно навыком из главы 3.</p>
+<p><strong>Как устроено.</strong> Тип хэша определяют по виду (префикс <code>$6$</code>, длина, источник — см. главу 3) или инструментом-определителем (<code>hash-identifier</code>, <code>hashid</code>). Узнав тип, передают john флагом <code>--format</code>:</p>
+<pre><code class="language-bash">john --format=raw-md5 --wordlist=/usr/share/wordlists/rockyou.txt hash.txt
+</code></pre>
+<p><code>--format=raw-md5</code> — «это чистый MD5». Другие частые значения: <code>--format=nt</code> (NT-хэш Windows), <code>--format=sha512crypt</code> (<code>$6$</code> из <code>/etc/shadow</code>). Полный список форматов:</p>
+<pre><code class="language-bash">john --list=formats
+</code></pre>
+<p><strong>Ошибка новичка:</strong> на <code>No password hashes loaded</code> сразу решать, что хэш «не ломается». Чаще всего john просто не распознал формат — надо опознать тип и дать <code>--format</code>.</p>
+<h2 id="s55">Хэши из /etc/shadow: unshadow</h2>
+<p><strong>На смене:</strong> именно это сделает атакующий с дампом из главы 3, и это же делают при проверке стойкости своих паролей.</p>
+<p><strong>Как устроено.</strong> В Linux имена пользователей лежат в <code>/etc/passwd</code>, а хэши паролей — в <code>/etc/shadow</code>. john хочет их вместе. Jumbo John даёт для этого команду <code>unshadow</code>:</p>
+<pre><code class="language-bash">unshadow /etc/passwd /etc/shadow &gt; creds.txt
+john --wordlist=/usr/share/wordlists/rockyou.txt creds.txt
+</code></pre>
+<p><code>unshadow</code> склеивает два файла в один формат <code>пользователь:хэш</code>, а john его перебирает. На учебной машине вместо настоящих системных файлов комната даёт их учебные копии.</p>
+<p><strong>SOC-угол (коротко).</strong> Для L1 вывод один: как только база хэшей оказалась у атакующего, дальше это вопрос времени и стойкости паролей, сеть фирмы в переборе уже не участвует. Поэтому реакция на дамп <code>/etc/shadow</code> — не «подождём, увидим перебор» (его не увидишь), а сразу смена паролей.</p>
+<h2 id="s56">Windows-хэши и другие форматы</h2>
+<p><strong>На смене:</strong> то же самое, но для Windows. NT-хэши из базы SAM (глава 3) john тоже перебирает — с флагом <code>--format=nt</code>.</p>
+<pre><code class="language-bash">john --format=nt --wordlist=/usr/share/wordlists/rockyou.txt ntlm.txt
+</code></pre>
+<p>NT-хэши без соли, поэтому слабые Windows-пароли вскрываются особенно быстро — ещё один довод за длинные пароли и в рекомендациях по Windows-учёткам.</p>
+<h2 id="s57">Single crack: пароль из имени пользователя</h2>
+<p><strong>На смене:</strong> объясняет, почему нельзя делать пароль из имени, компании или даты — это пробуют в первую очередь.</p>
+<p><strong>Как устроено.</strong> Режим <strong>single crack</strong> не берёт словарь, а строит кандидатов из данных самого пользователя: логина, имени, которые есть в строке <code>пользователь:хэш</code>. Потом слегка их видоизменяет (добавляет цифры, меняет регистр) — это называется <strong>word mangling</strong>, «коверканье слова».</p>
+<pre><code class="language-bash">john --single creds.txt
+</code></pre>
+<p>Если пользователь <code>joker</code> поставил паролем что-то от <code>joker</code> (<code>Joker123</code>, <code>joker!</code>), single crack это находит мгновенно, вообще без словаря. Вывод для рекомендаций: пароль не должен быть производным от имени, логина или названия фирмы.</p>
+<h2 id="s58">Custom rules: как john «коверкает» слова</h2>
+<p><strong>На смене:</strong> объясняет, почему <code>Password1!</code> не сильно лучше <code>password</code>. Люди предсказуемо дописывают к слову цифру и знак — и перебор это учитывает.</p>
+<p><strong>Как устроено.</strong> <strong>Правила</strong> (rules) говорят john, как видоизменять каждое слово из словаря: дописать цифры, заглавные, знаки. Люди делают это предсказуемо (<code>password</code> → <code>Password1!</code>), и правила ровно это и перебирают. Свои правила задают в файле настроек <code>john.conf</code> и вызывают по имени:</p>
+<pre><code class="language-bash">john --wordlist=/usr/share/wordlists/rockyou.txt --rule=THMRules hash.txt
+</code></pre>
+<p>Внутри правила записывают короткими командами: <code>Az"[0-9]"</code> — «добавить цифру в конец слова», <code>A0"[A-Z]"</code> — «добавить заглавную в начало», и так далее. Разбирать синтаксис правил целиком L1 не нужно — важно понять мысль: типовые «усложнения» пароля перебор уже знает. По-настоящему помогает только длина и непредсказуемость.</p>
+<p><strong>Ошибка новичка:</strong> верить, что <code>Sommer2026!</code> — надёжный пароль. Слово из словаря + год + <code>!</code> — самый типовой шаблон, правила перебирают его одним из первых.</p>
+<h2 id="s59">Запароленные файлы и ключи: zip, rar, SSH</h2>
+<p><strong>На смене:</strong> объясняет, почему запароленный архив из письма — не гарантия и для защиты, и почему слабый пароль на SSH-ключ опасен.</p>
+<p><strong>Как устроено.</strong> К john есть вспомогательные команды, которые достают «хэш» из защищённого паролем файла, чтобы его потом перебрать тем же john:</p>
+<ul>
+<li><code>zip2john secure.zip &gt; zip.hash</code> — из запароленного ZIP-архива;</li>
+<li><code>rar2john secure.rar &gt; rar.hash</code> — из RAR-архива;</li>
+<li><code>ssh2john id_rsa &gt; key.hash</code> — из запароленного закрытого SSH-ключа (глава 2).</li>
+</ul>
+<p>Схема одинаковая: сначала извлечь хэш, потом перебрать словарём:</p>
+<pre><code class="language-bash">zip2john secure.zip &gt; zip.hash
+john --wordlist=/usr/share/wordlists/rockyou.txt zip.hash
+</code></pre>
+<p><strong>SOC-угол (коротко).</strong> Два вывода. Первый: запароленный архив во вложении защищает ровно настолько, насколько силён его пароль, — слабый снимается за секунды, так что для L1 это не «безопасный файл». Второй: украденный закрытый SSH-ключ, если он был под слабым паролем (или вовсе без пароля), атакующий использует сразу — поэтому в рекомендациях «ключи — с надёжной парольной фразой».</p>
+<p><strong>Если не получилось:</strong> <code>zip2john: command not found</code> — значит, стоит не Jumbo-версия john. На учебной машине комнаты всё есть.</p>
+<div class="qz" data-q="13"><div class="qz-q">L2 спрашивает, насколько опасен дамп <code>/etc/shadow</code> с хэшами <code>$6$</code>. Твой ответ?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. `$6$` с солью убирает радужные таблицы, но перебор слабых паролей словарём всё равно работает."><span class="qz-mark" aria-hidden="true"></span><span>Стойкие пароли устоят, но слабые и короткие подберут офлайн за минуты — нужна срочная смена</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет. Соль мешает готовым таблицам, но слабый пароль всё равно переберут."><span class="qz-mark" aria-hidden="true"></span><span>Не опасен, <code>$6$</code> невозможно взломать</span></button><button type="button" class="qz-o" data-ok="0" data-why="Хэши тоже перебирают офлайн; слабые пароли вскроют."><span class="qz-mark" aria-hidden="true"></span><span>Опасен только если пароли хранились открытым текстом</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="14"><div class="qz-q">Пользователь предлагает пароль <code>Kranich2026!</code>. Почему это слабо?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Предсказуемая структура. Нужна длина и непредсказуемость."><span class="qz-mark" aria-hidden="true"></span><span>Слово (название фирмы) + год + знак — типовой шаблон, перебор правил берёт его одним из первых</span></button><button type="button" class="qz-o" data-ok="0" data-why="Внешне «сложный», но структура шаблонная — именно её правила и перебирают."><span class="qz-mark" aria-hidden="true"></span><span>Нормальный пароль, есть заглавная, цифры и знак</span></button><button type="button" class="qz-o" data-ok="0" data-why="Он не короткий; слабость в предсказуемой структуре из словарного слова."><span class="qz-mark" aria-hidden="true"></span><span>Слабо, потому что короткий</span></button></div><div class="qz-why" role="status"></div></div>
+<h2 id="s60">Копнуть глубже</h2>
+<details>
+<summary>Почему перебор офлайн быстрый, а подбор по сети — медленный</summary>
+<p>В прошлых учебниках перебор пароля по SSH шёл по сети: каждая попытка — целое соединение, сервер отвечает медленно, и такие попытки видны в логах (пачка <code>Failed password</code>). Офлайн-перебор украденного хэша — другое дело: атакующий на своей машине проверяет миллионы паролей в секунду, никакой сети, никаких логов у фирмы. Поэтому утечка хэшей опаснее, чем подбор по сети: её не видно, и скорость несопоставима. Единственная защита, которая остаётся, — чтобы сам пароль был не по зубам перебору.</p>
+</details>
+<h2 id="s61">Термины главы</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>EN</th>
+<th>RU</th>
+<th>DE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>wordlist</td>
+<td>словарь</td>
+<td>die Wortliste</td>
+</tr>
+<tr>
+<td>dictionary attack</td>
+<td>словарная атака</td>
+<td>der Wörterbuchangriff</td>
+</tr>
+<tr>
+<td>word mangling</td>
+<td>коверканье слова</td>
+<td>die Wortvariation</td>
+</tr>
+<tr>
+<td>offline cracking</td>
+<td>офлайн-перебор</td>
+<td>das Offline-Knacken</td>
+</tr>
+<tr>
+<td>password audit</td>
+<td>проверка стойкости паролей</td>
+<td>das Passwort-Audit</td>
+</tr>
+<tr>
+<td>passphrase</td>
+<td>парольная фраза</td>
+<td>die Passphrase</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="s62">Как сказать на смене</h2>
+<p>«Die geleakten Hashes sind $6$ — starke Passwörter halten, schwache werden offline geknackt. Empfehlung: sofortiger Passwortwechsel.» — Утёкшие хэши в формате $6$: стойкие пароли устоят, слабые взломают офлайн. Рекомендация: немедленная смена паролей.</p>
+<h2 id="s63">Выжимка</h2>
+<ul>
+<li>John перебирает пароли по хэшу: берёт слова из словаря (rockyou.txt), хэширует, сравнивает. Слабое и частое падает за секунды, длинное случайное — нет.</li>
+<li>Тип хэша опознаёшь (глава 3) и даёшь john флагом <code>--format</code>; <code>--show</code> показывает уже подобранное.</li>
+<li><code>/etc/shadow</code> → <code>unshadow</code> → john; Windows NT → <code>--format=nt</code> (без соли, быстро).</li>
+<li>single crack строит пароли из имени пользователя; правила дописывают типовые цифры/знаки — поэтому <code>Слово+Год+!</code> слабо.</li>
+<li><code>zip2john</code>/<code>rar2john</code>/<code>ssh2john</code> достают хэш из защищённого файла или ключа; слабый пароль на них снимается быстро. Вывод для тикета — всегда длина и непредсказуемость.</li>
+</ul>
+<h2 id="s64">Связи</h2>
+<ul>
+<li><strong>Глава 3</strong> — откуда берутся хэши и как их опознать.</li>
+<li><strong>Глава 2</strong> — закрытый SSH-ключ, который <code>ssh2john</code> проверяет на слабый пароль.</li>
+<li><strong>John the Ripper: The Basics</strong> на THM — все эти режимы руками на учебных хэшах.</li>
+<li><strong>Hydra</strong> (модуль Offensive Security Tooling) — перебор по сети, в отличие от офлайн-john.</li>
+</ul>
+<h1 id="s65" class="anchored">MITRE ATT&amp;CK: кража и подбор паролей по этапам</h1>
+<p><strong>MITRE ATT&amp;CK</strong> — большой каталог приёмов атакующих. Каждый приём — <strong>техника</strong> с кодом (например, <code>T1110</code>). Техники сгруппированы по <strong>тактикам</strong> — зачем приём нужен. Все приёмы этой ночи относятся к одной тактике — <strong>Credential Access</strong> (доступ к учётным данным): гость охотится за паролями и ключами.</p>
+<p>Наш ночной инцидент по шагам:</p>
+<!--thv::kc-cred--><figure class="thv" data-v="chain" id="thv-:kc-cred"><figcaption><b>Kill chain: охота за паролями в Kranich Druck</b></figcaption><script type="application/json">{"stages":[
+{"name":"Credential Access","ru":"Дамп хэшей","state":"done","note":"чтение /etc/shadow на внутреннем сервере"},
+{"name":"Exfiltration","ru":"Утечка базы хэшей","state":"done","note":"файл с хэшами ушёл на внешний адрес"},
+{"name":"Credential Access","ru":"Офлайн-перебор","state":"done","note":"хэши ломают john/hashcat на машине атакующего"},
+{"name":"Lateral Movement","ru":"Возврат по SSH-ключу","state":"cur","note":"вход под svc-backup по оставленному ключу"}
+]}</script></figure><!--/thv::kc-cred-->
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Этап инцидента</th>
+<th>Тактика</th>
+<th>Техника (ID)</th>
+<th>Как увидеть в логах</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Чтение <code>/etc/shadow</code></td>
+<td>Credential Access</td>
+<td><strong>T1003.008</strong> /etc/passwd and /etc/shadow</td>
+<td>нетипичный процесс читает <code>/etc/shadow</code></td>
+</tr>
+<tr>
+<td>Дамп базы SAM (Windows-аналог)</td>
+<td>Credential Access</td>
+<td><strong>T1003.002</strong> Security Account Manager</td>
+<td>доступ к SAM, теневые копии</td>
+</tr>
+<tr>
+<td>Перебор/подбор пароля</td>
+<td>Credential Access</td>
+<td><strong>T1110</strong> Brute Force</td>
+<td>офлайн не видно; по сети — пачка отказов</td>
+</tr>
+<tr>
+<td>Офлайн-взлом украденных хэшей</td>
+<td>Credential Access</td>
+<td><strong>T1110.002</strong> Password Cracking</td>
+<td>в сети фирмы не виден — виден предшествующий дамп</td>
+</tr>
+<tr>
+<td>Кража закрытого ключа</td>
+<td>Credential Access</td>
+<td><strong>T1552.004</strong> Private Keys</td>
+<td>доступ к <code>id_rsa</code>/<code>.ssh</code>, чтение ключей</td>
+</tr>
+</tbody>
+</table></div>
+<p>Главный вывод карты для L1: офлайн-перебор (<code>T1110.002</code>) в логах фирмы <strong>не виден</strong> — видно то, что <strong>до</strong> него: дамп хэшей (<code>T1003</code>) и кражу ключей (<code>T1552.004</code>). Поэтому реагируют на эти ранние шаги, не дожидаясь «перебора».</p>
+<h1 id="s66" class="anchored">Самопроверка</h1>
+<p>Четырнадцать вопросов по всему учебнику плюс пара из прошлых модулей. Не уверен — возвращайся к главе.</p>
+<div class="qz" data-q="15"><div class="qz-q">Чем шифрование отличается от хэширования?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Зашифрованное возвращают ключом; из хэша исходные данные не вернуть никак."><span class="qz-mark" aria-hidden="true"></span><span>Шифрование обратимо с ключом, хэш необратим вообще</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет. Ключ и обратимость — принципиальная разница."><span class="qz-mark" aria-hidden="true"></span><span>Ничем, это одно и то же</span></button><button type="button" class="qz-o" data-ok="0" data-why="Дело не в длине, а в том, что хэш односторонний."><span class="qz-mark" aria-hidden="true"></span><span>Хэш надёжнее, потому что длиннее</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="16"><div class="qz-q">Файл зашифрован алгоритмом 3DES. Что писать в тикете?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. 3DES выведен из употребления; для новых систем его не используют."><span class="qz-mark" aria-hidden="true"></span><span>Устаревший алгоритм — отметить как находку, рекомендовать AES</span></button><button type="button" class="qz-o" data-ok="0" data-why="Важно, чем именно: 3DES устарел."><span class="qz-mark" aria-hidden="true"></span><span>Всё хорошо, данные зашифрованы</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет, он устарел и запрещён для новых систем."><span class="qz-mark" aria-hidden="true"></span><span>3DES невозможно взломать</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="17"><div class="qz-q">У тебя строка из 64 шестнадцатеричных символов. Какой это, скорее всего, хэш?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. SHA-256 — 32 байта = 64 hex-символа. Это подсказка по длине."><span class="qz-mark" aria-hidden="true"></span><span>SHA-256</span></button><button type="button" class="qz-o" data-ok="0" data-why="MD5 — 32 символа, вдвое короче."><span class="qz-mark" aria-hidden="true"></span><span>MD5</span></button><button type="button" class="qz-o" data-ok="0" data-why="SHA-1 — 40 символов."><span class="qz-mark" aria-hidden="true"></span><span>SHA-1</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="18"><div class="qz-q">Безопасный первый шаг с подозрительным файлом и присланным IOC — это...</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. По хэшу узнаёшь файл, не выгружая содержимое наружу."><span class="qz-mark" aria-hidden="true"></span><span>посчитать его хэш и пробить по threat intel именно хэш</span></button><button type="button" class="qz-o" data-ok="0" data-why="Рискованно: можно слить данные фирмы."><span class="qz-mark" aria-hidden="true"></span><span>загрузить файл на публичный сервис</span></button><button type="button" class="qz-o" data-ok="0" data-why="Сначала дешёвая проверка по хэшу; запуск — отдельный, более тяжёлый шаг."><span class="qz-mark" aria-hidden="true"></span><span>запустить файл в песочнице сразу</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="19"><div class="qz-q">В <code>/etc/shadow</code> хэш начинается с <code>$6$</code>. Что это значит?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. `$6$` — sha512crypt; соль между вторыми `$`."><span class="qz-mark" aria-hidden="true"></span><span>sha512crypt с солью — соль мешает радужным таблицам</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет, это хэш с солью."><span class="qz-mark" aria-hidden="true"></span><span>Пароль хранится открытым текстом</span></button><button type="button" class="qz-o" data-ok="0" data-why="NT-хэши без `$`-префикса и из базы SAM."><span class="qz-mark" aria-hidden="true"></span><span>Это NT-хэш Windows</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="20"><div class="qz-q">Почему <code>/etc/shadow</code> хранит хэши паролей, а не сами пароли и не их шифрование?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Шифрование обратимо (ключ рядом на сервере), хэш — нет."><span class="qz-mark" aria-hidden="true"></span><span>Хэш односторонний: укравший файл не получит пароли напрямую</span></button><button type="button" class="qz-o" data-ok="0" data-why="Дело не в скорости, а в необратимости."><span class="qz-mark" aria-hidden="true"></span><span>Так быстрее работает вход</span></button><button type="button" class="qz-o" data-ok="0" data-why="Причина техническая: односторонность хэша."><span class="qz-mark" aria-hidden="true"></span><span>Это требование закона</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="21"><div class="qz-q">Почему соль добавляют к паролю перед хэшированием?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Своя соль у каждого — готовые таблицы бесполезны."><span class="qz-mark" aria-hidden="true"></span><span>Чтобы одинаковые пароли давали разные хэши и радужные таблицы не работали</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет, соль не мешает входу, она хранится рядом."><span class="qz-mark" aria-hidden="true"></span><span>Чтобы пароль стало невозможно ввести</span></button><button type="button" class="qz-o" data-ok="0" data-why="Соль не шифрует; она делает хэши уникальными."><span class="qz-mark" aria-hidden="true"></span><span>Чтобы зашифровать пароль</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="22"><div class="qz-q">john выдал <code>No password hashes loaded</code>. Что это чаще всего значит?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Обычно это не «не ломается», а непонятый формат."><span class="qz-mark" aria-hidden="true"></span><span>Не распознан формат хэша — нужно опознать тип и дать <code>--format</code></span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет, john даже не начал — он не понял формат."><span class="qz-mark" aria-hidden="true"></span><span>Пароль абсолютно стойкий</span></button><button type="button" class="qz-o" data-ok="0" data-why="Возможно, но чаще дело в нераспознанном формате."><span class="qz-mark" aria-hidden="true"></span><span>Хэш пустой</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="23"><div class="qz-q">Чем опасен дамп <code>/etc/shadow</code>, если перебор идёт у атакующего дома?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Поэтому реагируют на сам дамп, а не ждут «перебор»."><span class="qz-mark" aria-hidden="true"></span><span>Офлайн-перебора не видно в логах фирмы; слабые пароли вскроют молча</span></button><button type="button" class="qz-o" data-ok="0" data-why="Он и не появится — перебор офлайн. Ждать нельзя."><span class="qz-mark" aria-hidden="true"></span><span>Ничем, пока он в сети не появится</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет, `/etc/shadow` — Linux; суть та же для любой ОС."><span class="qz-mark" aria-hidden="true"></span><span>Опасен только для Windows</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="24"><div class="qz-q">Коллега предлагает пароль <code>Druck2026!</code>. Почему слабо?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Внешняя «сложность» не спасает от предсказуемой структуры."><span class="qz-mark" aria-hidden="true"></span><span>Словарное слово + год + знак — типовой шаблон, перебор правил берёт его рано</span></button><button type="button" class="qz-o" data-ok="0" data-why="Структура шаблонная — именно её правила перебирают."><span class="qz-mark" aria-hidden="true"></span><span>Нормальный, есть все виды символов</span></button><button type="button" class="qz-o" data-ok="0" data-why="Длина терпимая; слабость в предсказуемости."><span class="qz-mark" aria-hidden="true"></span><span>Слабо только из-за длины</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="25"><div class="qz-q">Подозрительный сайт отдаёт сертификат, где <code>subject</code> совпадает с <code>issuer</code>. Это...</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Сам себе выдал; для публичного сайта повод копать."><span class="qz-mark" aria-hidden="true"></span><span>самоподписанный сертификат — его никто не удостоверял, доверия нет</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет, тогда issuer был бы Let&#x27;s Encrypt."><span class="qz-mark" aria-hidden="true"></span><span>сертификат от Let's Encrypt</span></button><button type="button" class="qz-o" data-ok="0" data-why="Про срок говорят даты, а не совпадение subject/issuer."><span class="qz-mark" aria-hidden="true"></span><span>просроченный сертификат</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="26"><div class="qz-q">Строка <code>S3JhbmljaCBEcnVjaw==</code> в логе. Что делаешь?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Base64 — кодирование, разворачивается без ключа; внутри часто команда или адрес."><span class="qz-mark" aria-hidden="true"></span><span>Это Base64 (буквы/цифры, <code>==</code> в конце) — раскодирую <code>base64 -d</code></span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет, Base64 — не шифр, ключ не нужен."><span class="qz-mark" aria-hidden="true"></span><span>Это зашифровано, без ключа не прочитать</span></button><button type="button" class="qz-o" data-ok="0" data-why="У хэша нет `=` на конце и он не разворачивается; тут Base64."><span class="qz-mark" aria-hidden="true"></span><span>Это хэш, его не развернуть</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="27"><div class="qz-q">(из прошлого модуля) В логе <code>Failed password for root from 203.0.113.45</code>, много подряд. Это...</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. По сети такие попытки видны; офлайн-перебор — нет."><span class="qz-mark" aria-hidden="true"></span><span>перебор пароля по SSH (брутфорс) по сети</span></button><button type="button" class="qz-o" data-ok="0" data-why="Удачный был бы `Accepted password`."><span class="qz-mark" aria-hidden="true"></span><span>нормальный вход администратора</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет, это отказ во входе."><span class="qz-mark" aria-hidden="true"></span><span>ошибка сервера</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="28"><div class="qz-q">(из прошлого модуля) Вход по HTTPS в захвате виден как <code>Application Data</code>. Почему пароль не найти?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. По HTTPS видно кто/куда/сколько, но не содержимое."><span class="qz-mark" aria-hidden="true"></span><span>TLS шифрует тело до отправки</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет, данные зашифрованы, а не потеряны."><span class="qz-mark" aria-hidden="true"></span><span>Пакет битый</span></button><button type="button" class="qz-o" data-ok="0" data-why="Отправляли, но в зашифрованном виде."><span class="qz-mark" aria-hidden="true"></span><span>Пароль не отправляли</span></button></div><div class="qz-why" role="status"></div></div>
+<h1 id="s67" class="anchored">Практика</h1>
+<p>Всё — на маке, без виртуалок. Где команды мака отличаются от Linux — показано.</p>
+<h2 id="s68">Подготовка (один раз)</h2>
+<pre><code class="language-bash"># проверь, что инструменты есть (в macOS всё идёт с системой):
+which shasum base64 openssl python3
+# john для заданий 5–6 ставится по желанию:
+# brew install john-jumbo
+</code></pre>
+<h2 id="s69">Задание 1. Отпечаток и лавина</h2>
+<p>Создай файл, посчитай его SHA-256, измени один символ, посчитай снова.</p>
+<pre><code class="language-bash">echo -n &quot;Kranich Druck GmbH&quot; &gt; a.txt
+shasum -a 256 a.txt
+echo -n &quot;Kranich Druck GmbΗ&quot; &gt; b.txt   # поменяй одну букву
+shasum -a 256 b.txt
+</code></pre>
+<p>Что должно получиться: два совершенно разных хэша при разнице в один символ. Объясни себе, почему это делает хэш хорошим отпечатком.</p>
+<h2 id="s70">Задание 2. Распознай хэши по виду</h2>
+<p>Ниже учебные хэши. Для каждого определи тип (подсказки — глава 3: длина и префикс). Проверить догадку можно <code>hash-identifier</code> в комнате; ответы комнаты не подсматривай.</p>
+<pre><code>2496abbaacba5a0afb01e0e4b25e8b06
+3d531ae748ba310d86014d779b1e3b649d7f799cab5021a1fadaab70ab85b4c3
+$6$K7xQ2mPq$cph0FeohxPWSYrBvokwZB33adRCZpJL...
+$2b$06$abcdefghijklmnopqrstuv...
+</code></pre>
+<p>Что должно получиться: 32 hex → MD5; 64 hex → SHA-256; <code>$6$</code> → sha512crypt; <code>$2b$</code> → bcrypt.</p>
+<h2 id="s71">Задание 3. Base64 — раскодируй</h2>
+<p>В письме нашли строку. Разверни её и реши, опасно ли содержимое.</p>
+<pre><code class="language-bash">echo &quot;cG93ZXJzaGVsbCAtZW5jIEpBQmg...&quot; | base64 -d
+</code></pre>
+<p>Что должно получиться: читаемый текст (часто команда). Вывод для тикета: Base64 — не шифр, прячет лишь от беглого взгляда.</p>
+<h2 id="s72">Задание 4. Проверь целостность</h2>
+<p>Скачай любой небольшой файл, у которого вендор публикует SHA-256, посчитай свой хэш и сравни первые/последние 6 символов.</p>
+<pre><code class="language-bash">shasum -a 256 скачанный_файл
+</code></pre>
+<p>Что должно получиться: совпало — файл целый; не совпало — не брать в работу.</p>
+<h2 id="s73">Задание 5. Очередь триажа + отчёт по-немецки</h2>
+<p>Разбери события ночи. По каждому поставь вердикт (<strong>TP</strong> — подтверждённая угроза, <strong>FP</strong> — ложное, <strong>копать</strong> — нужно больше данных), приоритет и строку обоснования. Нить атаки — источник <code>203.0.113.45</code>.</p>
+<!--thv::siem-cred--><figure class="thv" data-v="siem" id="thv-:siem-cred"><figcaption><b>Мини-SIEM: события ночи в Kranich Druck</b><span>Учебный пример: события (адреса из диапазонов для примеров)</span></figcaption><script type="application/json">{"cols":["Время","Хост","Учётка","Событие","Детали"],
+"filter":[1,2],
+"rows":[
+["02:40","fue-app01","www-data","Доступ к файлу","cat /etc/shadow — нетипично для веб-учётки"],
+["02:41","fue-app01","www-data","Исходящая передача","файл 14 КБ на 203.0.113.45"],
+["02:55","fue-fs01","m.weber","Проверка целостности","sha256sum совпал — обычное обновление, норма"],
+["03:05","fue-app01","svc-backup","Вход по SSH-ключу","внешний адрес, отпечаток не из нашей базы"],
+["03:10","fue-ws12","k.huber","VirusTotal","проверка хэша вложения аналитиком — норма"]
+],
+"tasks":[
+"Собери нить 203.0.113.45 / www-data / svc-backup по порядку: дамп → утечка → возврат.",
+"Строки 02:55 и 03:10 реши: TP, FP или копать — и почему.",
+"Привяжи дамп /etc/shadow и вход по ключу к техникам ATT&CK из карты выше."
+]}</script></figure><!--/thv::siem-cred-->
+<p>Потом собери короткий отчёт по-немецки по схеме <strong>Was → Wann (с часовым поясом) → Woher → Auswirkung → Empfehlung</strong>:</p>
+<pre><code>Was: Auslesen der Passwort-Hashes (/etc/shadow), Exfiltration und Rückkehr über SSH-Schlüssel.
+Wann: 16.11.2026, 02:40–03:05 MEZ.
+Woher: 203.0.113.45 (extern), interne Konten www-data und svc-backup.
+Auswirkung: Passwort-Hashes abgeflossen, Offline-Knacken möglich; hinterlassener SSH-Zugang.
+Empfehlung: Passwörter aller Konten zurücksetzen, unbekannten SSH-Schlüssel entfernen, IP sperren, Eskalation an L2.
+</code></pre>
+<p>(Was — что, Wann — когда, Woher — откуда, Auswirkung — последствие, Empfehlung — рекомендация. MEZ — Mitteleuropäische Zeit, центральноевропейское время.)</p>
+<h2 id="s74">Задание 6. Почувствуй, за сколько падает слабый пароль (по желанию)</h2>
+<p>Если поставил john: создай файл с MD5-хэшем простого слова и короткого случайного набора, прогони словарём, посмотри, что найдётся, а что нет.</p>
+<pre><code class="language-bash">echo -n &quot;sommer&quot; | md5sum | cut -d' ' -f1 &gt; h1.txt
+john --format=raw-md5 --wordlist=/usr/share/wordlists/rockyou.txt h1.txt
+</code></pre>
+<p><code>cut -d' ' -f1</code> отрезает хэш от имени файла (режет по пробелу, берёт первое поле). Что должно получиться: словарное слово находится мгновенно, а случайный набор из 12 символов — нет. Это и есть весь довод за длинные пароли.</p>
+<h1 id="s75" class="anchored">Шпаргалка на один экран</h1>
+<p><strong>Три вещи не путать:</strong> шифрование (ключ, обратимо) · хэш (без ключа, необратимо) · кодирование/Base64 (без ключа, обратимо кем угодно).</p>
+<p><strong>Симметрия:</strong> один ключ. AES — стандарт; DES/3DES/RC4 — слабые, находка.
+<strong>Асимметрия:</strong> пара ключей. Открытый раздают, закрытый — никому. RSA, Diffie-Hellman, Ed25519.</p>
+<p><strong>Размеры хэшей:</strong> MD5 32 hex · SHA-1 40 · SHA-256 64 · SHA-512 128.</p>
+<p><strong>Префиксы <code>/etc/shadow</code>:</strong> <code>$1$</code> md5crypt (слабый) · <code>$2b$</code> bcrypt · <code>$5$</code> sha256crypt · <code>$6$</code> sha512crypt · <code>$y$</code> yescrypt. Windows: NT-хэш, 32 hex, без соли, из SAM.</p>
+<p><strong>Главный приём L1:</strong> хэш подозрительного файла → пробить по threat intel <strong>по хэшу</strong> (не сам файл) → сверить с IOC.</p>
+<p><strong>Целостность:</strong> <code>sha256sum</code>/<code>shasum -a 256</code>, сравнить с опубликованным. HMAC — хэш с секретным ключом.</p>
+<p><strong>Команды (мак):</strong> <code>shasum -a 256 файл</code> · <code>md5 файл</code> · <code>base64</code> / <code>base64 -d</code> · <code>ssh-keygen -t ed25519</code> · <code>chmod 600 ключ</code> · <code>gpg --decrypt</code>.</p>
+<p><strong>SSH-ключ в алерте:</strong> смотри отпечаток (<code>ssh-keygen -lf key.pub</code>) и свежесть строки в <code>authorized_keys</code>. Чужой ключ = находка.</p>
+<p><strong>john (на машине комнаты):</strong> <code>john --wordlist=rockyou.txt hash.txt</code> · <code>--format=nt</code> / <code>raw-md5</code> / <code>sha512crypt</code> · <code>--show</code> · <code>unshadow</code> · <code>--single</code> · <code>zip2john</code>/<code>ssh2john</code>.</p>
+<p><strong>ATT&amp;CK:</strong> дамп хэшей T1003.008 (shadow) / T1003.002 (SAM) · перебор T1110 / T1110.002 · кража ключа T1552.004. Офлайн-перебор в логах не виден — реагируй на дамп и кражу ключа.</p>
+<p><strong>Отчёт DE:</strong> Was → Wann (MEZ) → Woher → Auswirkung → Empfehlung.</p>
+<h1 id="s76" class="anchored">Отзыв</h1>
+<p>Три вопроса — ответь одной-двумя фразами, допишу правила на будущее:</p>
+<ol>
+<li>Что зашло больше всего: аналогии, разборы хэшей или практика на маке?</li>
+<li>Что было лишним, скучным или слишком очевидным?</li>
+<li>Где пришлось перечитать дважды — тема была сложная или я плохо объяснил?</li>
+</ol>
+<p>И четвёртый, под этот учебник: атакующая часть (john, взлом хэшей) дана короче обычного, упор — на «что видит и рекомендует L1». Хватило этого, или по John the Ripper хотелось бы больше разбора самих команд?</p>
+<!--/thv:ill-cs101-crypto-->
+  </main>
+</div>
+
+<button id="totop" aria-label="Наверх">↑</button>
+
+<script>
+(function(){
+  "use strict";
+  var LS={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},
+          set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+
+  /* theme */
+  var root=document.documentElement;
+  var saved=LS.get("thm-theme");
+  if(saved==="dark"||saved==="light")root.setAttribute("data-theme",saved);
+  document.getElementById("themebtn").addEventListener("click",function(){
+    var isDark=root.getAttribute("data-theme")==="dark"||
+      (!root.hasAttribute("data-theme")&&window.matchMedia("(prefers-color-scheme: dark)").matches);
+    var next=isDark?"light":"dark";
+    root.setAttribute("data-theme",next);LS.set("thm-theme",next);
+  });
+
+  /* font size */
+  var fs=parseInt(LS.get("thm-fs")||"17",10);
+  if(isNaN(fs))fs=17;
+  function applyFs(){root.style.setProperty("--fs",fs+"px");LS.set("thm-fs",String(fs));}
+  applyFs();
+  document.getElementById("fsup").addEventListener("click",function(){fs=Math.min(fs+1,23);applyFs();});
+  document.getElementById("fsdown").addEventListener("click",function(){fs=Math.max(fs-1,14);applyFs();});
+
+  /* copy buttons */
+  Array.prototype.forEach.call(document.querySelectorAll("pre"),function(pre){
+    var b=document.createElement("button");
+    b.className="copy";b.type="button";b.textContent="копировать";
+    b.addEventListener("click",function(){
+      var t=pre.querySelector("code")?pre.querySelector("code").innerText:pre.innerText;
+      if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){
+        b.textContent="скопировано";setTimeout(function(){b.textContent="копировать";},1400);
+      });}
+    });
+    pre.appendChild(b);
+  });
+
+  /* field breakdown */
+  Array.prototype.forEach.call(document.querySelectorAll(".fb"),function(fb){
+    var out=fb.querySelector(".fb-out");
+    var def=out.innerHTML;
+    function show(el){
+      Array.prototype.forEach.call(fb.querySelectorAll(".fld"),function(f){f.classList.remove("on");});
+      el.classList.add("on");
+      out.innerHTML="<b>"+el.getAttribute("data-k")+"</b>"+el.getAttribute("data-d");
+    }
+    fb.addEventListener("mouseover",function(e){var t=e.target.closest(".fld");if(t)show(t);});
+    fb.addEventListener("focusin",function(e){var t=e.target.closest(".fld");if(t)show(t);});
+    fb.addEventListener("click",function(e){var t=e.target.closest(".fld");if(t)show(t);});
+    fb.addEventListener("mouseleave",function(){
+      if(!fb.contains(document.activeElement)){
+        Array.prototype.forEach.call(fb.querySelectorAll(".fld"),function(f){f.classList.remove("on");});
+        out.innerHTML=def;
+      }
+    });
+  });
+
+  /* read marks */
+  var heads=Array.prototype.slice.call(document.querySelectorAll("main h2, main h1.anchored"));
+  var doneSet={};
+  try{doneSet=JSON.parse(LS.get("thm-done-01")||"{}")||{};}catch(e){doneSet={};}
+  function pct(){
+    var n=0;for(var i=0;i<heads.length;i++){if(doneSet[heads[i].id])n++;}
+    var p=heads.length?Math.round(n*100/heads.length):0;
+    document.getElementById("readpct").textContent=p+"% прочитано";
+  }
+  heads.forEach(function(h){
+    var txt=h.innerHTML;
+    h.innerHTML="";
+    var b=document.createElement("button");
+    b.className="mark";b.type="button";
+    b.setAttribute("aria-label","Отметить раздел прочитанным");
+    b.setAttribute("aria-pressed",doneSet[h.id]?"true":"false");
+    if(doneSet[h.id])h.classList.add("done");
+    var s=document.createElement("span");s.className="h2t";s.innerHTML=txt;
+    h.appendChild(b);h.appendChild(s);
+    b.addEventListener("click",function(){
+      if(doneSet[h.id]){delete doneSet[h.id];b.setAttribute("aria-pressed","false");h.classList.remove("done");}
+      else{doneSet[h.id]=1;b.setAttribute("aria-pressed","true");h.classList.add("done");}
+      LS.set("thm-done-01",JSON.stringify(doneSet));pct();
+    });
+  });
+  pct();
+
+  /* toc drawer */
+  var toc=document.getElementById("toc"),mb=document.getElementById("menubtn"),scrim=null;
+  function closeDrawer(){toc.classList.remove("open");mb.setAttribute("aria-expanded","false");
+    if(scrim){scrim.remove();scrim=null;}}
+  mb.addEventListener("click",function(){
+    if(toc.classList.contains("open")){closeDrawer();return;}
+    toc.classList.add("open");mb.setAttribute("aria-expanded","true");
+    scrim=document.createElement("div");scrim.id="scrim";
+    scrim.addEventListener("click",closeDrawer);document.body.appendChild(scrim);
+  });
+  toc.addEventListener("click",function(e){if(e.target.tagName==="A")closeDrawer();});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")closeDrawer();});
+
+  /* progress + active toc + to top */
+  var links=Array.prototype.slice.call(toc.querySelectorAll("a"));
+  var bar=document.querySelector("#pbar i"),top=document.getElementById("totop");
+  top.addEventListener("click",function(){window.scrollTo({top:0,behavior:"smooth"});});
+  var ticking=false;
+  function onScroll(){
+    if(ticking)return;ticking=true;
+    window.requestAnimationFrame(function(){
+      var h=document.documentElement.scrollHeight-window.innerHeight;
+      var p=h>0?Math.min(100,Math.max(0,window.scrollY*100/h)):0;
+      bar.style.width=p+"%";
+      top.classList.toggle("show",window.scrollY>600);
+      var cur=null;
+      for(var i=0;i<heads.length;i++){if(heads[i].getBoundingClientRect().top<120)cur=heads[i].id;}
+      links.forEach(function(a){a.classList.toggle("on",a.getAttribute("href")==="#"+cur);});
+      ticking=false;
+    });
+  }
+  window.addEventListener("scroll",onScroll,{passive:true});
+  window.addEventListener("resize",onScroll);
+  onScroll();
+})();
+</script>
+
+<style>
+.qz{margin:1.3em 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 15px}
+.qz-q{font-weight:600;margin-bottom:11px;line-height:1.5}
+.qz-opts{display:flex;flex-direction:column;gap:7px}
+.qz-o{display:flex;gap:9px;align-items:flex-start;text-align:left;font:inherit;font-size:.93rem;
+  color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:9px 11px;cursor:pointer}
+.qz-o:hover{border-color:var(--accent)}
+.qz-mark{flex:none;width:17px;height:17px;border:1.5px solid var(--line);border-radius:50%;margin-top:2px}
+.qz-o.ok .qz-mark{border-color:#1c8a4a;background:#1c8a4a}
+.qz-o.no .qz-mark{border-color:#c2432f;background:#c2432f}
+.qz-o.ok{border-color:#1c8a4a}.qz-o.no{border-color:#c2432f}
+.qz-o[disabled]{cursor:default;opacity:.95}
+.qz-why{display:none;margin-top:11px;padding-top:11px;border-top:1px solid var(--line);font-size:.9rem;line-height:1.55}
+.qz-why.show{display:block}
+.qz-why b{display:block;font-size:.76rem;letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px}
+.qz-why.good b{color:#1c8a4a}.qz-why.bad b{color:#c2432f}
+.tr{margin:1.4em 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.tr-cap{font-family:var(--sans);font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+  padding:9px 14px;border-bottom:1px solid var(--line)}
+.tr-alert{padding:12px 14px;font-family:var(--mono);font-size:.82rem;line-height:1.7}
+.tr-btns{display:flex;flex-wrap:wrap;gap:8px;padding:0 14px 13px}
+.tr-b{font:inherit;font-size:.87rem;color:inherit;background:var(--bg);border:1px solid var(--line);
+  border-radius:8px;padding:8px 13px;cursor:pointer}
+.tr-b:hover{border-color:var(--accent);color:var(--accent)}
+.tr-b.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
+.tr-out{display:none;border-top:1px solid var(--line);padding:12px 14px;font-size:.9rem;line-height:1.6}
+.tr-out.on{display:block}
+.tr-out b{display:block;font-size:.76rem;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.ck{margin:1.5em 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:13px 15px 15px}
+.ck-cap{font-family:var(--sans);font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.ck-list{display:flex;flex-direction:column;gap:3px}
+.ck-i{display:flex;gap:9px;align-items:center;text-align:left;font:inherit;font-size:.9rem;color:inherit;
+  background:none;border:0;padding:5px 2px;cursor:pointer;border-radius:6px}
+.ck-i:hover{color:var(--accent)}
+.ck-box{flex:none;width:15px;height:15px;border:1.5px solid var(--line);border-radius:4px;position:relative}
+.ck-i.on .ck-box{border-color:var(--accent);background:var(--accent)}
+.ck-i.on .ck-box::after{content:"";position:absolute;left:4px;top:1px;width:4px;height:8px;
+  border:solid #fff;border-width:0 1.8px 1.8px 0;transform:rotate(42deg)}
+.ck-i.on span:last-child{opacity:.55;text-decoration:line-through}
+.ck-bar{height:4px;background:var(--line);border-radius:3px;margin:11px 0 6px;overflow:hidden}
+.ck-bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .18s}
+.ck-n{font-family:var(--sans);font-size:.75rem;color:var(--muted)}
+.kc{margin:1.5em 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.kc-cap{font-family:var(--sans);font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+  padding:9px 14px;border-bottom:1px solid var(--line)}
+.kc-tabs{display:flex;overflow-x:auto;gap:6px;padding:11px 14px;border-bottom:1px solid var(--line)}
+.kc-t{flex:none;display:flex;align-items:center;gap:6px;font:inherit;font-size:.82rem;color:inherit;
+  background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:6px 12px;cursor:pointer;white-space:nowrap}
+.kc-t:hover{border-color:var(--accent);color:var(--accent)}
+.kc-t.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
+.kc-t .kc-n{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;
+  background:var(--line);color:var(--fg);font-size:.68rem;font-weight:600}
+.kc-t.on .kc-n{background:var(--accent);color:#fff}
+.kc-p{display:none;padding:13px 15px}
+.kc-p.on{display:block}
+.kc-what{font-size:.94rem;line-height:1.55;margin-bottom:10px}
+.kc-row{display:flex;gap:10px;font-size:.87rem;line-height:1.5;padding:5px 0;border-top:1px solid var(--line)}
+.kc-row b{flex:none;width:96px;font-size:.73rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);
+  font-weight:600;padding-top:2px}
+.kc figcaption{text-align:left;padding:0 15px 13px;margin-top:2px}
+@media (max-width:560px){.kc-row{flex-direction:column;gap:2px}.kc-row b{width:auto}}
+</style>
+
+<script>
+(function(){
+  // квизы
+  Array.prototype.forEach.call(document.querySelectorAll(".qz"), function(qz){
+    var why = qz.querySelector(".qz-why"), done = false;
+    Array.prototype.forEach.call(qz.querySelectorAll(".qz-o"), function(b){
+      b.addEventListener("click", function(){
+        if (done) return; done = true;
+        var ok = b.getAttribute("data-ok") === "1";
+        b.classList.add(ok ? "ok" : "no");
+        if (!ok) {
+          var right = qz.querySelector('.qz-o[data-ok="1"]');
+          if (right) right.classList.add("ok");
+        }
+        Array.prototype.forEach.call(qz.querySelectorAll(".qz-o"), function(x){ x.disabled = true; });
+        why.className = "qz-why show " + (ok ? "good" : "bad");
+        why.innerHTML = "<b>" + (ok ? "Верно" : "Не то") + "</b>" + b.getAttribute("data-why");
+      });
+    });
+  });
+  // триаж
+  Array.prototype.forEach.call(document.querySelectorAll(".tr"), function(tr){
+    Array.prototype.forEach.call(tr.querySelectorAll(".tr-b"), function(b){
+      b.addEventListener("click", function(){
+        var k = b.getAttribute("data-k");
+        Array.prototype.forEach.call(tr.querySelectorAll(".tr-b"), function(x){ x.classList.toggle("on", x === b); });
+        Array.prototype.forEach.call(tr.querySelectorAll(".tr-out"), function(o){
+          o.classList.toggle("on", o.getAttribute("data-k") === k);
+        });
+      });
+    });
+  });
+  // чеклист глав — состояние в переменной, без localStorage
+  Array.prototype.forEach.call(document.querySelectorAll(".ck"), function(ck){
+    var items = ck.querySelectorAll(".ck-i"), bar = ck.querySelector(".ck-bar i"),
+        num = ck.querySelector(".ck-n span"), state = {};
+    function paint(){
+      var n = 0; for (var k in state) if (state[k]) n++;
+      bar.style.width = (items.length ? (n / items.length * 100) : 0) + "%";
+      num.textContent = n;
+    }
+    Array.prototype.forEach.call(items, function(it){
+      it.addEventListener("click", function(ev){
+        var id = it.getAttribute("data-id");
+        if (ev.target.classList.contains("ck-box")) {
+          state[id] = !state[id]; it.classList.toggle("on", !!state[id]); paint(); return;
+        }
+        state[id] = !state[id]; it.classList.toggle("on", !!state[id]); paint();
+        var t = document.getElementById(id);
+        if (t && state[id]) t.scrollIntoView({behavior:"smooth", block:"start"});
+      });
+    });
+    paint();
+  });
+  // лента этапов
+  Array.prototype.forEach.call(document.querySelectorAll(".kc"), function(kc){
+    Array.prototype.forEach.call(kc.querySelectorAll(".kc-t"), function(t){
+      t.addEventListener("click", function(){
+        var i = t.getAttribute("data-i");
+        Array.prototype.forEach.call(kc.querySelectorAll(".kc-t"), function(x){ x.classList.toggle("on", x === t); });
+        Array.prototype.forEach.call(kc.querySelectorAll(".kc-p"), function(p){
+          p.classList.toggle("on", p.getAttribute("data-i") === i);
+        });
+      });
+    });
+  });
+})();
+</script>
+<!--thm-reader:start--><link rel="manifest" href="../manifest.webmanifest"><meta name="theme-color" content="#16212e"><script src="../assets/reader.js" defer></script><script>if('serviceWorker' in navigator)navigator.serviceWorker.register('../sw.js').catch(function(){});</script><!--thm-reader:end-->

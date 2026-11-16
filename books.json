@@ -141,6 +141,24 @@
   "added": "2026-11-13"
  },
  {
+  "id": "cs101-crypto",
+  "title": "Cryptography",
+  "url": "books/cs101-crypto.html",
+  "path": "02 Cyber Security 101",
+  "order": 6,
+  "rooms": "Cryptography Basics, Public Key Cryptography Basics, Hashing Basics, John the Ripper: The Basics",
+  "thm": [
+   "cryptographybasics",
+   "publickeycrypto",
+   "hashingbasics",
+   "johntheripperbasics"
+  ],
+  "thm_skip": [
+   "cryptographybasics"
+  ],
+  "added": "2026-11-16"
+ },
+ {
   "id": "x-offensive-intro",
   "title": "Offensive Security Intro",
   "url": "books/x-offensive-intro.html",

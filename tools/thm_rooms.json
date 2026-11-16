@@ -179,5 +179,21 @@
  "nmap": {
   "t": "Nmap: The Basics",
   "min": 60
+ },
+ "cryptographybasics": {
+  "t": "Cryptography Basics",
+  "min": 45
+ },
+ "publickeycrypto": {
+  "t": "Public Key Cryptography Basics",
+  "min": 60
+ },
+ "hashingbasics": {
+  "t": "Hashing Basics",
+  "min": 75
+ },
+ "johntheripperbasics": {
+  "t": "John the Ripper: The Basics",
+  "min": 60
  }
 }

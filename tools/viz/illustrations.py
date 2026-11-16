@@ -181,6 +181,33 @@ def netsoc():
     return frame("".join(b), 29)
 
 
-for name, fn in [("cs101-networking", netsoc), ("cs101-cli", cli), ("cs101-linux", linux), ("ps-06-web", web), ("ps-05-network", network), ("cs101-windows-ad", ad), ("cs101-01", cs101), ("ps-01-04", presec), ("x-offensive-intro", offensive)]:
+def crypto():
+    # сверху: шифрование — туда и обратно с ключом; снизу: хэш — только в одну сторону
+    b = [text(600, 64, "шифрование ↔ ключом · хэш → только вперёд", 26, INK, "middle", weight=700)]
+    # --- верхняя дорожка: открытый текст -> ключ -> шифртекст (обратимо)
+    b += [plate(70, 120, 250, 150, "#18263a", "#2c4058", 16), icon("file", 120, 150, 70, INK),
+          text(195, 250, "открытый текст", 18, INK, "middle", weight=600)]
+    b += [icon("key", 560, 150, 72, GILT), text(596, 250, "ключ", 17, GILT, "middle", mono=True, weight=600)]
+    b += [plate(880, 120, 250, 150, "#0c131b", "#2a3a4c", 16), icon("lock", 930, 150, 70, GOOD),
+          text(1005, 250, "шифртекст", 18, GOOD, "middle", weight=600)]
+    # двусторонние стрелки через ключ
+    b += [f'<line x1="330" y1="185" x2="540" y2="185" stroke="{GOOD}" stroke-width="3" marker-end="url(#ag)"/>',
+          f'<line x1="870" y1="215" x2="655" y2="215" stroke="{GOOD}" stroke-width="3" marker-end="url(#ag)"/>',
+          text(435, 172, "шифрование", 14, MUT, "middle", weight=600),
+          text(762, 238, "расшифрование", 14, MUT, "middle", weight=600)]
+    # --- нижняя дорожка: файл -> хэш (необратимо)
+    b += [plate(70, 330, 250, 150, "#18263a", "#2c4058", 16), icon("file", 120, 360, 70, INK),
+          text(195, 460, "файл / пароль", 18, INK, "middle", weight=600)]
+    b += [plate(880, 330, 250, 150, "#0c131b", "#2a3a4c", 16),
+          text(1005, 400, "9eb7ee7f…", 20, ACC, "middle", mono=True, weight=600),
+          text(1005, 460, "хэш (отпечаток)", 18, ACC, "middle", weight=600)]
+    b += [f'<line x1="330" y1="400" x2="870" y2="400" stroke="{ACC}" stroke-width="3" marker-end="url(#ar)"/>',
+          text(600, 388, "хэширование", 14, MUT, "middle", weight=600),
+          f'<line x1="870" y1="430" x2="360" y2="430" stroke="{BAD}" stroke-width="2.4" stroke-dasharray="7 9" opacity=".8"/>',
+          text(600, 452, "обратно — никак", 14, BAD, "middle", weight=600)]
+    return frame("".join(b), 13)
+
+
+for name, fn in [("cs101-crypto", crypto), ("cs101-networking", netsoc), ("cs101-cli", cli), ("cs101-linux", linux), ("ps-06-web", web), ("ps-05-network", network), ("cs101-windows-ad", ad), ("cs101-01", cs101), ("ps-01-04", presec), ("x-offensive-intro", offensive)]:
     (OUT / f"{name}.svg").write_text(fn(), encoding="utf8")
     print(name, (OUT / f"{name}.svg").stat().st_size, "байт")
