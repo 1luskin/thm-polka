@@ -1398,8 +1398,8 @@ Running  Spooler       Диспетчер печати
 Running  WinRM         Удалённое управление Windows
 Running  svc_upd8      System Update Helper
 </code></pre>
-<p>Ищешь <strong>новую</strong> службу без понятного назначения — так закрепляются (T1543.003). Строка <code>svc_upd8</code> с размытым именем «System Update Helper», которой вчера не было, — ровно такой кандидат.
-- <strong><code>Get-NetTCPConnection -State Established</code></strong> — открытые соединения. Полезное поле — <strong><code>OwningProcess</code></strong>: это PID процесса, который держит соединение. По нему через <code>Get-Process -Id &lt;PID&gt;</code> находишь программу:</p>
+<p>Ищешь <strong>новую</strong> службу без понятного назначения — так закрепляются (T1543.003). Строка <code>svc_upd8</code> с размытым именем «System Update Helper», которой вчера не было, — ровно такой кандидат.</p>
+<p><strong><code>Get-NetTCPConnection -State Established</code></strong> — открытые соединения. Полезное поле — <strong><code>OwningProcess</code></strong>: это PID процесса, который держит соединение. По нему через <code>Get-Process -Id &lt;PID&gt;</code> находишь программу:</p>
 <pre><code class="language-text">PS C:\&gt; Get-NetTCPConnection -State Established |
         Select-Object LocalAddress, RemoteAddress, RemotePort, OwningProcess
 
