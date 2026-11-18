@@ -1033,11 +1033,11 @@ ParentCommandLine:  cmd.exe /c &quot;for /l %i in (1,1,254) do ping -n 1 -w 100 
 <p><strong><code>$_</code> и точка.</strong> В условиях ты будешь писать <code>$_</code> — это «текущая карточка на ленте» (очередной объект). Точка после неё — обращение к полю: <code>$_.WS</code> значит «поле WS у текущей карточки». Знак <code>$</code> в PowerShell всегда помечает переменную.</p>
 <p><strong>Алиас</strong> (alias, псевдоним). Короткое второе имя командлета. <code>ls</code>, <code>dir</code>, <code>gci</code> — всё это псевдонимы для <code>Get-ChildItem</code>. Удобно руками, но в скрипты и тикеты пиши полное имя — так понятнее.</p>
 <h2 id="s38">Запуск и как понять, что ты в PowerShell</h2>
-<p><strong>На смене:</strong> сначала убедись, что ты именно в PowerShell, а не в cmd, — команды разные.</p>
-<p><strong>Как устроено.</strong> Открыть: Пуск → «Windows PowerShell», или в cmd набрать <code>powershell</code>. Приглашение PowerShell начинается с <code>PS</code>:</p>
-<pre><code class="language-text">PS C:\Users\adm.weber&gt;
-</code></pre>
-<p><code>PS</code> в начале — главный признак. Версию покажет встроенная переменная:</p>
+<p><strong>На смене:</strong> сначала убедись, что ты именно в PowerShell, а не в cmd, и узнай версию. Команды в двух оболочках разные, а от версии зависит, где лежит журнал скриптов (глава 4).</p>
+<p><strong>Зачем это существует.</strong> cmd умеет немного и отдаёт голый текст. Microsoft сделала PowerShell, чтобы админы могли управлять Windows целиком из текста: учётками, службами, журналами, другими машинами. Поэтому PowerShell любят и админы, и атакующие, и он постоянно мелькает в алертах.</p>
+<p><strong>Как устроено.</strong> На Windows есть две разные программы с похожими именами. <strong>Windows PowerShell 5.1</strong> (файл <code>powershell.exe</code>) встроена в каждую Windows и больше не развивается. <strong>PowerShell 7</strong> (файл <code>pwsh.exe</code>) — новая версия, её ставят отдельно, и она же работает на маке и в Linux. Командлеты почти одинаковые, но живут две версии отдельно: у каждой свои настройки и свои журналы.</p>
+<p><strong>Как открыть.</strong> Пуск → «Windows PowerShell», или в cmd набрать <code>powershell</code>. На маке — <code>pwsh</code> в Терминале (после установки PowerShell 7).</p>
+<p><strong>Разбор вывода:</strong></p>
 <pre><code class="language-text">PS C:\Users\adm.weber&gt; $PSVersionTable.PSVersion
 
 Major  Minor  Patch
@@ -1045,33 +1045,45 @@ Major  Minor  Patch
 5      1      0
 </code></pre>
 <ul>
-<li><strong>Windows PowerShell 5.1</strong> стоит на каждой Windows — старая, но вездесущая.</li>
-<li><strong>PowerShell 7</strong> (её ставят отдельно, и именно она есть на маке) — новее. На смене важно: в 7-й версии журнал скриптов пишется в другое место (глава 4).</li>
+<li><code>PS C:\Users\adm.weber&gt;</code> — приглашение. <code>PS</code> в начале — главный признак, что ты в PowerShell; дальше, как в cmd, папка, где ты стоишь.</li>
+<li><code>$PSVersionTable</code> — встроенная переменная со сведениями о версии; знак <code>$</code> помечает переменную. Точка и <code>PSVersion</code> — взять из неё одно поле.</li>
+<li>Ответ — объект с тремя полями: <code>Major</code> (главный номер), <code>Minor</code>, <code>Patch</code>. Здесь 5.1 — встроенная Windows PowerShell. Если <code>Major</code> равен 7 — значит, запущен <code>pwsh.exe</code>.</li>
+<li>Строка из чёрточек под заголовками — просто линейка таблицы, PowerShell так рисует любой объект.</li>
 </ul>
-<p><code>$PSVersionTable</code> — переменная; в PowerShell имена переменных начинаются с <code>$</code>.</p>
-<p><strong>Варианты, которые встретятся:</strong> на маке PowerShell 7 запускается командой <code>pwsh</code> в Терминале. Приглашение и командлеты те же, так что всю эту главу отрабатывай на маке.</p>
-<p><strong>Если не получилось:</strong> набрал <code>powershell</code>, а приглашение осталось без <code>PS</code> — возможно, команды такой нет (очень старая система); на маке запускай <code>pwsh</code>, а не <code>powershell</code>.</p>
-<p><strong>Ошибка новичка:</strong> путать cmd и PowerShell по виду окна. Окно одинаково чёрное — смотри на приглашение: <code>PS</code> в начале значит PowerShell.</p>
+<p><strong>Норма и подозрительное.</strong> На смене чаще смотришь не на своё окно, а на чужой запуск в журнале. Обычная строка — <code>powershell.exe</code> без ключей, открытый человеком. Насторожить должны ключи, которые прячут работу: <code>-WindowStyle Hidden</code> (без окна), <code>-NoProfile</code> (без личных настроек), <code>-EncodedCommand</code> (команда, закодированная в нечитаемую строку), <code>-Version 2</code> (запуск старейшей версии, у которой нет журнала скриптов). Подробно — в «Вживую» этой главы и в главе 4.</p>
+<p><strong>Попробуй сам.</strong> Поставь PowerShell 7 на мак (<code>brew install --cask powershell</code>, если стоит Homebrew — менеджер программ для мака), запусти <code>pwsh</code> и набери <code>$PSVersionTable.PSVersion</code>. Всю эту главу дальше можно отрабатывать там.</p>
+<p><strong>Если не получилось:</strong> на маке <code>command not found: pwsh</code> — PowerShell не установлен. Набрал на Windows <code>powershell</code>, а приглашение осталось без <code>PS</code> — команда не найдена или ты опечатался; посмотри, что ответила cmd.</p>
+<p><strong>Ошибка новичка:</strong> путать cmd и PowerShell по виду окна. Ошибаются, потому что окно одинаково тёмное, а многие команды (<code>cd</code>, <code>dir</code>) работают в обоих. Смотри на приглашение: <code>PS</code> в начале — PowerShell.</p>
 <h2 id="s39">Командлеты и как самому найти нужный</h2>
-<p><strong>На смене:</strong> ты не помнишь все команды — и не надо. Надо уметь за полминуты найти нужный командлет и прочитать, как он работает.</p>
-<p><strong>Как устроено.</strong> Три команды-помощника:</p>
+<p><strong>На смене:</strong> ты не помнишь все команды — и не надо. Надо уметь за полминуты найти нужный командлет, понять, что он делает, и разобрать незнакомую строку из алерта.</p>
+<p><strong>Зачем это существует.</strong> Командлетов в PowerShell тысячи. Microsoft заранее рассчитывала, что их никто не запомнит, поэтому встроила справочник прямо в оболочку: поиск по имени, справку с примерами и расшифровку псевдонимов.</p>
+<p><strong>Как устроено.</strong> Имя командлета строится по жёсткому правилу <strong>Глагол-Существительное</strong>, а глаголов немного: <code>Get</code> (получить), <code>Set</code> (изменить), <code>New</code> (создать), <code>Remove</code> (удалить), <code>Start</code>, <code>Stop</code>. Поэтому искать удобно по частям: «мне нужно получить что-то про процессы» = глагол <code>Get</code> + существительное <code>Process</code>. Командлеты собраны в <strong>модули</strong> — наборы по теме (управление, сеть, Active Directory).</p>
+<p><strong>Разбор вывода Get-Command:</strong></p>
 <pre><code class="language-text">PS C:\&gt; Get-Command -Verb Get -Noun Process
 
-CommandType   Name          Source
------------   ----          ------
-Cmdlet        Get-Process   Microsoft.PowerShell.Management
+CommandType   Name          Version   Source
+-----------   ----          -------   ------
+Cmdlet        Get-Process   7.0.0.0   Microsoft.PowerShell.Management
 </code></pre>
 <ul>
-<li><code>Get-Command</code> ищет командлеты. <code>-Verb Get</code> — все команды с глаголом Get, <code>-Noun Service</code> — все про службы. Так находишь команду, не зная её имени точно.</li>
-<li><code>Get-Help Get-Process -Examples</code> — показывает примеры запуска команды. Самое полезное: сразу видишь, как её применяют.</li>
-<li><code>Get-Alias ls</code> — говорит, какому полному командлету равен короткий псевдоним (<code>ls</code> → <code>Get-ChildItem</code>). И наоборот: <code>Get-Alias -Definition Get-ChildItem</code> — все псевдонимы этой команды.</li>
+<li><code>-Verb Get -Noun Process</code> — «найди все команды с глаголом Get и существительным Process». Можно со звёздочкой: <code>-Noun *user*</code> — всё, где в существительном есть user.</li>
+<li><code>CommandType</code> — что это: <code>Cmdlet</code> (командлет), <code>Alias</code> (псевдоним), <code>Function</code> (функция — команда, написанная на самом PowerShell).</li>
+<li><code>Name</code> — полное имя, его и пиши в тикет.</li>
+<li><code>Source</code> — из какого модуля командлет. <code>Microsoft.PowerShell.*</code> — встроенные. Незнакомый модуль в чужой команде — повод узнать, откуда он взялся.</li>
 </ul>
-<p>Нужного командлета нет в системе — его ставят из общего хранилища: <code>Find-Module имя</code> ищет, <code>Install-Module имя</code> ставит. На смене сам обычно не ставишь, но в чужой истории команда <code>Install-Module</code> значит «кто-то дотянул себе инструмент».</p>
-<p><strong>Если не получилось:</strong> <code>Get-Help</code> в первый раз предлагает <code>Update-Help</code> (скачать справку). Без интернета справка будет краткой — это нормально, примеры всё равно обычно есть.</p>
-<p><strong>Ошибка новичка:</strong> гадать имя команды. Глагол из набора известных (<code>Get</code>, <code>Set</code>, <code>New</code>, <code>Remove</code>, <code>Stop</code>, <code>Start</code>), существительное — предмет; <code>Get-Command -Verb Get -Noun *user*</code> найдёт всё про пользователей.</p>
+<p><strong>Справка и псевдонимы.</strong></p>
+<ul>
+<li><code>Get-Help Get-Process -Examples</code> — готовые примеры запуска. Самое полезное: сразу видно, как командлет применяют.</li>
+<li><code>Get-Alias ls</code> — какому полному командлету равен псевдоним: ответ <code>ls -&gt; Get-ChildItem</code>. Наоборот: <code>Get-Alias -Definition Get-ChildItem</code> — все псевдонимы этой команды. В алертах команды часто пишут псевдонимами (<code>iex</code>, <code>iwr</code>), и так их расшифровывают.</li>
+</ul>
+<p><strong>Норма и подозрительное.</strong> Нужного командлета нет в системе — его ставят из общего хранилища: <code>Find-Module имя</code> ищет, <code>Install-Module имя</code> ставит. Админ, который ставит модуль для работы, — норма. <code>Install-Module</code> в истории команд на сервере, где никто не работает руками, или модуль с именем известного инструмента для взлома — значит, кто-то принёс себе инструменты.</p>
+<p><strong>Попробуй сам.</strong> В <code>pwsh</code> на маке: найди все командлеты с существительным <code>Item</code>, потом посмотри примеры у одного из них.</p>
+<p><strong>Если не получилось:</strong> <code>Get-Help</code> при первом запуске предлагает <code>Update-Help</code> (скачать полную справку). Без интернета справка будет краткой — это нормально, примеры обычно всё равно есть.</p>
+<p><strong>Ошибка новичка:</strong> гадать имя команды или гуглить, не попробовав <code>Get-Command</code>. Ошибаются по привычке из cmd, где имена команд не подчиняются правилу. Здесь правило есть, им и пользуйся.</p>
 <h2 id="s40">Файлы: Get-ChildItem, Get-Content</h2>
-<p><strong>На смене:</strong> дойти до файла и прочитать его — так же часто, как в cmd, только команды другие (и те же, что в Linux, но через псевдонимы).</p>
-<p><strong>Как устроено.</strong></p>
+<p><strong>На смене:</strong> дойти до файла и прочитать его — так же часто, как в cmd. Команды другие, но для удобства у них есть псевдонимы со знакомыми именами.</p>
+<p><strong>Зачем это существует.</strong> PowerShell сделан так, чтобы одни и те же командлеты работали с разными «хранилищами»: папками на диске, реестром, переменными окружения. Поэтому команда называется не «показать папку», а <code>Get-ChildItem</code> — «получить дочерние элементы»: внутри папки это файлы, внутри раздела реестра — подразделы.</p>
+<p><strong>Как устроено.</strong> Каждый файл приходит не строкой текста, как в cmd, а объектом с полями: имя, размер, дата изменения, признаки. Поэтому дальше по конвейеру его можно отфильтровать по любому полю — например, оставить только файлы, изменённые за последний час.</p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
@@ -1108,7 +1120,8 @@ Cmdlet        Get-Process   Microsoft.PowerShell.Management
 </tr>
 </tbody>
 </table></div>
-<pre><code class="language-text">PS C:\Users\adm.weber&gt; Get-ChildItem C:\Users\Public
+<p><strong>Разбор вывода:</strong></p>
+<pre><code class="language-text">PS C:\Users\adm.weber&gt; Get-ChildItem C:\Users\Public -Force
 
     Directory: C:\Users\Public
 
@@ -1116,13 +1129,24 @@ Mode    LastWriteTime        Length Name
 ----    -------------        ------ ----
 d----   15.09.2026    22:03         Downloads
 -a---   15.09.2026    22:08    4096 update.exe
+-a-h-   15.09.2026    22:08      16 note.txt
 </code></pre>
 <ul>
-<li>Колонка <code>Mode</code>: <code>d</code> в начале — папка (directory), <code>-a</code> — обычный файл. Скрытые файлы — <code>Get-ChildItem -Force</code> (как <code>dir /a</code>).</li>
-<li><code>Length</code> — размер в байтах, <code>Name</code> — имя.</li>
+<li><code>Directory:</code> — какую папку показываем.</li>
+<li><code>Mode</code> — признаки, по одной букве на месте: <code>d</code> — папка (directory), <code>a</code> — обычный файл, <code>h</code> — скрытый (hidden), <code>r</code> — только для чтения. Прочерк — признака нет.</li>
+<li><code>LastWriteTime</code> — когда файл последний раз меняли. Как и в cmd, это главное поле: сверяешь со временем алерта.</li>
+<li><code>Length</code> — размер в байтах; у папок пусто.</li>
+<li><code>Name</code> — имя.</li>
+<li><code>-Force</code> показал скрытый <code>note.txt</code> (буква <code>h</code>). Без <code>-Force</code> его бы не было, как в <code>dir</code> без <code>/a</code>.</li>
 </ul>
-<p><strong>Если не получилось:</strong> <code>Cannot find path … because it does not exist</code> — нет такой папки: проверь путь и регистр.</p>
-<p><strong>Ошибка новичка:</strong> на чужой машине по привычке писать <code>del</code>. Как и в cmd, на смене файлы только смотрят (<code>Get-ChildItem</code>, <code>Get-Content</code>); <code>Remove-Item</code> — это уже порча улик.</p>
+<p><strong>Полезная связка.</strong> Самые свежие файлы в папке — сверху:</p>
+<pre><code class="language-text">PS C:\&gt; Get-ChildItem C:\Users\Public -Force | Sort-Object LastWriteTime -Descending
+</code></pre>
+<p><code>Sort-Object</code> сортирует объекты по полю, <code>-Descending</code> — от большего к меньшему, то есть новые сверху.</p>
+<p><strong>Норма и подозрительное.</strong> Как в главе 1: программа в <code>Public</code>, <code>Downloads</code> или Temp, созданная прямо перед алертом, да ещё скрытый файл рядом — зацепка.</p>
+<p><strong>Попробуй сам.</strong> В <code>pwsh</code> на маке: <code>Get-ChildItem ~/Downloads | Sort-Object LastWriteTime -Descending</code> — найди самый свежий файл и прочитай текстовый через <code>Get-Content</code>.</p>
+<p><strong>Если не получилось:</strong> <code>Cannot find path … because it does not exist</code> — нет такой папки: проверь путь. Путь с пробелами бери в кавычки: <code>Get-ChildItem "C:\Program Files"</code>.</p>
+<p><strong>Ошибка новичка:</strong> на чужой машине по привычке написать <code>del</code> или <code>rm</code>. В PowerShell это псевдонимы <code>Remove-Item</code>, и файл удалится. Ошибаются, потому что псевдоним выглядит безобидно. На смене файлы только смотрят (<code>Get-ChildItem</code>, <code>Get-Content</code>); удаление — порча улик.</p>
 <h2 id="s41">Конвейер: отобрать, отсортировать, оставить нужное</h2>
 <p><strong>На смене:</strong> главный приём главы. Из большого списка объектов конвейер оставляет нужное за одну строку. Четыре командлета делают почти всё.</p>
 <p><strong>Как устроено.</strong> Разберём по шагам на процессах. Каждый шаг добавляет одно звено через <code>|</code>.</p>
