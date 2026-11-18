@@ -169,5 +169,24 @@
     "thm": [
       "offensivesecurityintro"
     ]
+  },
+  {
+    "id": "x-exploitation-basics",
+    "title": "Основы эксплуатации",
+    "url": "books/x-exploitation-basics.html",
+    "path": "Вне курса",
+    "order": 2,
+    "rooms": "Moniker Link (CVE-2024-21413), Metasploit: Introduction, Metasploit: Exploitation, Metasploit: Meterpreter, Blue",
+    "added": "2026-11-18",
+    "thm": [
+      "monikerlink",
+      "metasploitintro",
+      "metasploitexploitation",
+      "meterpreter",
+      "blue"
+    ],
+    "thm_skip": [
+      "metasploitintro"
+    ]
   }
 ]
