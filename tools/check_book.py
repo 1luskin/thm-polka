@@ -155,6 +155,20 @@ for n, title, c in chapter_rows():
         cp.append("мини-квиз у must: меньше 2 вопросов")
     w = words(c)
     per = w // max(1, len(subs))
+    # каждая подтема — не тоньше половины эталона (среднее прячет тонкие разделы)
+    for h, sc in subs:
+        sw = words(sc)
+        if (lvl == "must" or (verdict and verdict.group(1) == "skip")) and sw < ET_PER_SUB * 0.5:
+            cp.append(f"«{h[:38]}»: тонко, {sw} слов при эталоне {ET_PER_SUB} — объяснить глубже по эталону")
+    # словарик не длиннее средней подтемы
+    sl = next(((h, st) for h, st in h2s if h.startswith("Сначала слова")), None)
+    if sl and subs:
+        i = [h for h, _ in h2s].index(sl[0])
+        en = h2s[i + 1][1] if i + 1 < len(h2s) else len(c)
+        slw = words(c[sl[1]:en])
+        avg_sub = sum(words(sc) for _, sc in subs) // len(subs)
+        if slw > avg_sub:
+            cp.append(f"«Сначала слова» ({slw} слов) длиннее средней подтемы ({avg_sub}) — подтемы недописаны или словарик раздут")
     if (lvl == "must" or (verdict and verdict.group(1) == "skip")) and per < ET_PER_SUB * 0.8:
         cp.append(f"коротко: {per} слов на подтему при эталоне {ET_PER_SUB} — дописать по «Минимуму»")
     print(f"{n}. {title[:40]} | {lvl} | {verdict.group(1) if verdict else '—'} | {'✓' if head_order == want else '✗'} | {len(subs)} | {w} | {per} | {nq} | {len(cp)}")
