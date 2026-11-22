@@ -153,9 +153,7 @@
       "hashingbasics",
       "johntheripperbasics"
     ],
-    "thm_skip": [
-      "cryptographybasics"
-    ],
+    "thm_skip": [],
     "added": "2026-11-17"
   },
   {
