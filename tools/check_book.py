@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Сверка учебника со скиллом thm-textbook (шаг 5): главы по порядку и «Минимуму на подтему»,
+"""Сверка учебника со скиллом uchebnik-thm (шаг 5): главы по порядку и «Минимуму на подтему»,
 непоясненные термины, объём против эталона, блоки учебника, квизы, ATT&CK, вёрстка.
 
 Запуск:
@@ -59,6 +59,14 @@ et_ch = et_body[et_body.index("# Глава 1"):]
 SERVICE = re.compile(r"Аналогия|Ты на смене|Сначала слова|Копнуть глубже|Выжимка|Термин|Связи|Мини-квиз|Как сказать|Сделай сам|В тикет|Вживую")
 et_subs = [s for s in re.findall(r"^## (.+)$", et_ch, flags=re.M) if not SERVICE.search(s)]
 ET_PER_SUB = len(et_ch.split()) // max(1, len(et_subs))
+# планка подтемы: ~80% раздела `set` эталона (скилл, правило 2)
+_set = re.search(r"^## Переменные окружения: set\n(.*?)(?=^## )", et_ch, flags=re.M | re.S)
+SET_W = len(re.sub(r"[`*|\[\]#>]", " ", _set.group(1)).split()) if _set else ET_PER_SUB
+SUB_MIN = int(SET_W * 0.8)
+PROTO_FILE = ROOT / "tools/check_protocols.txt"
+PROTOS = [l.strip() for l in PROTO_FILE.read_text().splitlines() if l.strip() and not l.startswith("#")] if PROTO_FILE.exists() else []
+CUT_RX = re.compile(r"не могу (?:продолжить|написать|дальше)|не буду продолжать|дальше писать не|не могу помочь", re.I)
+OTPISKA = re.compile(r"^\s*(?:нет|неверно|не подходит|это другое|не то|мимо)[.,!…]*\s*$", re.I)
 
 # ---------- главы ----------
 ORDER = ["Ты на смене", "Аналогия", "Сначала слова", "Вживую", "Копнуть глубже", "Мини-квиз", "Выжимка", "Термины", "Связи"]
@@ -85,18 +93,17 @@ def chapter_rows():
         yield n, title, c
 
 
-print(f"Эталон: {ET_PER_SUB} слов на подтему ({len(et_subs)} подтем)")
-print("Глава | важн | верд | порядок | подтем | слов | на подтему | квизов | проблемы")
+print(f"Эталон: {ET_PER_SUB} слов на подтему ({len(et_subs)} подтем); раздел set — {SET_W}, планка подтемы must — {SUB_MIN}")
+print("Глава | важн | порядок | подтем | слов | на подтему | мин/макс подтема | квизов | проблемы")
+if 'class="thm-verdict"' in main or "Маршрут:" in main:
+    problems.append("вердикт по комнатам / «Маршрут» (убраны из скилла)")
 for n, title, c in chapter_rows():
     cp = []
     lvl = re.search(r'class="ch-level" data-l="(\w+)"', c)
     lvl = lvl.group(1) if lvl else None
     if not lvl:
         cp.append("нет плашки важности")
-    room = "(" in title
-    verdict = re.search(r'class="thm-verdict" data-v="(\w+)"', c)
-    if room and not verdict:
-        cp.append("нет плашки вердикта")
+    verdict = None
     # h2 по порядку
     h2s = [(H.unescape(re.sub("<[^>]+>", "", m.group(1))).strip(), m.start()) for m in re.finditer(r"<h2[^>]*>(.*?)</h2>", c, re.S)]
     names = [h for h, _ in h2s]
@@ -155,11 +162,25 @@ for n, title, c in chapter_rows():
         cp.append("мини-квиз у must: меньше 2 вопросов")
     w = words(c)
     per = w // max(1, len(subs))
-    # каждая подтема — не тоньше половины эталона (среднее прячет тонкие разделы)
-    for h, sc in subs:
-        sw = words(sc)
-        if (lvl == "must" or (verdict and verdict.group(1) == "skip")) and sw < ET_PER_SUB * 0.5:
-            cp.append(f"«{h[:38]}»: тонко, {sw} слов при эталоне {ET_PER_SUB} — объяснить глубже по эталону")
+    # каждая подтема must — не меньше ~80% раздела set (среднее прячет тонкие разделы)
+    sws = [words(sc) for _, sc in subs]
+    for (h, sc), sw in zip(subs, sws):
+        if lvl == "must" and sw < SUB_MIN:
+            cp.append(f"«{h[:38]}»: тонко, {sw} слов при планке {SUB_MIN} (80% от set) — дописать по карточке")
+    # глубина не падает к концу главы
+    if len(sws) >= 2 and sws[-1] < sws[0] * 0.8:
+        cp.append(f"последняя подтема «{subs[-1][0][:30]}» ({sws[-1]}) короче 80% первой ({sws[0]}) — сдулся к концу")
+    # обрывы: пустые разделы, обрыв на середине фразы, «не могу»
+    for i, (h, st) in enumerate(h2s):
+        en = h2s[i + 1][1] if i + 1 < len(h2s) else len(c)
+        sec = c[st:en]
+        if words(sec) < 20 and not h.startswith(("Термины", "Связи")):
+            cp.append(f"«{h[:38]}»: почти пустой раздел ({words(sec)} слов) — обрыв?")
+        last_p = re.findall(r"<p>(.*?)</p>", sec, re.S)
+        if last_p and not re.search(r"[.!?:»)…]\s*$", text(last_p[-1]).strip()):
+            cp.append(f"«{h[:38]}»: последний абзац обрывается без точки")
+        if CUT_RX.search(text(sec)):
+            cp.append(f"«{h[:38]}»: фраза-обрыв («не могу…»)")
     # словарик не длиннее средней подтемы
     sl = next(((h, st) for h, st in h2s if h.startswith("Сначала слова")), None)
     if sl and subs:
@@ -169,9 +190,7 @@ for n, title, c in chapter_rows():
         avg_sub = sum(words(sc) for _, sc in subs) // len(subs)
         if slw > avg_sub:
             cp.append(f"«Сначала слова» ({slw} слов) длиннее средней подтемы ({avg_sub}) — подтемы недописаны или словарик раздут")
-    if (lvl == "must" or (verdict and verdict.group(1) == "skip")) and per < ET_PER_SUB * 0.8:
-        cp.append(f"коротко: {per} слов на подтему при эталоне {ET_PER_SUB} — дописать по «Минимуму»")
-    print(f"{n}. {title[:40]} | {lvl} | {verdict.group(1) if verdict else '—'} | {'✓' if head_order == want else '✗'} | {len(subs)} | {w} | {per} | {nq} | {len(cp)}")
+    print(f"{n}. {title[:40]} | {lvl} | {'✓' if head_order == want else '✗'} | {len(subs)} | {w} | {per} | {min(sws) if sws else 0}/{max(sws) if sws else 0} | {nq} | {len(cp)}")
     for p in cp:
         problems.append(f"гл.{n}: {p}")
 
@@ -256,6 +275,32 @@ if not nterm:
 q_why = re.findall(r'<button type="button" class="qz-o" data-ok="\d" data-why="([^"]*)"', main)
 if any(len(w.strip()) < 8 for w in q_why):
     problems.append(f"квизы: {sum(1 for w in q_why if len(w.strip()) < 8)} вариантов без пояснения")
+# квизы: позиция верного ответа и пояснения к неверным
+from collections import Counter
+q_pos, q_bad = [], []
+for blk in re.split(r'<div class="qz"', main)[1:]:
+    blk = blk.split('<div class="qz-why"')[0]
+    opts = re.findall(r'class="qz-o" data-ok="(\d)" data-why="([^"]*)"', blk)
+    for k, (ok, why) in enumerate(opts, 1):
+        if ok == "1":
+            q_pos.append(k)
+        elif len(H.unescape(why).split()) < 8 or OTPISKA.search(H.unescape(why)):
+            q_bad.append(H.unescape(why)[:50])
+if q_pos:
+    cnt = Counter(q_pos)
+    top, share = cnt.most_common(1)[0][0], cnt.most_common(1)[0][1] / len(q_pos)
+    print(f"\nКвизы: {len(q_pos)}, позиции верных: {dict(sorted(cnt.items()))}")
+    if share > 0.4:
+        problems.append(f"квизы: {int(share * 100)}% верных ответов на позиции {top} (больше 40%) — переставить по раскладке")
+if q_bad:
+    problems.append(f"квизы: {len(q_bad)} пояснений к неверным вариантам короче 8 слов или отписки (напр. «{q_bad[0]}»)")
+# протоколы и инструменты: часто упомянут — нужен свой заголовок
+heads_txt = " ".join(H.unescape(re.sub("<[^>]+>", "", x)) for x in re.findall(r"<h[23][^>]*>(.*?)</h[23]>", main, re.S)).lower()
+body_txt = text(strip_code(main))
+for pr in PROTOS:
+    k = len(re.findall(r"(?<![\w-])" + re.escape(pr) + r"(?![\w-])", body_txt))
+    if k >= 3 and pr.lower() not in heads_txt and not any(pr.lower() == x.lower() for x in KNOWN):
+        problems.append(f"протокол/инструмент «{pr}»: {k} упоминаний, но нет своего раздела (h2/h3)")
 for m in re.finditer(r'<figure class="thv"[^>]*>.*?<script type="application/json">(.*?)</script>', main, re.S):
     try:
         json.loads(m.group(1))
@@ -277,7 +322,7 @@ if not PARTIAL:
     def qn(t):
         return heads[t].count('class="qz"') if t in heads else 0
     BOOK = [
-        ("шапка: маршрут", "Маршрут:" in main),
+        ("шапка: комнаты", "Комнаты" in main[: main.find('<h1 id="s1"')]),
         ("Вспомни прошлое 3–5", 3 <= qn("Вспомни прошлое") <= 5),
         ("разбор строки ≥1", 'class="fb' in main),
         ("Самопроверка 8–10", 8 <= qn("Самопроверка") <= 10),
@@ -291,12 +336,6 @@ if not PARTIAL:
         print(("✓ " if ok else "✗ ") + n)
         if not ok:
             problems.append(n)
-    # маршрут совпадает с плашками
-    route = main[main.find("Маршрут:"): main.find('<h1 id="s1"')]
-    for n, title, c in chapter_rows():
-        v = re.search(r'class="thm-verdict" data-v="(\w+)"', c)
-        if v and {"go": "🧪", "maybe": "🤔", "skip": "⏭"}[v.group(1)] not in route:
-            problems.append(f"маршрут в шапке не совпадает с вердиктом гл.{n}")
 
 # ---------- слова-сигналы ----------
 for w in ["важно", "запомни", "ключевое", "обязательно"]:

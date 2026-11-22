@@ -1,0 +1,42 @@
+# Протоколы, механизмы и инструменты, которым нужен свой раздел (h2/h3), если в учебнике их упоминают 3+ раза.
+# Правило скилла: «Названный протокол, механизм или инструмент — своя подтема, а не строчка».
+# Пополнять после каждого учебника.
+ICMP
+ARP
+DHCP
+NAT
+DNS
+HTTP
+HTTPS
+TLS
+SSH
+FTP
+SMB
+RDP
+Kerberos
+NTLM
+LDAP
+Sysmon
+auditd
+AES
+DES
+3DES
+RSA
+Diffie-Hellman
+ECDSA
+PGP
+GPG
+MD5
+SHA-1
+SHA-256
+bcrypt
+HMAC
+XOR
+OpenSSL
+hashcat
+john
+unshadow
+ssh-keygen
+Wireshark
+tcpdump
+Nmap
