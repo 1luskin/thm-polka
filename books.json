@@ -202,5 +202,22 @@
    "burpsuitebasics"
   ],
   "thm_skip": []
+ },
+ {
+  "id": "x-offensive-tooling",
+  "title": "Наступательный инструментарий",
+  "url": "books/x-offensive-tooling.html",
+  "path": "Вне курса",
+  "order": 4,
+  "rooms": "Offensive Security Tooling, Hydra, Gobuster: The Basics, Shells Overview, SQLMap: The Basics",
+  "added": "2026-11-22",
+  "thm": [
+   "offensivesecuritytooling",
+   "hydra",
+   "gobusterthebasics",
+   "shellsoverview",
+   "sqlmapthebasics"
+  ],
+  "thm_skip": []
  }
 ]
