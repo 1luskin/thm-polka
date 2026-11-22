@@ -1,0 +1,1312 @@
+<title>Учебник: Взлом веб-сайтов</title><!--thm-og:start--><meta name="description" content="курса · Web Application Basics, JavaScript Essentials, SQL Fundamentals, Burp Suite: The Basics"><meta property="og:type" content="website"><meta property="og:site_name" content="THM Полка"><meta property="og:locale" content="ru_RU"><meta property="og:title" content="Учебник: Взлом веб-сайтов"><meta property="og:description" content="курса · Web Application Basics, JavaScript Essentials, SQL Fundamentals, Burp Suite: The Basics"><meta property="og:url" content="https://1luskin.github.io/thm-polka/books/x-web-hacking.html"><meta property="og:image" content="https://1luskin.github.io/thm-polka/assets/og/x-web-hacking.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><link rel="icon" href="/thm-polka/assets/favicon.svg" type="image/svg+xml"><link rel="icon" href="/thm-polka/favicon.ico" sizes="32x32"><link rel="apple-touch-icon" href="/thm-polka/assets/apple-touch-icon.png"><!--thm-og:end-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#eef1f5; --surface:#ffffff; --surface-2:#f6f8fa;
+  --ink:#111a22; --muted:#5b6b7b; --line:#d5dde5; --line-soft:#e4eaf0;
+  --accent:#1a5fa8; --accent-soft:#e3edf8;
+  --alert:#a85e0e; --alert-soft:#f9eedd;
+  --ok:#0f7551; --ok-soft:#e2f2eb;
+  --code-bg:#101a24; --code-ink:#dbe6f0; --code-dim:#8aa0b4;
+  --fs:17px; --maxw:none;
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d141b; --surface:#141d26; --surface-2:#19232e;
+    --ink:#e4ecf3; --muted:#93a5b6; --line:#25323f; --line-soft:#1e2933;
+    --accent:#6ba8f5; --accent-soft:#16283c;
+    --alert:#e0a555; --alert-soft:#2c2417;
+    --ok:#52c095; --ok-soft:#13291f;
+    --code-bg:#080e14; --code-ink:#d7e3ef; --code-dim:#7f95a9;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d141b; --surface:#141d26; --surface-2:#19232e;
+  --ink:#e4ecf3; --muted:#93a5b6; --line:#25323f; --line-soft:#1e2933;
+  --accent:#6ba8f5; --accent-soft:#16283c;
+  --alert:#e0a555; --alert-soft:#2c2417;
+  --ok:#52c095; --ok-soft:#13291f;
+  --code-bg:#080e14; --code-ink:#d7e3ef; --code-dim:#7f95a9;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:var(--fs);line-height:1.68;-webkit-text-size-adjust:100%}
+a{color:var(--accent);text-underline-offset:2px;overflow-wrap:anywhere}
+li,p,td,th{overflow-wrap:break-word}
+a:focus-visible,button:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+
+/* ---------- progress + topbar ---------- */
+#pbar{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;height:3px;background:transparent;z-index:40}
+#pbar i{display:block;height:100%;width:0;background:var(--accent);transition:width .12s linear}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;display:flex;align-items:center;gap:10px;
+  background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);padding:8px 16px;font-family:var(--sans)}
+.topbar .brand{font-size:.82rem;font-weight:600;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto}
+.topbar .spacer{flex:1}
+.btn{font-family:var(--sans);font-size:.78rem;font-weight:500;color:var(--ink);background:var(--surface-2);
+  border:1px solid var(--line);border-radius:7px;padding:5px 9px;cursor:pointer;line-height:1.2}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+#readpct{font-family:var(--sans);font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+#menubtn{display:none}
+
+/* ---------- layout ---------- */
+.layout{display:grid;grid-template-columns:262px minmax(0,1fr);gap:34px;align-items:start;
+  max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:26px 80px}
+.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 58px);max-height:calc(100vh - 92px);overflow-y:auto;
+  font-family:var(--sans);font-size:.83rem;line-height:1.35;border-left:2px solid var(--line-soft);padding-left:14px}
+.toc .toc-h{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.toc a{display:block;color:var(--muted);text-decoration:none;padding:4px 0;border-left:2px solid transparent;margin-left:-16px;padding-left:14px}
+.toc a.t1{color:var(--ink);font-weight:600;margin-top:12px;font-size:.84rem}
+.toc a.t2{padding-left:26px;font-size:.8rem}
+.toc a:hover{color:var(--accent)}
+.toc a.on{color:var(--accent);border-left-color:var(--accent);font-weight:600}
+.content{min-width:0;max-width:70ch}
+
+/* ---------- typography ---------- */
+h1{font-family:var(--sans);font-size:2.05rem;line-height:1.15;font-weight:600;letter-spacing:-.015em;margin:.2em 0 .5em;text-wrap:balance}
+h1.anchored{font-size:1.72rem;margin-top:2.2em;padding-top:.7em;border-top:2px solid var(--line);
+   display:flex;align-items:center;gap:10px;scroll-margin-top:72px}
+h2{font-family:var(--sans);font-size:1.3rem;font-weight:600;line-height:1.25;margin:2.2em 0 .7em;text-wrap:balance;
+   display:flex;align-items:center;gap:10px;scroll-margin-top:72px}
+h3{font-family:var(--sans);font-size:1.06rem;font-weight:600;margin:1.9em 0 .5em;color:var(--ink);text-wrap:balance}
+.mark{flex:none;width:19px;height:19px;border:1.5px solid var(--line);border-radius:5px;background:var(--surface);
+  cursor:pointer;padding:0;position:relative}
+.mark[aria-pressed="true"]{background:var(--ok);border-color:var(--ok)}
+.mark[aria-pressed="true"]::after{content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;
+  border:solid #fff;border-width:0 2px 2px 0;transform:rotate(42deg)}
+.done .h2t{opacity:.5}
+p{margin:0 0 1.05em}
+ul,ol{margin:0 0 1.15em;padding-left:1.35em}
+li{margin:.3em 0}
+hr{border:0;border-top:1px solid var(--line);margin:2.6em 0}
+blockquote{margin:1.4em 0;padding:.85em 1.1em;background:var(--alert-soft);border-left:3px solid var(--alert);border-radius:0 8px 8px 0}
+blockquote p:last-child{margin:0}
+strong{font-weight:600}
+.lede{color:var(--muted);font-size:.95rem;font-family:var(--sans)}
+
+/* ---------- code ---------- */
+code{font-family:var(--mono);font-size:.86em;background:var(--surface-2);border:1px solid var(--line-soft);
+  border-radius:4px;padding:.08em .32em;overflow-wrap:anywhere;word-break:break-word}
+pre{position:relative;background:var(--code-bg);color:var(--code-ink);border-radius:10px;padding:14px 16px;
+  overflow-x:auto;margin:1.2em 0;font-size:.85rem;line-height:1.55}
+pre code{background:none;border:0;padding:0;color:inherit;font-size:1em}
+.copy{position:absolute;top:8px;right:8px;font-family:var(--sans);font-size:.68rem;color:var(--code-dim);
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:6px;padding:3px 7px;cursor:pointer}
+.copy:hover{color:#fff;border-color:rgba(255,255,255,.4)}
+
+/* ---------- tables ---------- */
+.tablewrap{overflow-x:auto;margin:1.3em 0;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-family:var(--sans);font-size:.87rem;line-height:1.45}
+th,td{text-align:left;padding:9px 13px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;font-size:.76rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+
+/* ---------- details ---------- */
+details{margin:1.1em 0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:2px 15px}
+details[open]{background:var(--surface-2)}
+summary{cursor:pointer;font-family:var(--sans);font-size:.9rem;font-weight:500;padding:11px 0;list-style:none;
+  display:flex;gap:9px;align-items:flex-start}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"▸";color:var(--accent);flex:none;transition:transform .15s}
+details[open] summary::before{transform:rotate(90deg)}
+details > :not(summary){font-size:.95rem}
+details > p:last-child{padding-bottom:.6em}
+
+/* ---------- field breakdown ---------- */
+.fb{margin:1.4em 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.fb-cap{font-family:var(--sans);font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+  padding:9px 14px 0}
+.fb-line{font-family:var(--mono);font-size:.8rem;line-height:2.1;padding:8px 14px 12px;overflow-x:auto;white-space:pre}
+.fld{border-radius:4px;padding:2px 3px;cursor:pointer;border-bottom:2px solid var(--line);transition:background .12s}
+.fld:hover,.fld.on{background:var(--accent-soft);border-bottom-color:var(--accent)}
+.fld.on{box-shadow:inset 0 0 0 1px var(--accent)}
+.fb-out{font-family:var(--sans);font-size:.85rem;border-top:1px solid var(--line);padding:11px 14px;
+  background:var(--surface-2);min-height:3.6em}
+.fb-out b{font-weight:600;color:var(--accent);display:block;font-size:.78rem;letter-spacing:.03em;text-transform:uppercase;margin-bottom:2px}
+.fb-hint{color:var(--muted)}
+
+/* ---------- figures ---------- */
+figure{margin:1.6em 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 16px 10px}
+figure svg{display:block;max-width:100%;height:auto;margin:0 auto;color:var(--ink)}
+figcaption{font-family:var(--sans);font-size:.78rem;color:var(--muted);margin-top:10px;text-align:center;line-height:1.45}
+
+/* ---------- to top ---------- */
+#totop{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:35;
+  width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);
+  font-size:1rem;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .2s}
+#totop.show{opacity:1;pointer-events:auto}
+
+/* ---------- mobile ---------- */
+@media (max-width:860px){
+  .layout{grid-template-columns:minmax(0,1fr);gap:0;padding-block:18px 70px}
+  #menubtn{display:inline-block}
+  .toc{position:fixed;inset:0 auto 0 0;width:min(84vw,300px);z-index:45;background:var(--surface);
+    border-right:1px solid var(--line);border-left:0;max-height:none;padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px));
+    transform:translateX(-102%);transition:transform .22s ease;overflow-y:auto}
+  .toc.open{transform:none;box-shadow:0 0 40px rgba(0,0,0,.28)}
+  .toc a{margin-left:0;padding-left:10px}
+  #scrim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:44}
+  h1{font-size:1.68rem}
+  h2{font-size:1.24rem;scroll-margin-top:64px}
+  .content{max-width:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+
+<div id="pbar"><i></i></div>
+
+<div class="topbar">
+  <button class="btn" id="menubtn" aria-label="Оглавление" aria-expanded="false">☰</button>
+  <span class="brand">Web Hacking · Взлом веб-сайтов</span>
+  <span class="spacer"></span>
+  <span id="readpct">0% прочитано</span>
+  <button class="btn" id="fsdown" aria-label="Уменьшить шрифт">A−</button>
+  <button class="btn" id="fsup" aria-label="Увеличить шрифт">A+</button>
+  <button class="btn" id="themebtn" aria-label="Сменить тему">◐</button>
+</div>
+
+<div class="layout">
+  <nav class="toc" id="toc" aria-label="Содержание">
+    <div class="toc-h">Содержание</div>
+    <a class="t1" href="#s1">Вспомни прошлое</a>
+    <a class="t1" href="#s2">Глава 1. Web Application Basics — HTTP,…</a>
+    <a class="t2" href="#s3">Ты на смене</a>
+    <a class="t2" href="#s4">Аналогия: сайт — это ресторан с кухней</a>
+    <a class="t2" href="#s5">Сначала слова, без которых дальше не по…</a>
+    <a class="t2" href="#s6">Клиент и сервер: где что выполняется (и…</a>
+    <a class="t2" href="#s7">Адрес страницы (URL) по частям</a>
+    <a class="t2" href="#s8">Методы: что именно просит браузер</a>
+    <a class="t2" href="#s9">Коды ответа: чем кончилось дело</a>
+    <a class="t2" href="#s10">Заголовки: кто спрашивает и что сервер…</a>
+    <a class="t2" href="#s11">Вживую: строка журнала доступа по полям</a>
+    <a class="t2" href="#s12">Копнуть глубже</a>
+    <a class="t2" href="#s13">Мини-квиз</a>
+    <a class="t2" href="#s14">Сделай сам</a>
+    <a class="t2" href="#s15">Выжимка</a>
+    <a class="t2" href="#s16">Термины</a>
+    <a class="t2" href="#s17">Связи</a>
+    <a class="t1" href="#s18">Глава 2. JavaScript Essentials — как ра…</a>
+    <a class="t2" href="#s19">Ты на смене</a>
+    <a class="t2" href="#s20">Аналогия: доска объявлений, которой вер…</a>
+    <a class="t2" href="#s21">Сначала слова, без которых дальше не по…</a>
+    <a class="t2" href="#s22">Где и как исполняется JavaScript (и поч…</a>
+    <a class="t2" href="#s23">Как JavaScript попадает на страницу — и…</a>
+    <a class="t2" href="#s24">XSS: три вида и как каждый виден (или н…</a>
+    <a class="t2" href="#s25">Обфускация: когда скрипт нарочно сделан…</a>
+    <a class="t2" href="#s26">Защита: как XSS не дают случиться</a>
+    <a class="t2" href="#s27">Вживую: запрос с пробой XSS по полям</a>
+    <a class="t2" href="#s28">Копнуть глубже</a>
+    <a class="t2" href="#s29">Мини-квиз</a>
+    <a class="t2" href="#s30">Сделай сам</a>
+    <a class="t2" href="#s31">Выжимка</a>
+    <a class="t2" href="#s32">Термины</a>
+    <a class="t2" href="#s33">Связи</a>
+    <a class="t1" href="#s34">Глава 3. SQL Fundamentals — запросы к б…</a>
+    <a class="t2" href="#s35">Ты на смене</a>
+    <a class="t2" href="#s36">Аналогия: строгий библиотекарь и бланк…</a>
+    <a class="t2" href="#s37">Сначала слова, без которых дальше не по…</a>
+    <a class="t2" href="#s38">Что такое база и как устроен запрос к н…</a>
+    <a class="t2" href="#s39">Чтение базы: SELECT … FROM … WHERE</a>
+    <a class="t2" href="#s40">Остальные базовые команды — коротко, но…</a>
+    <a class="t2" href="#s41">SQL-инъекция: как ввод становится коман…</a>
+    <a class="t2" href="#s42">Защита: почему инъекция вообще возможна…</a>
+    <a class="t2" href="#s43">Вживую: запрос с SQL-инъекцией по полям</a>
+    <a class="t2" href="#s44">Копнуть глубже</a>
+    <a class="t2" href="#s45">Мини-квиз</a>
+    <a class="t2" href="#s46">Сделай сам</a>
+    <a class="t2" href="#s47">Выжимка</a>
+    <a class="t2" href="#s48">Термины</a>
+    <a class="t2" href="#s49">Связи</a>
+    <a class="t1" href="#s50">Глава 4. Burp Suite: The Basics — чем щ…</a>
+    <a class="t2" href="#s51">Ты на смене</a>
+    <a class="t2" href="#s52">Аналогия: почта, которую вскрывают на п…</a>
+    <a class="t2" href="#s53">Сначала слова, без которых дальше не по…</a>
+    <a class="t2" href="#s54">Что такое перехватывающий прокси и заче…</a>
+    <a class="t2" href="#s55">Инструменты внутри Burp — понятийно</a>
+    <a class="t2" href="#s56">Как ручной перебор виден защитнику</a>
+    <a class="t2" href="#s57">Копнуть глубже</a>
+    <a class="t2" href="#s58">Мини-квиз</a>
+    <a class="t2" href="#s59">Сделай сам</a>
+    <a class="t2" href="#s60">Выжимка</a>
+    <a class="t2" href="#s61">Термины</a>
+    <a class="t2" href="#s62">Связи</a>
+    <a class="t1" href="#s63">Самопроверка</a>
+    <a class="t1" href="#s64">Практика</a>
+    <a class="t2" href="#s65">Задание 1. Очередь в SIEM: отсей и найд…</a>
+    <a class="t2" href="#s66">Задание 2. Выставь приоритет</a>
+    <a class="t2" href="#s67">Задание 3. Доложи по-немецки</a>
+    <a class="t1" href="#s68">Шпаргалка на один экран</a>
+    <a class="t1" href="#s69">Отзыв</a>
+  </nav>
+  <main class="content">
+<h1>Учебник: Взлом веб-сайтов</h1>
+<p><strong>Модуль:</strong> Web Hacking (Взлом веб-сайтов) · <strong>Комнаты:</strong> Web Application Basics, JavaScript Essentials, SQL Fundamentals, Burp Suite: The Basics.</p>
+
+<p>В прошлых модулях ты смотрел на сеть и на хосты: пакеты, порты, процессы, логи Windows. Этот модуль — про <strong>веб</strong>: как устроен сайт изнутри, на каком языке браузер разговаривает с сервером и где в этом разговоре прячутся атаки. Тебе это нужно не чтобы ломать сайты, а чтобы <strong>читать веб-логи у себя на смене</strong>: почти каждая атака на сайт оставляет строку в журнале веб-сервера, и научиться видеть в этой строке улику — прямая работа L1 (аналитик первой линии: тот, кто первым разбирает прилетевший алерт).</p>
+
+<p><strong>Что будешь уметь после учебника:</strong></p>
+<ul>
+<li>разбирать строку журнала веб-сервера по частям: кто, каким <strong>методом</strong>, какой адрес запросил и что сервер ответил;</li>
+<li>по <strong>коду ответа</strong> отличать норму от разведки — всплеск 404, стена 401, редкий 500;</li>
+<li>узнавать в запросе <strong>XSS</strong> (внедрение чужого JavaScript) и <strong>SQL-инъекцию</strong> (подмену запроса к базе) по характерным следам;</li>
+<li>читать базовый SQL-запрос и понимать, что именно просили у базы;</li>
+<li>распознавать обфусцированный (нарочно запутанный) JavaScript и раскодировать его;</li>
+<li>понимать, что такое перехватывающий прокси Burp Suite и как ручной перебор параметров выглядит в логах;</li>
+<li>собрать нить запросов, выставить приоритет и коротко доложить по-немецки.</li>
+</ul>
+
+<p><strong>Маршрут:</strong></p>
+<ul>
+<li>🔥 <strong>Глава 1. Web Application Basics</strong> — HTTP, методы, коды, заголовки глазами логов. Фундамент, на нём стоят остальные три главы.</li>
+<li>🔥 <strong>Глава 2. JavaScript Essentials</strong> — где исполняется JS, XSS и обфускация. Твой фронтенд-опыт тут мост, а не замена: атаку и детект смотрим с нуля.</li>
+<li>🔥 <strong>Глава 3. SQL Fundamentals</strong> — язык запросов к базе и SQL-инъекция. Классика веб-атак, её следы спрашивают на смене и на собеседовании.</li>
+<li>👀 <strong>Глава 4. Burp Suite: The Basics</strong> — инструмент, которым щупают сайты. Сам ты им на смене не работаешь, но его следы в логах узнавать должен.</li>
+</ul>
+<p>Итого: 3 главы 🔥 обязательных, 1 👀 бегло. Все четыре комнаты проходятся в браузере (виртуалка не нужна) — руками пройти стоит каждую, а разбор следов и практика на логах — здесь.</p>
+
+<div class="ck"><div class="ck-cap">Где я в учебнике</div><div class="ck-list"><button type="button" class="ck-i" data-id="s2"><span class="ck-box" aria-hidden="true"></span><span>Глава 1. Web Application Basics</span></button><button type="button" class="ck-i" data-id="s18"><span class="ck-box" aria-hidden="true"></span><span>Глава 2. JavaScript Essentials</span></button><button type="button" class="ck-i" data-id="s34"><span class="ck-box" aria-hidden="true"></span><span>Глава 3. SQL Fundamentals</span></button><button type="button" class="ck-i" data-id="s50"><span class="ck-box" aria-hidden="true"></span><span>Глава 4. Burp Suite: The Basics</span></button></div><div class="ck-bar"><i></i></div><div class="ck-n"><span>0</span> из 4</div></div>
+
+<h1 id="s1" class="anchored">Вспомни прошлое</h1>
+<p>Пять вопросов из прошлых учебников — разогрев перед вебом. Не вспомнил — под ответом объяснение.</p>
+
+<div class="qz" data-q="1"><div class="qz-q">Сервер ответил кодом <strong>302</strong>. Что это значит?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="Нет. Успех — это семейство 2xx (200 OK). 302 начинается на 3, а значит относится к другому семейству."><span class="qz-mark" aria-hidden="true"></span><span>Запрос успешно выполнен, страница отдана</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет. Ошибка на стороне клиента — это 4xx (например 404). 302 — не ошибка."><span class="qz-mark" aria-hidden="true"></span><span>Ошибка в запросе клиента</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. Коды на 3xx — это перенаправления (redirect): сервер говорит браузеру «иди по другому адресу». 302 — временное перенаправление, типичный ответ после входа в систему."><span class="qz-mark" aria-hidden="true"></span><span>Перенаправление: иди по другому адресу</span></button></div><div class="qz-why" role="status"></div></div>
+
+<div class="qz" data-q="2"><div class="qz-q">Веб-сервер по <strong>HTTPS</strong> (защищённый HTTP) обычно слушает порт…</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="22 — это SSH (удалённая командная строка), к вебу отношения не имеет."><span class="qz-mark" aria-hidden="true"></span><span>22</span></button><button type="button" class="qz-o" data-ok="0" data-why="80 — это обычный HTTP без шифрования. Защищённый HTTPS слушает 443."><span class="qz-mark" aria-hidden="true"></span><span>80</span></button><button type="button" class="qz-o" data-ok="1" data-why="Верно. HTTPS — порт 443, обычный HTTP — 80. Порт — это номер «двери» на сервере, по которому находят нужную службу; 443 закреплён за зашифрованным вебом."><span class="qz-mark" aria-hidden="true"></span><span>443</span></button></div><div class="qz-why" role="status"></div></div>
+
+<div class="qz" data-q="3"><div class="qz-q">В адресе страницы встретился параметр <code>data=YWRtaW4=</code>. Что это, скорее всего?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="Нет. Шифрование нельзя прочитать обратно без ключа. Здесь же знак = в конце и набор букв — примета обратимого кодирования, а не шифра."><span class="qz-mark" aria-hidden="true"></span><span>Зашифрованный пароль, прочитать нельзя</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет. Хэш — это необратимый отпечаток фиксированной длины из шестнадцатеричных цифр (0–9, a–f). Здесь буквы разного регистра и =, это не хэш."><span class="qz-mark" aria-hidden="true"></span><span>Хэш, его придётся перебирать</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. Хвост = и алфавит из букв/цифр — примета base64 (способ записать любые данные печатными символами). YWRtaW4= раскодируется в admin. Base64 читается в обе стороны мгновенно, это не защита."><span class="qz-mark" aria-hidden="true"></span><span>Кодирование base64, читается обратно в текст</span></button></div><div class="qz-why" role="status"></div></div>
+
+<div class="qz" data-q="4"><div class="qz-q"><strong>DNS</strong> (система доменных имён) переводит…</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="Нет. Имя→MAC в локальной сети делает протокол ARP, не DNS."><span class="qz-mark" aria-hidden="true"></span><span>IP-адрес в MAC-адрес сетевой карты</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет. Номер порта за службой закреплён соглашением (80, 443, 22), DNS этим не занимается."><span class="qz-mark" aria-hidden="true"></span><span>Номер порта в название службы</span></button><button type="button" class="qz-o" data-ok="1" data-why="Верно. DNS — это телефонная книга интернета: имя домена (example.com) → IP-адрес (203.0.113.10), по которому браузер и постучится."><span class="qz-mark" aria-hidden="true"></span><span>Имя домена в IP-адрес</span></button></div><div class="qz-why" role="status"></div></div>
+
+<div class="qz" data-q="5"><div class="qz-q">В логах видно: процесс <code>cmd.exe</code> запущен родителем <code>w3wp.exe</code> (рабочий процесс веб-сервера IIS). Твоя первая мысль?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Веб-сервер обслуживает страницы, ему незачем запускать командную оболочку. cmd.exe с родителем w3wp.exe — классический признак веб-шелла: атакующий через дыру на сайте выполняет команды на сервере."><span class="qz-mark" aria-hidden="true"></span><span>Подозрительно: веб-сервер породил командную оболочку — вероятен веб-шелл</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет. Норма для cmd.exe — родитель explorer.exe (человек открыл сам). w3wp.exe в роли родителя оболочки — это не норма."><span class="qz-mark" aria-hidden="true"></span><span>Норма: у cmd.exe именно такой родитель и бывает всегда</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет. Имя процесса ещё ничего не доказывает, но связка «веб-сервер → оболочка» — сильный сигнал, который нельзя списывать как шум."><span class="qz-mark" aria-hidden="true"></span><span>Неважно: имя cmd.exe само по себе ещё ни о чём не говорит</span></button></div><div class="qz-why" role="status"></div></div>
+
+<h1 id="s2" class="anchored">Глава 1. Web Application Basics — HTTP, методы, коды, заголовки (Web Application Basics)</h1>
+<div class="ch-level" data-l="must"><span class="ic">🔥</span>Обязательно <span class="why">— каждая веб-атака из следующих глав оставляет след в журнале веб-сервера, а чтобы его прочитать, надо понимать метод, код и заголовки запроса</span></div>
+
+<h2 id="s3">Ты на смене</h2>
+<p>14:30. Из <strong>WAF</strong> (web application firewall — межсетевой экран, который стоит перед сайтом и отсеивает подозрительные запросы) прилетает уведомление: с одного IP на сайт фирмы <code>shop.kranich.de</code> за минуту ушло 340 запросов, половина из них получила в ответ код <code>404</code>.</p>
+<p>Почему это стало алертом? 340 запросов в минуту с одного адреса — это не человек, который кликает мышкой, а программа. А стена ответов <code>404</code> («страница не найдена») значит, что программа дёргает адреса наугад, которых на сайте нет: так выглядит <strong>перебор</strong> — машина проверяет сотни адресов подряд, ищет забытую админку, резервную копию, уязвимую страницу. Но ровно так же ведёт себя и безобидный поисковый робот, и кривой скрипт мониторинга. Твоя работа — по строкам журнала понять, какой случай перед тобой.</p>
+<p>За пять минут надо ответить:</p>
+<ol>
+<li>Что именно запрашивали — какие методы и адреса?</li>
+<li>Что сервер отвечал — только 404, или среди них проскочил 200 (нашлось что-то настоящее) или 500 (сервер поперхнулся)?</li>
+<li>Кто запрашивал — что в заголовках, похоже на браузер или на инструмент?</li>
+</ol>
+<p>Всё, что ниже в этой главе, — инструменты для этих трёх ответов.</p>
+
+<h2 id="s4">Аналогия: сайт — это ресторан с кухней</h2>
+<p>Представь ресторан. Зал с меню — это то, что ты видишь в браузере: красивые страницы, кнопки, картинки. Это <strong>фронтенд</strong> (front end — «передняя часть»), он живёт в твоём браузере. Но еду готовят не в зале, а на кухне, куда гостю хода нет: там повар, кладовая, рецепты. Это <strong>бэкенд</strong> (back end — «задняя часть»): программа на сервере и база данных, где лежат пароли, заказы, деньги.</p>
+<p>Официант бегает между залом и кухней. Каждый раз он несёт на кухню <strong>заказ</strong> («столик 5 просит стейк») и приносит обратно <strong>ответ</strong> («готово» или «стейка нет»). Этот обмен записками и есть HTTP, а сам официант — браузер. Атакующий — гость, который вместо «принесите стейк» пишет на бумажке «а ещё покажи мне список всех паролей из кладовой» и смотрит, вынесет ли кухня. Твоя работа на смене — читать копии всех записок (журнал веб-сервера) и ловить те, где просили не стейк.</p>
+
+<h2 id="s5">Сначала слова, без которых дальше не понять</h2>
+<p><strong>Веб-приложение</strong> (web application). Сайт, который не просто показывает текст, а что-то делает в ответ на твои действия: интернет-магазин, почта, личный кабинет банка. В отличие от обычной страницы, за ним стоит программа на сервере и база данных.</p>
+<p><strong>HTTP</strong> (HyperText Transfer Protocol — протокол передачи гипертекста). Язык записок между браузером и сервером; его ты уже видел в модуле Pre Security. Напомню смысл: браузер шлёт <strong>запрос</strong> (request), сервер шлёт <strong>ответ</strong> (response). HTTPS — то же самое, но записки в запечатанном конверте (зашифрованы).</p>
+<p><strong>Метод</strong> (method). Первое слово запроса — что именно браузер просит сделать: забрать страницу, отправить форму, удалить запись. Разбираем ниже отдельно.</p>
+<p><strong>Код ответа</strong> (status code). Трёхзначное число в начале ответа: коротко, чем кончилось дело. 200 — «держи», 404 — «нет такого», 500 — «у меня поломка». Тоже отдельный раздел ниже.</p>
+<p><strong>Заголовок</strong> (header). Строчки-приписки к запросу и ответу: кто спрашивает, какой браузер, какой формат, какие печеньки. Напомню из прошлого модуля — сам текст страницы едет в <strong>теле</strong> (body), а заголовки — это служебные пометки вокруг него.</p>
+<p><strong>Журнал доступа</strong> (access log). Файл, куда веб-сервер записывает по строчке на каждый пришедший запрос: кто, когда, что просил, что получил. Главный источник для тебя на смене.</p>
+<p><strong>Алерт</strong> (alert — тревога) и <strong>тикет</strong> (ticket — заявка). Два слова, которые встретятся во всех главах. <strong>Алерт</strong> — автоматическое уведомление системы защиты: «случилось подозрительное, посмотри». <strong>Тикет</strong> — запись об инциденте в системе учёта (такая же, как заявка в службу поддержки): туда ты заносишь, что нашёл, чтобы коллеги и следующая смена видели. Фраза «в тикет» дальше значит «вот это коротко запиши в заявку по инциденту».</p>
+<p><strong>Сканер</strong> и <strong>разведка</strong>. <strong>Сканер</strong> — программа, которая сама, без человека, быстро проверяет сайт: перебирает адреса, щупает поля. <strong>Разведка</strong> (reconnaissance) — первый этап почти любой атаки: атакующий ещё не ломает, а осматривается — какие на сайте страницы, какие методы, какая версия сервера. Стена однообразных запросов — обычно именно разведка.</p>
+<p>Остальные слова — там, где появляются.</p>
+<h2 id="s6">Клиент и сервер: где что выполняется (и чему нельзя верить)</h2>
+<p><strong>На смене.</strong> Это не отдельный алерт, а правило, на котором держится вся веб-безопасность. Поймёшь его — и половина веб-атак перестанет быть загадкой: ты будешь сразу понимать, что в запросе атакующий мог подделать, а что нет.</p>
+<p><strong>Зачем это существует.</strong> Сайт физически разрезан на две части, которые работают на разных компьютерах. <strong>Клиент</strong> (client) — браузер на машине пользователя: он скачивает страницу и показывает её. <strong>Сервер</strong> (server) — чужой компьютер в дата-центре, где лежит программа сайта и база данных. Разрезали так потому, что данные (пароли, заказы, деньги) нельзя держать на миллионе чужих машин — их держат в одном месте, на сервере, а клиенту отдают только картинку.</p>
+<p><strong>Как устроено.</strong> У тебя за плечами фронтенд, так что мост простой. <strong>Статический сайт</strong> — это голые HTML и CSS: сервер отдаёт один и тот же файл всем, как раздаёт листовку. <strong>Веб-приложение</strong> — это когда на сервере крутится программа (на PHP, Python, Node.js — неважно), которая на каждый запрос лезет в базу и собирает страницу под конкретного пользователя: твой личный кабинет, твоя корзина. Твой React живёт на стороне <em>клиента</em> — он рисует интерфейс в браузере. А проверка «правильный ли пароль», «хватает ли денег на счёте» обязана быть на стороне <em>сервера</em>.</p>
+<p><strong>Главный вывод для безопасности.</strong> Браузер — на машине пользователя, а значит <strong>пользователь — хозяин клиента</strong>. Он может открыть инструменты разработчика (F12), переписать любой JavaScript, поменять любое «спрятанное» поле формы, выкинуть проверку и послать серверу что угодно напрямую. Поэтому действует железное правило:</p>
+<blockquote><p>Всё, что приходит от клиента, — <strong>недоверенные данные</strong> (untrusted input). Любую проверку, которую сделал фронтенд, атакующий просто выкидывает. Настоящая защита бывает только на сервере.</p></blockquote>
+<p>Пример на твоём языке: ты на React повесил <code>maxLength=8</code> на поле пароля и проверку «только буквы». Обычный пользователь это увидит. Атакующий откроет F12, сотрёт атрибут, или вообще не станет открывать твою страницу — соберёт запрос руками и пошлёт серверу строку в 5000 символов с кавычками. Если сервер это принял не глядя — дыра. Поэтому на смене, глядя на подозрительный запрос, ты никогда не думаешь «но на сайте же стоит проверка»: проверка могла быть выключена или обойдена.</p>
+<p><strong>Норма и подозрительное.</strong> Норма — когда в запросах то, что пользователь физически мог ввести через форму: имя, email, число. Подозрительно — когда в поле, где ждут имя, приезжают кавычки, угловые скобки <code>&lt;&gt;</code>, слова <code>SELECT</code>, <code>script</code>, точки-слэши <code>../</code>: человек через нормальную форму такое не наберёт, значит запрос собрали в обход неё.</p>
+<p><strong>Ошибка новичка.</strong> Увидеть «странный» запрос и отмахнуться: «да это фронтенд бы не пропустил». Ошибаются, потому что привыкли смотреть на сайт глазами обычного пользователя, у которого есть только кнопки. Атакующий кнопками не ограничен.</p>
+
+<h2 id="s7">Адрес страницы (URL) по частям</h2>
+<p><strong>На смене.</strong> В журнале каждая строка — это запрошенный адрес. Научишься резать его на части — будешь за секунду видеть, куда стучались и не спрятали ли в адресе атаку.</p>
+<p><strong>Зачем это существует.</strong> Чтобы указать ровно одну страницу среди миллиардов, нужен единый формат адреса. Это <strong>URL</strong> (Uniform Resource Locator — единообразный указатель на ресурс). Как почтовый адрес: страна, город, улица, дом, квартира — только для интернета.</p>
+<p><strong>Как устроено — разбор по частям.</strong></p>
+<pre><code>https://shop.kranich.de:443/produkt/search?q=lampe&amp;id=42#reviews
+└─1─┘   └────2──────┘ └3┘ └────4─────┘ └────5──────┘ └──6──┘</code></pre>
+<ol>
+<li><strong>Схема</strong> (scheme) — <code>https</code>. Каким протоколом говорить. <code>https</code> — зашифрованный, <code>http</code> — открытый. Иногда встретишь <code>ftp</code> (старый протокол передачи файлов) или <code>file</code> (обращение к файлу прямо на диске) — на обычном сайте это повод присмотреться.</li>
+<li><strong>Хост</strong> (host) — <code>shop.kranich.de</code>. Имя сервера, которое DNS превратит в IP. Сверяешь с тем, что ждёшь: чужой или похожий-но-не-тот хост (<code>shop.kranlch.de</code>) — это уже примета фишинга.</li>
+<li><strong>Порт</strong> (port) — <code>:443</code>. Дверь на сервере. Для https подразумевается 443, для http — 80, поэтому в адресе его обычно не пишут. Нестандартный порт (<code>:8080</code>, <code>:8443</code>) в тикет стоит занести.</li>
+<li><strong>Путь</strong> (path) — <code>/produkt/search</code>. Какую именно страницу или функцию дёргают, как папки и файл. Здесь прячут <strong>обход каталога</strong> (path traversal — выход за пределы папки сайта): запись <code>../</code> значит «на папку вверх», поэтому <code>/../../etc/passwd</code> — попытка через сайт дотянуться до системного файла <code>/etc/passwd</code> (в Linux в нём список пользователей). Такого в нормальном адресе не бывает.</li>
+<li><strong>Строка запроса</strong> (query string) — всё после <code>?</code>: <code>q=lampe&amp;id=42</code>. Это <strong>параметры</strong> — пары «имя=значение», склеенные знаком <code>&amp;</code>. Через них странице передают данные: что искать, какой номер товара. <strong>Это главное место, куда суют веб-атаки</strong>: именно в значение параметра вписывают кавычку для SQL-инъекции или <code>&lt;script&gt;</code> для XSS.</li>
+<li><strong>Фрагмент</strong> (fragment) — <code>#reviews</code>. Якорь, место на странице, куда проскроллить. Важная деталь: фрагмент <strong>остаётся в браузере и на сервер не уходит</strong>, поэтому в журнале веб-сервера его не будет. Запомни — пригодится в главе про XSS.</li>
+</ol>
+<p><strong>Разбор боевой строки.</strong> В журнале такой адрес выглядит безобидно: <code>GET /produkt/search?q=lampe&amp;id=42</code> — ищут лампу, товар 42, норма. А вот это — нет:</p>
+<pre><code>GET /produkt/search?q=lampe&amp;id=42' OR '1'='1</code></pre>
+<p>В параметре <code>id</code> вместо числа появилась кавычка и кусок логики — попытка влезть в запрос к базе (разберём в главе 3). Для тебя сейчас важно одно: <strong>значение параметра — это то, что ввёл пользователь, то есть недоверенные данные; если там не то, что ждали (не число в числовом поле), это улика.</strong></p>
+<p><strong>Норма и подозрительное.</strong></p>
+<div class="tablewrap"><table><thead><tr><th>Часть URL</th><th>Норма</th><th>Насторожись</th></tr></thead><tbody>
+<tr><td>Хост</td><td>твой домен</td><td>домен-двойник, опечатка в имени</td></tr>
+<tr><td>Путь</td><td>обычные слова, папки</td><td><code>../</code>, <code>%2e%2e</code>, <code>/etc/passwd</code>, <code>/.env</code></td></tr>
+<tr><td>Параметры</td><td>числа, слова, email</td><td>кавычки <code>'</code> <code>"</code>, <code>&lt;</code> <code>&gt;</code>, <code>UNION</code>, <code>script</code>, очень длинные значения</td></tr>
+</tbody></table></div>
+<p><strong>Ошибка новичка.</strong> Смотреть только на хост и путь, пропуская строку запроса. Ошибаются, потому что в адресной строке браузера параметры часто спрятаны или обрезаны, а в журнале они есть целиком — и прячут атаку именно там.</p>
+<p><strong>В тикет.</strong></p>
+<pre><code>Запрос к shop.kranich.de: GET /produkt/search, параметр id=42' OR '1'='1
+— в числовом параметре кавычка и логика, похоже на пробу SQL-инъекции.</code></pre>
+
+<h2 id="s8">Методы: что именно просит браузер</h2>
+<p><strong>На смене.</strong> Метод — первое слово строки в журнале. По нему ты за долю секунды понимаешь намерение: просто смотрели страницу или что-то отправляли/меняли на сервере. Необычный метод в логе — сразу вопрос.</p>
+<p><strong>Зачем это существует.</strong> Браузеру и серверу надо одним словом договориться, что делать с ресурсом: отдать, принять, заменить, стереть. Чтобы не выдумывать это каждый раз, HTTP заранее определил набор <strong>методов</strong> (их ещё зовут «глаголами»). Это как бланки на почте: один для «выдать посылку», другой для «принять посылку» — слово в начале сразу задаёт смысл.</p>
+<p><strong>Как устроено — основные методы.</strong></p>
+<div class="tablewrap"><table><thead><tr><th>Метод</th><th>Что значит</th><th>Когда увидишь в логе</th></tr></thead><tbody>
+<tr><td><code>GET</code></td><td>«дай мне страницу/данные»</td><td>почти весь трафик: открыл страницу, картинку, искал по сайту</td></tr>
+<tr><td><code>POST</code></td><td>«прими от меня данные»</td><td>вход в систему, отправка формы, комментарий, оплата</td></tr>
+<tr><td><code>PUT</code></td><td>«замени ресурс целиком»</td><td>реже; API (программный интерфейс — когда с сервером общается не браузер, а другая программа), загрузка/замена файла. На обычном сайте — повод присмотреться</td></tr>
+<tr><td><code>DELETE</code></td><td>«удали ресурс»</td><td>редко; API. Неожиданный DELETE — всегда вопрос</td></tr>
+<tr><td><code>HEAD</code></td><td>«дай только заголовки, без тела»</td><td>проверки доступности; сканеры любят им быстро щупать адреса</td></tr>
+<tr><td><code>OPTIONS</code></td><td>«какие методы ты вообще разрешаешь?»</td><td>служебный; всплеск OPTIONS по многим путям — разведка</td></tr>
+<tr><td><code>PATCH</code></td><td>«поменяй часть ресурса»</td><td>в основном API</td></tr>
+</tbody></table></div>
+<p><strong>Два метода, которые ты видишь каждый день — GET и POST — и важная для тебя разница.</strong></p>
+<ul>
+<li><code>GET</code> несёт все данные <strong>в самом адресе</strong>, в строке запроса: <code>GET /search?q=lampe</code>. Значит, эти данные <strong>попадают в журнал доступа целиком</strong> — ты их увидишь. Плюс для тебя (видно, что искали), минус для сайта (если по глупости в GET передали пароль или токен — он осел в логах и истории браузера). <strong>Токен</strong> (token) — длинная случайная строка-пропуск вместо пароля: сервер выдаёт её после входа, и ею подтверждают, что ты это ты; украл токен — вошёл как жертва.</li>
+<li><code>POST</code> несёт данные <strong>в теле запроса</strong>, отдельно от адреса: <code>POST /login</code>, а логин с паролем — в теле. В обычный журнал доступа тело <strong>не пишется</strong> — ты увидишь только <code>POST /login</code> и код ответа, но не сам пароль. Это и правильно (пароль не светится в логах), и неудобно (чтобы увидеть, что отправили, нужен прокси или журнал приложения).</li>
+</ul>
+<p><strong>Разбор вывода — три строки журнала:</strong></p>
+<pre><code>GET  /produkt/42        HTTP/1.1  200
+POST /login             HTTP/1.1  302
+GET  /admin/backup.zip  HTTP/1.1  403</code></pre>
+<ul>
+<li>Строка 1 — открыли товар 42, сервер отдал (200). Норма.</li>
+<li>Строка 2 — отправили форму входа (POST), сервер перенаправил (302) — типично после успешного логина. Пароль в этой строке не виден, он был в теле.</li>
+<li>Строка 3 — <code>GET</code> на <code>/admin/backup.zip</code>, ответ 403 («запрещено»). Кто-то руками (или сканером) ищет резервную копию в админке. Файла ему не дали, но <strong>сам факт такого запроса — разведка</strong>, это в тикет.</li>
+</ul>
+<p><strong>Норма и подозрительное.</strong> Норма сайта — море GET и россыпь POST на вход/формы. Насторожись: методы, которых на этом сайте быть не должно (<code>PUT</code>, <code>DELETE</code>, <code>OPTIONS</code>, а также <code>TRACE</code> — служебный метод-«эхо», в норме отключён) — особенно подряд по разным путям; поток <code>HEAD</code> с одного IP (сканер быстро проверяет, какие адреса существуют); <code>POST</code> на странные пути (<code>/upload.php</code>, которого вы не делали).</p>
+<p><strong>Если не получилось.</strong> В строке журнала вместо знакомого метода — мусор или очень длинное слово. Это не всегда ошибка чтения: кривой или вредоносный клиент может послать мусор вместо метода, чтобы сломать разбор на сервере. Запиши строку как есть, не «чини» её мысленно.</p>
+<p><strong>Ошибка новичка.</strong> Считать, что POST «безопаснее» GET, раз данные не видно. От журнала — да, не видно. Но для атакующего POST ничем не труднее: он так же легко шлёт в теле POST кавычку или <code>&lt;script&gt;</code>. «Не видно в логе» ≠ «не атакуют»; просто улика в этом случае в журнале приложения или на прокси, а не в access log.</p>
+<p><strong>В тикет.</strong></p>
+<pre><code>С 198.51.100.23 за 1 мин: 60× HEAD и 12× OPTIONS по разным путям,
+ответы 404/405 — похоже на автоматическую разведку структуры сайта.</code></pre>
+<h2 id="s9">Коды ответа: чем кончилось дело</h2>
+<p><strong>На смене.</strong> Код ответа — это вердикт сервера одним числом. На потоке логов ты не читаешь каждую строку целиком: ты смотришь на колонку кодов и ловишь аномалию — стену одинаковых 404, редкий 500, неожиданный 200 там, где всё было 403.</p>
+<p><strong>Зачем это существует.</strong> Браузеру нужно одним махом понять, сработал запрос или нет, и если нет — чья вина. Разбирать для этого текст страницы долго, поэтому сервер в начале каждого ответа ставит <strong>трёхзначный код</strong>. Первая цифра — это <strong>семейство</strong>, грубый смысл; две остальные уточняют. Знаешь пять семейств — читаешь любой код, даже незнакомый.</p>
+<div class="tablewrap"><table><thead><tr><th>Семейство</th><th>Смысл одним словом</th><th>Кто «виноват»</th></tr></thead><tbody>
+<tr><td><code>1xx</code></td><td>«подожди, продолжаю»</td><td>служебное, в логах почти не встретишь</td></tr>
+<tr><td><code>2xx</code></td><td>успех — «держи»</td><td>всё хорошо</td></tr>
+<tr><td><code>3xx</code></td><td>перенаправление — «иди туда»</td><td>ни то ни сё, норма</td></tr>
+<tr><td><code>4xx</code></td><td>ошибка клиента — «ты не так просишь»</td><td>клиент (браузер, пользователь, атакующий)</td></tr>
+<tr><td><code>5xx</code></td><td>ошибка сервера — «я сломался»</td><td>сервер</td></tr>
+</tbody></table></div>
+<p><strong>Коды, которые ты реально встречаешь, и что они значат для тебя:</strong></p>
+<div class="tablewrap"><table><thead><tr><th>Код</th><th>Значение</th><th>Когда это улика</th></tr></thead><tbody>
+<tr><td><code>200</code> OK</td><td>всё отдал</td><td>сам по себе норма; но 200 <em>после</em> стены 404/403 = «что-то наконец нашлось/пустило» — присмотрись</td></tr>
+<tr><td><code>301 / 302</code></td><td>перенаправление (навсегда / временно)</td><td>норма; 302 типичен после входа</td></tr>
+<tr><td><code>401</code> Unauthorized</td><td>«ты не вошёл»</td><td>поток 401 с одного IP = перебор паролей (brute force)</td></tr>
+<tr><td><code>403</code> Forbidden</td><td>«вошёл, но сюда нельзя»</td><td>поток 403 = кто-то лезет в закрытые разделы, разведка</td></tr>
+<tr><td><code>404</code> Not Found</td><td>«нет такой страницы»</td><td>стена 404 с одного IP по разным путям = перебор каталогов/файлов</td></tr>
+<tr><td><code>405</code> Method Not Allowed</td><td>«такой метод тут нельзя»</td><td>появляется, когда клиент пробует PUT/DELETE/OPTIONS где не положено — проба</td></tr>
+<tr><td><code>429</code> Too Many Requests</td><td>«слишком часто, притормози»</td><td>сервер сам отбивается от потока — значит, поток был</td></tr>
+<tr><td><code>500</code> Internal Server Error</td><td>«сервер поперхнулся»</td><td><strong>важно:</strong> внезапный 500 на вводе с кавычкой — признак, что ввод долетел до базы и сломал запрос. Первый звоночек удачной инъекции</td></tr>
+<tr><td><code>502 / 503</code></td><td>шлюз/перегрузка</td><td>часто просто сервер лёг под нагрузкой</td></tr>
+</tbody></table></div>
+<p><strong>Разбор: та же стена 404, но с одной особой строкой.</strong></p>
+<pre><code>GET /backup      404
+GET /old         404
+GET /admin       404
+GET /.git/config 200   ← вот это
+GET /test        404</code></pre>
+<p>Четыре 404 — перебор наугад, пока неинтересно. Но <code>/.git/config</code> вернул <strong>200</strong>: сервер по ошибке отдаёт служебную папку <code>.git</code> — это рабочие файлы системы контроля версий (git — инструмент разработчиков для хранения истории кода), где бывают пароли и внутренние адреса. Один 200 среди 404 важнее, чем сотня самих 404. На смене глаз цепляется именно за <em>исключение в потоке</em>.</p>
+<p><strong>Норма и подозрительное.</strong> Норма сайта — почти всё 200 и 3xx, редкие одиночные 404 (битая ссылка). Подозрительно: всплеск 4xx с одного адреса за короткое время; любой <strong>5xx на подозрительном вводе</strong>; одинокий 200/301 посреди стены 403/404.</p>
+<p><strong>Ошибка новичка.</strong> Увидеть «куча 404, всем отказано, значит атака не удалась» и закрыть алерт. Ошибаются, потому что смотрят на массу, а не на исключения. Перебор <em>ищет</em> ту единственную дверь, что откроется; твоя задача — найти в потоке 404 тот самый 200 раньше, чем атакующий успеет им воспользоваться.</p>
+
+<h2 id="s10">Заголовки: кто спрашивает и что сервер рассказывает о себе</h2>
+<p><strong>На смене.</strong> Заголовки — это паспортные данные запроса и ответа. По заголовкам запроса ты понимаешь, кто стучится (настоящий браузер или инструмент). По заголовкам ответа — не отдаёт ли сервер лишнего и защищён ли он.</p>
+<p><strong>Зачем это существует.</strong> Кроме самой страницы, сторонам надо обменяться кучей служебных мелочей: какой браузер, какой язык, какой формат, залогинен ли уже пользователь. Пихать это в тело неудобно, поэтому придумали <strong>заголовки</strong> — строки вида <code>Имя: значение</code> перед телом. Как наклейки на посылке: адрес, вес, «хрупкое» — сам груз внутри, а условия доставки снаружи.</p>
+<p><strong>Заголовки запроса (их шлёт браузер) — что смотреть:</strong></p>
+<div class="tablewrap"><table><thead><tr><th>Заголовок</th><th>Что это</th><th>Зачем тебе</th></tr></thead><tbody>
+<tr><td><code>Host</code></td><td>какой сайт просят</td><td>на одном IP живут много сайтов; Host говорит, какой именно</td></tr>
+<tr><td><code>User-Agent</code></td><td>каким браузером/программой пришли</td><td>главная примета: <code>python-requests</code>, <code>curl</code>, <code>sqlmap</code>, <code>Nikto</code> в User-Agent = это инструмент, а не человек</td></tr>
+<tr><td><code>Referer</code></td><td>с какой страницы пришли</td><td>пустой или чужой Referer на внутренней странице — заходили не по ссылке, а напрямую</td></tr>
+<tr><td><code>Cookie</code></td><td>печенья — метки, которыми сервер узнаёт тебя</td><td>внутри — <strong>идентификатор сессии</strong> (о нём ниже); его крадут атаки XSS</td></tr>
+</tbody></table></div>
+<p><strong>Куки и сессия — коротко, пригодится в главе 2.</strong> <strong>Кука</strong> (cookie) — маленькая метка, которую сервер выдаёт браузеру командой <code>Set-Cookie</code>, а браузер потом прикладывает к каждому запросу заголовком <code>Cookie</code>. Внутри обычно <strong>идентификатор сессии</strong> (session ID) — случайная строка, по которой сервер помнит, что ты уже вошёл, и не спрашивает пароль на каждой странице. Это, по сути, твой браслет на входе в клуб. Укради у человека его session ID — и войдёшь как он, без пароля. Поэтому кража кук (через XSS) так ценится атакующими.</p>
+<p><strong>Заголовки ответа (их шлёт сервер) — что смотреть:</strong></p>
+<div class="tablewrap"><table><thead><tr><th>Заголовок</th><th>Что это</th><th>Зачем тебе</th></tr></thead><tbody>
+<tr><td><code>Server</code></td><td>имя и версия веб-сервера (<code>nginx/1.24</code>)</td><td>сервер сам выдаёт, что он и какой версии — подарок для подбора известной уязвимости. В норме это прячут</td></tr>
+<tr><td><code>Set-Cookie</code></td><td>сервер выдаёт браузеру куку</td><td>смотри флаги <code>HttpOnly</code> и <code>Secure</code> (ниже) — без них куку легче украсть</td></tr>
+<tr><td><code>Content-Type</code></td><td>что в теле (<code>text/html</code>, <code>application/json</code>)</td><td>несовпадение типа с содержимым бывает частью атаки</td></tr>
+<tr><td><code>Location</code></td><td>куда перенаправить (при 3xx)</td><td>при 302 — адрес, куда ушёл пользователь</td></tr>
+</tbody></table></div>
+<p><strong>Защитные заголовки (их наличие — хорошо).</strong> Это приписки, которыми сервер велит браузеру вести себя безопаснее:</p>
+<ul>
+<li><code>Content-Security-Policy</code> (CSP) — «исполняй скрипты только отсюда»: главный тормоз для XSS. Разберём в главе 2.</li>
+<li><code>Strict-Transport-Security</code> (HSTS) — «ходи ко мне только по https».</li>
+<li><code>X-Frame-Options</code> — «не встраивай мою страницу в чужую рамку» (защита от обмана кликом).</li>
+<li>Флаги у куки: <code>HttpOnly</code> — «эту куку не отдавать JavaScript» (значит, XSS её не украдёт); <code>Secure</code> — «слать только по https»; <code>SameSite</code> — «не прикладывать к запросам с чужих сайтов».</li>
+</ul>
+<p><strong>Разбор: нормальный и подозрительный запрос.</strong></p>
+<pre><code>Норма:      User-Agent: Mozilla/5.0 (Windows NT 10.0; ...) Chrome/131.0
+Подозрение: User-Agent: sqlmap/1.8#stable (https://sqlmap.org)</code></pre>
+<p>Первый — обычный браузер. Второй прямо представляется инструментом автоматической SQL-инъекции. Казалось бы, зачем атакующему честно писать имя инструмента? Незачем — и всё же сотни сканеров ходят с дефолтным User-Agent, потому что их запускают, не меняя настроек. Лёгкая добыча для тебя: правило «User-Agent содержит sqlmap/nikto/nmap/curl» ловит самых ленивых (<code>sqlmap</code>, <code>nikto</code>, <code>nmap</code> — популярные инструменты сканирования и атаки; <code>curl</code> — утилита, которой шлют запросы из командной строки, без браузера). Опытный подделает User-Agent под Chrome — тогда ловишь уже по поведению (скорость, стена 404), а не по имени.</p>
+<p><strong>Норма и подозрительное.</strong> Норма — User-Agent реального браузера, есть Referer, куки с <code>HttpOnly</code>. Подозрительно: User-Agent пустой или с именем инструмента; сервер светит точную версию в <code>Server</code>; куки без <code>HttpOnly</code>/<code>Secure</code>; нет ни одного защитного заголовка.</p>
+<p><strong>Ошибка новичка.</strong> Верить User-Agent как паспорту. Его клиент пишет сам и может написать что угодно. «Chrome в User-Agent» не доказывает, что это Chrome; это лишь то, чем <em>назвался</em> клиент. Доказывает поведение, а не самопредставление.</p>
+<p><strong>В тикет.</strong></p>
+<pre><code>Запросы с 198.51.100.23: User-Agent = "sqlmap/1.8", Referer пустой,
+60 запросов/мин к /produkt?id= — автоматическая проба SQL-инъекции.</code></pre>
+
+<h2 id="s11">Вживую: строка журнала доступа по полям</h2>
+<p>Вот одна настоящая по формату строка журнала веб-сервера (так называемый combined-формат Apache/nginx). Наведи или нажми на поле — объясню, что это и зачем тебе.</p>
+<figure class="fb"><div class="fb-cap">Строка access log (combined) — учебный пример</div><div class="fb-line"><span class="fld" tabindex="0" role="button" data-k="IP клиента" data-d="кто прислал запрос. Первое, что пробиваешь: свой/чужой, из какой страны, сколько запросов с него">203.0.113.7</span> <span class="fld" tabindex="0" role="button" data-k="identd и user" data-d="&quot;- -&quot; — два почти всегда пустых поля (опознание и имя вошедшего пользователя). Если во втором поле есть имя — пользователь был залогинен">- -</span> <span class="fld" tabindex="0" role="button" data-k="Время" data-d="когда пришёл запрос, со смещением часового пояса (+0100 = Берлин зимой). В тикет приводи к одному поясу">[22/Nov/2026:14:31:05 +0100]</span> <span class="fld" tabindex="0" role="button" data-k="Метод + путь + версия" data-d="самое важное. GET — просто смотрели; путь /produkt/search; параметр q=lampe — что искали. Тут же увидишь кавычку или &lt;script&gt;, если атака в GET">&quot;GET /produkt/search?q=lampe HTTP/1.1&quot;</span> <span class="fld" tabindex="0" role="button" data-k="Код ответа" data-d="вердикт сервера. 200 — отдал. Именно эту колонку сканируешь глазами на стену 404 или редкий 500">200</span> <span class="fld" tabindex="0" role="button" data-k="Размер" data-d="сколько байт отдал сервер. Резкий скачок размера на том же пути иногда выдаёт, что в ответ утекло лишнее (дамп базы)">2048</span> <span class="fld" tabindex="0" role="button" data-k="Referer" data-d="с какой страницы перешли. Пустой Referer на глубокой внутренней странице = зашли напрямую, не кликом — примета инструмента">&quot;https://shop.kranich.de/&quot;</span> <span class="fld" tabindex="0" role="button" data-k="User-Agent" data-d="чем пришли. Mozilla/... Chrome — браузер. python-requests, curl, sqlmap — инструмент, а не человек">&quot;Mozilla/5.0 ... Chrome/131.0&quot;</span></div><div class="fb-out fb-hint">Наведи на поле или нажми на него.</div></figure>
+<p>Эти восемь полей — скелет полной строки веб-лога (combined-формат); в более коротких форматах часть полей, например размер или Referer, опускают. На смене ты читаешь их именно в таком порядке: <em>кто → когда → что просил → что получил → чем пришёл</em>. Четыре главных для вердикта — IP, «метод+путь», код ответа и User-Agent.</p>
+
+<h2 id="s12">Копнуть глубже</h2>
+<details><summary>Почему фрагмент <code>#...</code> не попадает в логи, а параметры попадают</summary>
+<p>Когда браузер собирает запрос, он по стандарту <strong>отрезает</strong> всё после <code>#</code> и на сервер не шлёт: фрагмент — это указание самому браузеру, куда проскроллить на уже полученной странице. А вот строка запроса после <code>?</code> серверу нужна (это данные для страницы), поэтому она уходит и оседает в журнале. Практический вывод: данные, спрятанные в <code>#</code>, сервер и его логи вообще не видят — поэтому один из видов XSS (DOM-based, глава 2) живёт именно во фрагменте и в access log его не поймать, нужен журнал на стороне клиента.</p></details>
+<details><summary>Почему в access log нет тела POST — и где его тогда искать</summary>
+<p>Журнал доступа по умолчанию пишет только «шапку» запроса: метод, путь, код, размер, пару заголовков. Тело (содержимое POST — логин, пароль, текст формы) туда не кладут нарочно: иначе в логах оседали бы пароли. Поэтому, расследуя подозрительный POST, ты смотришь не access log, а <strong>журнал самого приложения</strong> (что программа записала о запросе), либо данные с <strong>прокси/WAF</strong>, который видит тело до того, как оно уйдёт на сервер. Это прямой мост к главе 4: Burp — как раз такой прокси, он показывает тело целиком.</p></details>
+
+<h2 id="s13">Мини-квиз</h2>
+<div class="qz" data-q="1"><div class="qz-q">В журнале: с одного IP за минуту 200 запросов, почти все <code>404</code>, а один путь вернул <code>200</code>. На что смотришь в первую очередь?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="404 сами по себе — это промахи перебора, их много и они однообразны. Тратить время на них — упустить главное."><span class="qz-mark" aria-hidden="true"></span><span>На сами 404 — их больше всего</span></button><button type="button" class="qz-o" data-ok="0" data-why="Время важно для картины, но решает здесь не оно: решает, что именно нашлось в потоке промахов."><span class="qz-mark" aria-hidden="true"></span><span>На время — когда началось</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. Один 200 среди стены 404 — это то, что перебор искал и нашёл: существующий адрес. Исключение в потоке важнее самого потока."><span class="qz-mark" aria-hidden="true"></span><span>На единственный путь с ответом 200</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="2"><div class="qz-q">Пользователь отправил форму входа. Какой метод и где искать, что именно он отправил?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Верно. Вход — это POST, а логин/пароль едут в теле запроса. В обычном access log тела нет, поэтому содержимое смотрят в журнале приложения или на прокси."><span class="qz-mark" aria-hidden="true"></span><span>POST; содержимое — в теле, в access log его нет</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет. GET кладёт данные в адрес, и тогда пароль осел бы в логах — так формы входа не делают."><span class="qz-mark" aria-hidden="true"></span><span>GET; данные видны прямо в строке адреса</span></button><button type="button" class="qz-o" data-ok="0" data-why="Пароль в заголовке Cookie не передают при входе — куку (сессию) сервер выдаёт уже после успешного входа."><span class="qz-mark" aria-hidden="true"></span><span>POST; пароль лежит в заголовке Cookie</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="3"><div class="qz-q">В заголовке <code>User-Agent</code> написано <code>Mozilla/5.0 ... Chrome/131</code>. Что это доказывает?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="Не доказывает. User-Agent клиент пишет сам и может подделать под что угодно."><span class="qz-mark" aria-hidden="true"></span><span>Что запрос точно пришёл из Chrome</span></button><button type="button" class="qz-o" data-ok="0" data-why="Наоборот: раз User-Agent легко подделать, «похож на браузер» не снимает подозрений, если поведение машинное."><span class="qz-mark" aria-hidden="true"></span><span>Что это точно человек, а не инструмент</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. Это лишь то, чем клиент НАЗВАЛСЯ. Проверять надо поведением (скорость, стена ошибок), а не самопредставлением."><span class="qz-mark" aria-hidden="true"></span><span>Только то, чем клиент назвался — не более</span></button></div><div class="qz-why" role="status"></div></div>
+
+<h2 id="s14">Сделай сам</h2>
+<ol>
+<li>Открой любой сайт, нажми F12 → вкладка Network (Сеть), обнови страницу. Найди первый запрос: посмотри его Method, Status, и в Headers — <code>User-Agent</code>, <code>Host</code>. Это ровно те поля, что ты разбирал.</li>
+<li>Найди на том же сайте запрос с кодом 3xx (часто это переход после клика) и запрос с 404 (открой заведомо несуществующий адрес, добавив в конец <code>/ffff</code>). Сверь коды с таблицей семейств.</li>
+<li>Возьми адрес с параметрами (поищи что-нибудь на сайте, посмотри строку после <code>?</code>) и разбери его на шесть частей: схема, хост, порт, путь, параметры, фрагмент. Порта и фрагмента в адресе обычно нет — так и пометь «нет», это нормально; порт для https подразумевается 443.</li>
+</ol>
+
+<h2 id="s15">Выжимка</h2>
+<ul>
+<li><strong>Клиент — у пользователя, сервер — чужой.</strong> Всё из клиента — недоверенные данные; настоящая проверка только на сервере.</li>
+<li><strong>URL = схема://хост:порт/путь?параметры#фрагмент.</strong> Атаку прячут в параметрах и пути; фрагмент на сервер не уходит.</li>
+<li><strong>Метод — намерение.</strong> GET кладёт данные в адрес (видно в логе), POST — в тело (в access log не видно). Необычный метод — вопрос.</li>
+<li><strong>Код — вердикт.</strong> 2xx успех, 3xx редирект, 4xx вина клиента, 5xx вина сервера. Лови исключение в потоке: 200 среди 404, 500 на подозрительном вводе.</li>
+<li><strong>Заголовки — паспорт.</strong> User-Agent выдаёт инструмент, но его подделывают; куки несут сессию; защитные заголовки (CSP, HttpOnly) — это хорошо.</li>
+</ul>
+
+<h2 id="s16">Термины</h2>
+<details><summary>Термины EN / RU / DE</summary>
+<div class="tablewrap"><table><thead><tr><th>EN</th><th>RU</th><th>DE</th></tr></thead><tbody>
+<tr><td>web application</td><td>веб-приложение</td><td>Webanwendung</td></tr>
+<tr><td>client / server</td><td>клиент / сервер</td><td>Client / Server</td></tr>
+<tr><td>front end / back end</td><td>фронтенд / бэкенд</td><td>Frontend / Backend</td></tr>
+<tr><td>request / response</td><td>запрос / ответ</td><td>Anfrage / Antwort</td></tr>
+<tr><td>HTTP method</td><td>метод HTTP</td><td>HTTP-Methode</td></tr>
+<tr><td>status code</td><td>код состояния</td><td>Statuscode</td></tr>
+<tr><td>header</td><td>заголовок</td><td>Header / Kopfzeile</td></tr>
+<tr><td>query string</td><td>строка запроса</td><td>Query-String / Abfragezeichenfolge</td></tr>
+<tr><td>access log</td><td>журнал доступа</td><td>Zugriffsprotokoll</td></tr>
+<tr><td>untrusted input</td><td>недоверенные данные</td><td>nicht vertrauenswürdige Eingabe</td></tr>
+<tr><td>cookie / session</td><td>кука / сессия</td><td>Cookie / Sitzung</td></tr>
+<tr><td>User-Agent</td><td>строка клиента</td><td>User-Agent</td></tr>
+</tbody></table></div>
+</details>
+
+<h2 id="s17">Связи</h2>
+<ul>
+<li>До этого: <strong>HTTP in Detail</strong> и <strong>How Websites Work</strong> (Pre Security) — там HTTP и устройство страницы с нуля; эта глава добавила взгляд через логи и безопасность.</li>
+<li>Рядом: <strong>Core Protocols</strong> и <strong>Wireshark</strong> (Cyber Security 101) — HTTP там же виден на уровне пакетов.</li>
+<li>Дальше: глава 2 (JavaScript) — что происходит в клиенте и как через него крадут куки; глава 3 (SQL) — как параметр из URL превращается в атаку на базу.</li>
+</ul>
+<h1 id="s18" class="anchored">Глава 2. JavaScript Essentials — как работает JS и чем опасен (JavaScript Essentials)</h1>
+<div class="ch-level" data-l="must"><span class="ic">🔥</span>Обязательно <span class="why">— XSS (внедрение чужого JavaScript) — одна из самых частых веб-атак, а обфусцированный JS прилетает в письмах и на страницах; и то и другое надо узнавать</span></div>
+
+<h2 id="s19">Ты на смене</h2>
+<p>11:05. Алерт от <strong>прокси</strong> (посредник, через который идёт весь веб-трафик фирмы, — он видит, куда ходят браузеры): в его журнале видно, что браузер сотрудника, открыв страницу отзывов внутреннего портала <code>portal.kranich.de/reviews</code>, сам собой отправил запрос на чужой адрес <code>evil-collect.example</code> с длинной строкой в параметре.</p>
+<p>Почему это алерт? Сотрудник просто читал отзывы — он никуда не отправлял данные руками. Но его браузер взял и ушёл на чужой сервер. Это классический почерк <strong>XSS</strong>: на странице отзывов оказался чужой JavaScript, который выполнился прямо в браузере сотрудника и утащил его данные (чаще всего — куку с сессией). Браузер не виноват: он честно исполнил код, который был на странице. Виноват сайт, который позволил этому коду туда попасть.</p>
+<p>За пять минут надо понять:</p>
+<ol>
+<li>Что это за длинная строка ушла на чужой адрес — и не сессионная ли это кука?</li>
+<li>Откуда на странице отзывов взялся чужой скрипт?</li>
+<li>Кого ещё задело — одного сотрудника или всех, кто открывал эту страницу?</li>
+</ol>
+<p>Чтобы это разобрать, надо понимать, где и как вообще исполняется JavaScript.</p>
+
+<h2 id="s20">Аналогия: доска объявлений, которой верят на слово</h2>
+<p>Представь доску объявлений в подъезде. Обычно люди вешают записки «продам велосипед». Но доска устроена глупо: всё, что на ней написано, жильцы выполняют не глядя, как приказ. Кто-то вешает записку: «каждый, кто это читает, — положи ключи от квартиры под коврик». И жильцы кладут, потому что доске принято верить.</p>
+<p>Страница с отзывами — такая доска. Отзывы пишут пользователи, а браузер следующего посетителя исполняет всё, что на странице, как код. Если сайт по глупости позволил вписать в отзыв не текст, а <strong>инструкцию</strong> (кусок JavaScript), то браузер каждого, кто откроет страницу, эту инструкцию выполнит — например, «отправь мою куку вон туда». Это и есть XSS. Защита — простая: доска должна показывать записки <strong>как текст</strong> («велосипед продам»), а не исполнять их как приказ.</p>
+
+<h2 id="s21">Сначала слова, без которых дальше не понять</h2>
+<p><strong>JavaScript</strong> (JS). Язык программирования, который исполняется <strong>в браузере</strong> и оживляет страницу: реагирует на клики, подгружает данные, меняет содержимое на лету. Ты его знаешь по фронтенду — здесь смотрим на него со стороны безопасности.</p>
+<p><strong>DOM</strong> (Document Object Model — объектная модель документа). То, во что браузер превращает HTML-страницу у себя в памяти: дерево из всех элементов (заголовки, кнопки, поля). JavaScript не меняет сам текст HTML — он меняет это дерево, и страница на экране перерисовывается. Тебе это дерево знакомо: каждый раз, когда React обновляет экран, он правит DOM.</p>
+<p><strong>XSS</strong> (Cross-Site Scripting — межсайтовый скриптинг). Атака, при которой чужой JavaScript попадает на доверенную страницу и исполняется в браузере жертвы. Имя историческое и неточное; суть — «на странице выполнился не тот скрипт».</p>
+<p><strong>Обфускация</strong> (obfuscation — запутывание). Намеренное превращение понятного кода в нечитаемую кашу, чтобы человек и простые проверки не разглядели, что он делает. Любимый приём вредоносного JS.</p>
+<p>Остальные слова — на месте.</p>
+
+<h2 id="s22">Где и как исполняется JavaScript (и почему ему нельзя доверять защиту)</h2>
+<p><strong>На смене.</strong> Это фундамент всей главы. Поймёшь, где JS живёт, — поймёшь, почему XSS опасен именно для <em>пользователя</em>, а не для сервера, и почему проверки на JavaScript ничего не защищают.</p>
+<p><strong>Зачем это существует.</strong> Голый HTML — это неподвижный текст: показал и всё. Чтобы страница реагировала (развернуть меню, проверить форму, подгрузить ещё товары без перезагрузки), нужен язык, работающий <em>прямо в браузере у пользователя</em>, мгновенно. Это и есть JavaScript: его придумали, чтобы оживить страницу на стороне клиента.</p>
+<p><strong>Как устроено.</strong> Когда ты открываешь сайт, сервер присылает HTML и вместе с ним куски JavaScript. Браузер строит DOM-дерево страницы и тут же <strong>исполняет этот JS на твоей машине, твоими правами в рамках страницы</strong>. С этого момента скрипт может всё, что может страница: читать и менять её содержимое, видеть твои куки (если не стоит флаг <code>HttpOnly</code>), отправлять запросы на другие адреса от твоего имени. Ключевое: <strong>исполняется это у клиента, а не на сервере</strong>. Сервер лишь прислал текст скрипта — дальше командует браузер жертвы.</p>
+<p><strong>Мост от твоего React.</strong> Ты привык, что JS — твой инструмент: ты пишешь компонент, он рисует интерфейс. Теперь переверни картинку. Раз JS исполняется в браузере <em>любого</em> посетителя, то <strong>чужой</strong> JS, случайно попавший на твою страницу, исполнится с теми же возможностями, что и твой. Для браузера нет «моего» и «чужого» кода — есть просто код на странице. Вот почему твоя фронтенд-проверка формы — это удобство для пользователя, а не защита: она живёт в том же недоверенном месте, что и атакующий, и он её просто обходит. Защита — на сервере; JavaScript защищать не умеет по своей природе.</p>
+<p><strong>Норма и подозрительное.</strong> Норма — скрипты сайта грузятся со своего домена (<code>portal.kranich.de</code>) или известных CDN (сеть доставки контента — сервис, с которого сайты честно подгружают общие библиотеки, например jQuery). Подозрительно: на странице появился скрипт с незнакомого домена; страница сама шлёт запрос на чужой адрес с длинной строкой (похоже на утечку куки); в содержимом, которое ввёл пользователь (отзыв, имя, комментарий), оказались теги <code>&lt;script&gt;</code> или обработчики вроде <code>onerror=</code>.</p>
+<p><strong>Ошибка новичка.</strong> Думать «это же клиентский код, он не опасен, данные на сервере целы». Для сервера XSS и правда часто не страшен. Но страдает <strong>пользователь</strong>: у него угоняют сессию, действуют от его имени, крадут то, что видит его браузер. На смене XSS — это инцидент с пользователями, а не с сервером, и мерить его надо числом задетых людей.</p>
+<h2 id="s23">Как JavaScript попадает на страницу — и где это видно</h2>
+<p><strong>На смене.</strong> Чтобы поймать чужой скрипт, надо знать все двери, через которые JS вообще заходит на страницу. XSS пролезает ровно через эти же двери — просто в них подсовывают чужой код вместо своего.</p>
+<p><strong>Зачем это существует.</strong> Разработчику нужно несколько способов подключить скрипт: написать прямо в странице, подгрузить файлом, повесить реакцию на событие (клик, наведение). Это обычные, честные механизмы фронтенда. Беда в том, что если на страницу попадает <em>пользовательский</em> текст и сайт по неосторожности вставляет его как есть, любой из этих механизмов превращается в дыру.</p>
+<p><strong>Как устроено — три двери:</strong></p>
+<div class="tablewrap"><table><thead><tr><th>Способ</th><th>Как выглядит</th><th>Чем опасен</th></tr></thead><tbody>
+<tr><td>Встроенный скрипт (inline)</td><td><code>&lt;script&gt; ...код... &lt;/script&gt;</code> прямо в HTML</td><td>если в страницу попал пользовательский <code>&lt;script&gt;</code> — он исполнится</td></tr>
+<tr><td>Внешний файл</td><td><code>&lt;script src="/app.js"&gt;&lt;/script&gt;</code></td><td>если <code>src</code> ведёт на чужой домен — грузится чужой код</td></tr>
+<tr><td>Обработчик события</td><td><code>onerror=</code>, <code>onload=</code>, <code>onclick=</code> у тега</td><td>код в атрибуте события исполняется без тегов <code>&lt;script&gt;</code> — так обходят простые фильтры</td></tr>
+</tbody></table></div>
+<p><strong>Важная деталь для детекта.</strong> XSS не обязательно выглядит как <code>&lt;script&gt;</code>. Очень часто это <strong>обработчик события на безобидном теге</strong>: например, картинка с заведомо битым адресом и припиской <code>onerror=</code> — браузер не смог загрузить картинку, сработало «при ошибке», и выполнился код. Тегов <code>&lt;script&gt;</code> нет, а скрипт исполнился. Поэтому фильтр «вырезать слово script» дыру не закрывает: ищут шире — <code>on...=</code>, <code>javascript:</code>, угловые скобки там, где их быть не должно.</p>
+<p><strong>Норма и подозрительное.</strong> Норма — скрипты только от разработчиков сайта, в полях пользователя (имя, отзыв) чистый текст. Подозрительно в пользовательском вводе: <code>&lt;</code> <code>&gt;</code>, слово <code>script</code>, любые <code>on<em>что-то</em>=</code>, <code>javascript:</code>, а также их <strong>закодированные виды</strong>. Про кодирование коротко, пригодится не раз: чтобы безопасно протащить в адресе особые символы, их записывают как <code>%</code> и две шестнадцатеричные цифры — код символа. Так <code>&lt;</code> становится <code>%3C</code>, а <code>&gt;</code> — <code>%3E</code> (это называется URL-кодировка). Браузер и сервер разворачивают их обратно, поэтому <code>%3Cscript%3E</code> для них — то же самое, что <code>&lt;script&gt;</code>, а вот простой фильтр «вырезать слово script» этого уже не замечает. Значит, ищи и буквальные угловые скобки, и их коды <code>%3C</code>/<code>%3E</code>.</p>
+<p><strong>Если не получилось (не находишь скрипт, а алерт есть).</strong> Иногда в теле страницы ни <code>&lt;script&gt;</code>, ни <code>on...=</code> нет, а браузер жертвы всё равно ушёл на чужой домен. Две частые причины. Первая: код в <strong>закодированном</strong> виде (<code>%3Cscript%3E</code> в URL-кодировке, либо запись через HTML-коды символов вроде <code>&amp;#x3c;</code> — это тоже «<code>&lt;</code>», только иначе записанное) — ищи не буквы «script», а их кодировки. Вторая: это <strong>DOM-based</strong> XSS, где код сидит во фрагменте <code>#...</code> и до сервера, а значит и до журнала, вообще не дошёл (разберём в следующем разделе) — тогда ищи след на стороне клиента: в отчётах CSP или телеметрии браузера. «В теле страницы чисто» ≠ «XSS не было».</p>
+<p><strong>В тикет.</strong></p>
+<pre><code>portal.kranich.de: в поле «отзыв» принят ввод с обработчиком события
+(&lt;img src=x onerror=...&gt;) — сайт не экранирует пользовательский ввод.
+Проверить, исполнился ли он у посетителей страницы (исходящий трафик).</code></pre>
+<p><strong>Ошибка новичка.</strong> Искать только дословное <code>&lt;script&gt;</code>. Ошибаются, потому что это первое, что приходит в голову, — а реальный XSS чаще прячется в обработчике события (<code>onerror</code>, <code>onload</code>) или в закодированном виде, где слова «script» в явном виде нет вовсе.</p>
+
+<h2 id="s24">XSS: три вида и как каждый виден (или не виден)</h2>
+<p><strong>На смене.</strong> Прилетел алерт про чужой запрос из браузера сотрудника. Чтобы понять масштаб и где искать след, надо определить вид XSS: от этого зависит, одного человека задело или всех, и есть ли вообще след в твоих логах.</p>
+<p><strong>Зачем вообще атакующему XSS.</strong> Коротко, потому что дальше — про защиту. Исполнив свой JS в браузере жертвы, атакующий чаще всего <strong>крадёт сессионную куку</strong> (и входит как жертва без пароля — в <strong>MITRE ATT&amp;CK</strong> это T1539, кража куки веб-сессии). MITRE ATT&amp;CK — общий справочник приёмов атак с номерами (T….); аналитики называют этими номерами, что именно произошло, чтобы понимать друг друга без пересказа, либо действует от имени жертвы (нажимает кнопки, отправляет формы), либо подсовывает фальшивую форму входа. Важно: это всё происходит <em>в браузере жертвы</em>, не на сервере. Сам «пейлоад» (кусок внедряемого кода) мы здесь не пишем — тебе на смене нужен не он, а его <strong>след</strong>.</p>
+<p><strong>Как устроено — три вида:</strong></p>
+<div class="tablewrap"><table><thead><tr><th>Вид XSS</th><th>Где живёт чужой код</th><th>Кого задевает</th><th>Виден ли в логах сервера</th></tr></thead><tbody>
+<tr><td><strong>Reflected</strong> (отражённый)</td><td>в параметре URL; сервер «отражает» его обратно в страницу в том же ответе</td><td>одну жертву, которой подсунули ссылку</td><td><strong>Да</strong> — payload прямо в строке запроса в access log</td></tr>
+<tr><td><strong>Stored</strong> (хранимый)</td><td>сохранён на сервере (отзыв, комментарий, профиль) и отдаётся всем</td><td><strong>всех</strong>, кто откроет страницу — самый опасный</td><td>Частично — виден POST, которым добавили; само тело — в журнале приложения</td></tr>
+<tr><td><strong>DOM-based</strong></td><td>в клиентском JS; часто во фрагменте <code>#...</code>, который на сервер не уходит</td><td>жертву со специальной ссылкой</td><td><strong>Нет</strong> — фрагмент в логи сервера не попадает; нужен CSP-отчёт или телеметрия браузера</td></tr>
+</tbody></table></div>
+<p><strong>Аналогия для трёх видов.</strong> Reflected — тебе подсунули записку, ты её вслух прочитал один раз. Stored — записку приклеили на общую доску, и её читает каждый входящий (потому и опаснее всего). DOM-based — записка написана невидимыми чернилами, которые проявляет только твой собственный браузер; охранник на входе (сервер) её вообще не видел.</p>
+<p><strong>Как это выглядит в логах — следы (учебные примеры).</strong> Канонический <em>безвредный</em> пробник, которым проверяют XSS, — <code>&lt;script&gt;alert(1)&lt;/script&gt;</code>: он просто показывает окошко с цифрой 1, ничего не крадёт. Увидел его (или его закодированный вид) в параметре или в теле POST — значит кто-то <strong>щупает</strong> поле на XSS:</p>
+<pre><code>GET /reviews?q=&lt;script&gt;alert(1)&lt;/script&gt;          200   ← проба reflected
+GET /reviews?q=%3Cscript%3Ealert(1)%3C%2Fscript%3E 200   ← то же, в URL-кодировке
+POST /reviews   (в теле: text=&lt;img src=x onerror=...&gt;) 302   ← проба stored через обработчик события</code></pre>
+<p>Что ты тут читаешь: <code>%3C</code> и <code>%3E</code> — это закодированные <code>&lt;</code> и <code>&gt;</code> (URL-кодировка, разобрали выше), так обходят простые фильтры; <code>&lt;img ... onerror=&gt;</code> — тот самый трюк без тега <code>&lt;script&gt;</code>. Если дальше в логах браузер жертвы ушёл с длинной строкой на чужой домен — проба стала удачной атакой с кражей куки.</p>
+<p><strong>Этапы и где каждый ловится:</strong></p>
+<figure class="thv" data-v="chain" id="xss-chain"><figcaption><b>Хранимый XSS по этапам</b><span>Учебный пример: где L1 видит каждый шаг</span></figcaption>
+<script type="application/json">{"stages":[{"name":"inject","ru":"Внедрение","state":"done","note":"POST с чужим кодом в отзыв — виден POST в access log, тело в журнале приложения/WAF"},{"name":"store","ru":"Сохранение","state":"done","note":"код лёг в базу — виден в самой базе/в журнале приложения"},{"name":"serve","ru":"Выдача","state":"done","note":"страница отдаётся с чужим кодом всем посетителям — всплеск обращений к странице"},{"name":"exfil","ru":"Утечка","state":"cur","note":"браузеры жертв шлют куки на чужой домен — виден исходящий запрос в прокси/EDR"}]}</script></figure>
+<p><strong>Норма и подозрительное.</strong> Норма — в полях пользователя текст, исходящие запросы только на известные домены. Подозрительно: <code>&lt;script&gt;</code>, <code>onerror=</code>, <code>%3Cscript%3E</code> в параметрах или теле; всплеск одинаковых исходящих запросов с куками на незнакомый домен сразу с нескольких машин (признак сработавшего stored XSS — задело многих).</p>
+<p><strong>Ошибка новичка.</strong> Искать XSS только в access log и, не найдя, закрыть алерт. Для DOM-based и для тела POST в access log следа нет — это не значит, что атаки не было. Смотри журнал приложения, данные WAF/прокси и исходящий трафик браузеров.</p>
+<p><strong>В тикет.</strong></p>
+<pre><code>portal.kranich.de/reviews: в отзыв внедрён скрипт (stored XSS), браузеры
+≥5 сотрудников ушли с куками на evil-collect.example. Вид: хранимый —
+задеты все читатели страницы. Куку-сессии считать скомпрометированными.</code></pre>
+
+<h2 id="s25">Обфускация: когда скрипт нарочно сделан нечитаемым</h2>
+<p><strong>На смене.</strong> Вредоносный JS почти никогда не приходит в читаемом виде — иначе его сразу бы заметили. Он приходит кашей из букв и цифр. Твоя задача — узнать такую кашу и раскодировать до смысла, чтобы понять, что он делает.</p>
+<p><strong>Зачем это существует (для атакующего).</strong> Если написать <code>укради куку и отправь туда-то</code> прямым текстом, это увидит и человек, и простой фильтр по словам. Поэтому код <strong>запутывают</strong>: тот же смысл записывают так, что глазами не прочесть, а браузер при исполнении разворачивает обратно. Защита слов не видит — браузер видит.</p>
+<p><strong>Как устроено — частые приёмы (их и опознаёшь):</strong></p>
+<div class="tablewrap"><table><thead><tr><th>Примета в коде</th><th>Что делает</th></tr></thead><tbody>
+<tr><td><code>eval(...)</code></td><td>«выполни вот эту строку как код» — главный красный флаг: смысл спрятан в строке-аргументе</td></tr>
+<tr><td><code>atob("...")</code></td><td>раскодировать base64 обратно в текст — рядом с <code>eval</code> значит «спрятал код в base64»</td></tr>
+<tr><td><code>String.fromCharCode(104,105,...)</code></td><td>собрать строку из номеров символов — длинная цепочка чисел вместо слов</td></tr>
+<tr><td><code>\x68\x69</code> или <code>hi</code></td><td>буквы записаны шестнадцатеричными кодами вместо самих букв (<code>\x68</code> = буква h); тут спрятано слово <code>hi</code></td></tr>
+<tr><td><code>unescape</code> / <code>decodeURIComponent</code></td><td>разворачивают <code>%68%69</code>-кодировку обратно в текст</td></tr>
+</tbody></table></div>
+<p><strong>Разбор: раскодируем безвредный пример по шагам.</strong> Вот обфусцированная строчка (учебная, внутри ничего вредного — обычный <code>alert</code>):</p>
+<figure class="thv" data-v="decode" id="js-decode"><figcaption><b>Раскодирование обфусцированного JS</b><span>Учебный пример — внутри безвредный alert</span></figcaption>
+<script type="application/json">{"input":"eval(atob('YWxlcnQoJ3ByaXZldCcp'))","steps":[{"op":"узнать eval(atob(...))","out":"atob('YWxlcnQoJ3ByaXZldCcp')","note":"eval исполнит то, что вернёт atob — значит настоящий код спрятан в base64-строке"},{"op":"раскодировать base64","out":"alert('privet')","note":"atob развернул строку: это простой alert. Будь тут кража куки — увидел бы document.cookie и чужой адрес"},{"op":"вывод","out":"безвредно (alert)","note":"смысл восстановлен — можно писать вердикт"}]}</script></figure>
+<p>Логика разбора всегда одна: найди «разворачивающую» функцию (<code>eval</code>, <code>atob</code>, <code>fromCharCode</code>, <code>unescape</code>), раскодируй её аргумент — и перед тобой настоящий код. Делать это руками не нужно: есть <strong>CyberChef</strong> (бесплатный браузерный инструмент: вставил строку — он раскодирует base64/hex/url в пару кликов). Важное правило безопасности: раскодированный вредоносный JS ты <strong>читаешь, но не запускаешь</strong> — он для того и написан, чтобы сработать при исполнении.</p>
+<p><strong>Норма и подозрительное.</strong> Норма — читаемый код сайта, минификация (сжатие пробелов) ради скорости, но имена и строки узнаваемы. Подозрительно: <code>eval</code>/<code>atob</code>/длинные <code>fromCharCode</code>-цепочки; строки из <code>\x</code>/<code>\u</code>; гигантская строка base64, которую тут же разворачивают и исполняют.</p>
+<p><strong>Если не получилось.</strong> Раскодировал base64, а внутри снова каша (ещё один base64 или fromCharCode) — это нарочно: обфускацию делают в несколько слоёв. Повтори раскодирование ещё раз, пока не проступит читаемый код. Пустой или битый результат — проверь, не прихватил ли ты лишние символы (кавычки, пробелы) в строку.</p>
+<p><strong>Ошибка новичка.</strong> Увидев base64, сразу писать «это шифрование, не прочитать». Base64 — не шифрование: это просто другой способ записи, он разворачивается без всякого ключа. Путают, потому что выглядит одинаково непонятно. Запомни из «Вспомни прошлое»: <code>=</code> на конце и алфавит букв/цифр — это кодирование, оно обратимо.</p>
+<h2 id="s26">Защита: как XSS не дают случиться</h2>
+<p><strong>На смене.</strong> Разбирая инцидент, ты в тикете пишешь не только «что было», но и «почему пролезло и что включить». Для этого надо знать три рубежа защиты от XSS — тогда рекомендация будет по делу, а не «усильте безопасность».</p>
+<p><strong>Зачем это существует.</strong> XSS случается, когда пользовательский текст сайт вставляет в страницу как код. Значит, защита — это везде, где такой текст может оказаться, относиться к нему как к тексту и обрубить ему возможность стать кодом. Рубежей три, они дополняют друг друга.</p>
+<ol>
+<li><strong>Экранирование вывода</strong> (output encoding) — главный рубеж. Прежде чем показать пользовательский текст на странице, сайт заменяет опасные символы на безобидные значки: <code>&lt;</code> становится <code>&amp;lt;</code>, <code>&gt;</code> — <code>&amp;gt;</code>. Браузер тогда рисует их <em>как символы</em> «меньше/больше», а не как начало тега. Отзыв <code>&lt;script&gt;...&lt;/script&gt;</code> отобразится буквально текстом, и ничего не исполнится. Это и есть «показывать записку как текст, а не выполнять как приказ» из аналогии.</li>
+<li><strong>Проверка ввода</strong> (input validation) — на входе отбрасывать то, чего в поле быть не должно: в поле «возраст» пускать только цифры, в «email» — формат почты. Рубеж полезный, но один он дырявый: для «отзыва» или «имени» список допустимого широк, и запретить всё опасное трудно. Поэтому проверка ввода помогает, но держится всё на экранировании вывода.</li>
+<li><strong>CSP</strong> (Content-Security-Policy) — страховка на случай, если первые два дали течь. Это заголовок ответа, которым сайт говорит браузеру: «исполняй скрипты <em>только</em> с моего домена, встроенные (inline) — не исполняй». Тогда чужой <code>&lt;script&gt;</code>, даже просочившись в страницу, браузером не запустится. CSP не чинит дыру, но гасит её последствия.</li>
+</ol>
+<p><strong>Плюс к этому — флаг <code>HttpOnly</code> на куке.</strong> Помнишь: XSS чаще всего крадёт сессионную куку. Если сервер выдал куку с флагом <code>HttpOnly</code>, то JavaScript её <strong>вообще не видит</strong> — украсть через XSS нечего. Это не защита от самого XSS, но она обесценивает главный приз. Проверить легко: в заголовке <code>Set-Cookie</code> должно стоять <code>HttpOnly</code>.</p>
+<p><strong>Норма и подозрительное.</strong> У здорового сайта: пользовательский текст на странице экранирован (в исходнике страницы видно <code>&amp;lt;</code> вместо <code>&lt;</code>), есть заголовок <code>Content-Security-Policy</code>, куки с <code>HttpOnly</code> и <code>Secure</code>. Тревожно: ввод отображается на странице один-в-один; ни одного защитного заголовка; куки без флагов.</p>
+<p><strong>Ошибка новичка.</strong> Советовать в тикете «включить WAF» как единственное лечение. WAF (фильтр перед сайтом) ловит известные пробы, но его обходят кодировкой и хитрыми обработчиками. Настоящее лечение XSS — экранирование вывода в коде сайта; WAF и CSP лишь подпирают. Путают, потому что WAF ближе к L1 и «виден», а правка кода — забота разработчиков.</p>
+<p><strong>В тикет.</strong></p>
+<pre><code>Причина XSS на /reviews: отзыв выводится без экранирования, CSP нет,
+кука сессии без HttpOnly. Рекомендация разработке: экранировать вывод
+отзывов, добавить CSP, выставить HttpOnly+Secure на сессионную куку.</code></pre>
+
+<h2 id="s27">Вживую: запрос с пробой XSS по полям</h2>
+<p>Строка журнала, в которой кто-то щупает поле поиска на XSS. Наведи или нажми на поле.</p>
+<figure class="fb"><div class="fb-cap">Access log: проба reflected XSS — учебный пример</div><div class="fb-line"><span class="fld" tabindex="0" role="button" data-k="IP клиента" data-d="с кого проба. Пробей: сколько ещё странных запросов с этого адреса">198.51.100.23</span> <span class="fld" tabindex="0" role="button" data-k="Время" data-d="когда. Свяжи с моментом, когда у жертвы сработал чужой скрипт">[22/Nov/2026:11:04:50 +0100]</span> <span class="fld" tabindex="0" role="button" data-k="Метод и путь с пробой" data-d="GET на /search, но в параметре q — не слово, а %3Cscript%3E...%3C/script%3E. Это &lt;script&gt;alert(1)&lt;/script&gt; в URL-кодировке: проба reflected XSS">&quot;GET /search?q=%3Cscript%3Ealert(1)%3C/script%3E HTTP/1.1&quot;</span> <span class="fld" tabindex="0" role="button" data-k="Код ответа" data-d="200 — сервер отдал страницу. Если ввод в ней не экранирован, скрипт у жертвы исполнится. 200 тут не «всё хорошо», а «проба прошла»">200</span> <span class="fld" tabindex="0" role="button" data-k="User-Agent" data-d="python-requests — это инструмент, а не браузер. Ещё одна гиря на весы «автоматическая атака»">&quot;python-requests/2.31&quot;</span></div><div class="fb-out fb-hint">Наведи на поле или нажми на него.</div></figure>
+<p>Три улики в одной строке: закодированный <code>&lt;script&gt;</code> в параметре, ответ 200 (значит отдали), и User-Agent инструмента. Вердикт — проба XSS; дальше проверяешь, экранирует ли сайт этот ввод, и не ушли ли после этого браузеры жертв на чужой домен.</p>
+
+<h2 id="s28">Копнуть глубже</h2>
+<details><summary>Почему «вырезать слово script» не спасает</summary>
+<p>Наивная защита — удалять из ввода подстроку <code>script</code>. Обходят её легко: во-первых, XSS не требует тега <code>&lt;script&gt;</code> — хватает обработчика события (<code>onerror</code>, <code>onload</code>) на любом теге. Во-вторых, фильтр можно запутать регистром и кодировкой (<code>%3Cscript%3E</code>, <code>&amp;#x3C;</code>), которые браузер развернёт обратно уже после фильтра. Вывод для тикета: «чёрные списки» слов — слабая защита; правильно — экранировать весь вывод и поставить CSP. Для тебя как детектора это значит: ищи XSS не по одному слову <code>script</code>, а по набору признаков (угловые скобки, <code>on...=</code>, <code>javascript:</code>, их кодировки).</p></details>
+<details><summary>Почему DOM-based XSS не видно в логах сервера</summary>
+<p>При DOM-based XSS вредный код обрабатывает <em>клиентский</em> JavaScript, часто взяв его из фрагмента <code>#...</code> адреса. А фрагмент, как ты помнишь из главы 1, браузер на сервер не отправляет — значит, в access log его нет в принципе. Сервер «не видел» атаку. Поймать такое можно только на стороне клиента: отчётами CSP (браузер жалуется на нарушение политики), телеметрией EDR на машине или ручным разбором клиентского JS. На смене это ловушка: «в логах чисто» ≠ «атаки не было».</p></details>
+
+<h2 id="s29">Мини-квиз</h2>
+<div class="qz" data-q="1"><div class="qz-q">Отзыв на странице сохраняется и показывается всем посетителям. В него внедрили скрипт. Какой это вид XSS и чем он опаснее других?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="Reflected отражается из URL в тот же ответ и бьёт по одной жертве со ссылкой — он не сохраняется и не бьёт по всем."><span class="qz-mark" aria-hidden="true"></span><span>Reflected — этот вид бьёт сразу по всем посетителям</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. Stored (хранимый): код сохранён на сервере и отдаётся каждому, кто откроет страницу — поэтому задевает всех читателей, а не одну жертву."><span class="qz-mark" aria-hidden="true"></span><span>Stored — задевает всех, кто откроет страницу</span></button><button type="button" class="qz-o" data-ok="0" data-why="DOM-based живёт в клиентском JS (часто во фрагменте #) и бьёт по жертве со специальной ссылкой; он не «сохраняется для всех»."><span class="qz-mark" aria-hidden="true"></span><span>DOM-based — просто потому, что его не видно в логах</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="2"><div class="qz-q">Какой из рубежей — главное лечение XSS, а не просто подпорка?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="WAF ловит известные пробы, но обходится кодировкой и обработчиками событий — это подпорка, не лечение."><span class="qz-mark" aria-hidden="true"></span><span>Поставить перед сайтом фильтр WAF</span></button><button type="button" class="qz-o" data-ok="0" data-why="CSP гасит последствия (не даёт чужому скрипту исполниться), но саму дыру не чинит — это страховка."><span class="qz-mark" aria-hidden="true"></span><span>Добавить заголовок CSP в ответах сервера</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. Экранирование вывода превращает пользовательский текст обратно в текст (&lt; → &amp;lt;), и он уже не может стать кодом. Это и есть лечение; остальное — подпорки."><span class="qz-mark" aria-hidden="true"></span><span>Экранирование вывода в коде сайта</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="3"><div class="qz-q">В JS-файле встретилось <code>eval(atob("..."))</code>. Что это значит и что делать?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. atob развернёт base64 обратно в код, а eval его исполнит — значит смысл спрятан в строке. Раскодировать base64 (CyberChef), прочитать — но не запускать."><span class="qz-mark" aria-hidden="true"></span><span>Код спрятан в base64; раскодировать и прочитать, не запуская</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет. Base64 — не шифрование, ключ не нужен: atob разворачивает его мгновенно."><span class="qz-mark" aria-hidden="true"></span><span>Это шифрование — без секретного ключа прочитать нельзя</span></button><button type="button" class="qz-o" data-ok="0" data-why="Опасно: запускать неизвестный код нельзя — он для того и обфусцирован, чтобы сработать при исполнении. Его читают, а не запускают."><span class="qz-mark" aria-hidden="true"></span><span>Запустить прямо в браузере и посмотреть, что оно сделает</span></button></div><div class="qz-why" role="status"></div></div>
+
+<h2 id="s30">Сделай сам</h2>
+<ol>
+<li>Открой CyberChef (cyberchef.org) в браузере. Вставь строку <code>YWxlcnQoJ3ByaXZldCcp</code>, применяй операцию «From Base64» (From Base64 — «из base64»). Прочитай, что получилось, — это тот самый приём из раздела про обфускацию.</li>
+<li>На любой странице нажми F12 → Console и набери <code>document.cookie</code>. Вернётся строка с куками, доступными скрипту, — или <em>пустая строка</em>, если у сайта все куки с флагом <code>HttpOnly</code> (это не поломка, а наоборот — хорошая защита: такие куки скрипту не видны). Так ты наглядно видишь, что крадёт XSS и почему <code>HttpOnly</code> важен.</li>
+<li>В ответах любого сайта (F12 → Network → любой запрос → Headers) поищи заголовок <code>Content-Security-Policy</code>. Есть — сайт подстраховался от XSS; нет — слабое место.</li>
+</ol>
+
+<h2 id="s31">Выжимка</h2>
+<ul>
+<li><strong>JS исполняется в браузере жертвы</strong> её правами. Чужой скрипт на странице = XSS; страдает пользователь (угон сессии), не сервер.</li>
+<li><strong>XSS заходит через те же двери, что обычный JS:</strong> <code>&lt;script&gt;</code>, внешний <code>src</code>, обработчики <code>on...=</code>. Ищи шире слова «script».</li>
+<li><strong>Три вида:</strong> reflected (из URL, виден в логе), stored (сохранён, бьёт по всем, самый опасный), DOM-based (в клиенте, в логах сервера не виден).</li>
+<li><strong>Обфускация</strong> прячет смысл: <code>eval</code>/<code>atob</code>/<code>fromCharCode</code>. Раскодируй (CyberChef), читай, не запускай. Base64 — не шифрование.</li>
+<li><strong>Лечение — экранирование вывода;</strong> CSP, проверка ввода и <code>HttpOnly</code> подпирают.</li>
+</ul>
+
+<h2 id="s32">Термины</h2>
+<details><summary>Термины EN / RU / DE</summary>
+<div class="tablewrap"><table><thead><tr><th>EN</th><th>RU</th><th>DE</th></tr></thead><tbody>
+<tr><td>JavaScript</td><td>JavaScript (язык в браузере)</td><td>JavaScript</td></tr>
+<tr><td>DOM</td><td>дерево элементов страницы</td><td>DOM (Document Object Model)</td></tr>
+<tr><td>Cross-Site Scripting (XSS)</td><td>межсайтовый скриптинг</td><td>Cross-Site-Scripting</td></tr>
+<tr><td>reflected / stored / DOM-based</td><td>отражённый / хранимый / в DOM</td><td>reflektiert / gespeichert / DOM-basiert</td></tr>
+<tr><td>obfuscation</td><td>обфускация, запутывание</td><td>Verschleierung</td></tr>
+<tr><td>payload</td><td>полезная нагрузка (внедряемый код)</td><td>Payload / Schadcode</td></tr>
+<tr><td>output encoding / escaping</td><td>экранирование вывода</td><td>Ausgabe-Kodierung / Escaping</td></tr>
+<tr><td>Content-Security-Policy</td><td>политика безопасности контента</td><td>Content-Security-Policy</td></tr>
+<tr><td>session cookie</td><td>сессионная кука</td><td>Sitzungs-Cookie</td></tr>
+<tr><td>HttpOnly</td><td>флаг «не отдавать JS»</td><td>HttpOnly-Flag</td></tr>
+</tbody></table></div>
+</details>
+
+<h2 id="s33">Связи</h2>
+<ul>
+<li>До этого: глава 1 этого учебника — заголовки, куки, сессия и почему клиент недоверенный.</li>
+<li>Рядом: <strong>How Websites Work</strong> (Pre Security) — HTML/JS/DOM с нуля, если хочется освежить сам язык.</li>
+<li>Дальше: глава 3 (SQL) — вторая классическая веб-инъекция, но целит не в браузер, а в базу; и глава 4 (Burp) — чем щупают поля на XSS и SQLi.</li>
+</ul>
+<h1 id="s34" class="anchored">Глава 3. SQL Fundamentals — запросы к базе и SQL-инъекция (SQL Fundamentals)</h1>
+<div class="ch-level" data-l="must"><span class="ic">🔥</span>Обязательно <span class="why">— SQL-инъекция — старейшая и до сих пор живая веб-атака; её следы в логах спрашивают на смене и на собеседовании, а понять их нельзя, не читая сам SQL</span></div>
+
+<h2 id="s35">Ты на смене</h2>
+<p>16:40. WAF поднял тревогу: к странице товара <code>shop.kranich.de/produkt</code> пришёл запрос, где в параметре <code>id</code> вместо номера товара — кавычка и слова <code>UNION SELECT</code>. Через минуту с того же адреса сервер пару раз ответил <code>500</code>.</p>
+<p>Почему это алерт? Параметр <code>id</code> должен быть числом (номер товара). Кавычка и <code>UNION SELECT</code> в нём — это куски <strong>SQL</strong>, языка запросов к базе данных. Кто-то пытается подсунуть свой текст прямо в запрос, который сайт отправляет базе, — это <strong>SQL-инъекция</strong>. А ответы <code>500</code> означают, что подсунутое долетело до базы и сломало запрос: первый признак, что дыра есть. Если атака удастся, из базы утекут пароли, заказы, персональные данные — самое ценное, что есть у магазина.</p>
+<p>За пять минут надо понять:</p>
+<ol>
+<li>Что именно пытались подсунуть в запрос к базе?</li>
+<li>База повелась (утекли данные) или устояла (только ошибки 500)?</li>
+<li>Это единичная проба или уже поток — и что успели достать?</li>
+</ol>
+<p>Чтобы это читать, надо понимать, как устроен обычный SQL-запрос.</p>
+
+<h2 id="s36">Аналогия: строгий библиотекарь и бланк заказа</h2>
+<p>Представь старую библиотеку, где книги приносит библиотекарь по бланку. В бланке графа: «Название книги: ______». Ты пишешь название, библиотекарь читает <em>весь</em> бланк как инструкцию и несёт книгу. Система работает, пока в графу пишут названия.</p>
+<p>Но библиотекарь туповат: он читает бланк буквально, целиком. Хитрый посетитель пишет в графу «название»: <em>«Муму», а ещё отдай мне ключи от хранилища и список всех читателей</em>. Библиотекарь читает всю строку как одну инструкцию — и выполняет: несёт и книгу, и ключи, и список. Графа была для названия, но в неё впихнули <strong>команду</strong>, и библиотекарь не отличил данные от приказа.</p>
+<p>База данных — этот библиотекарь. Обычный SQL-запрос — бланк с графой «id товара». SQL-инъекция — когда в графу вписывают не номер, а кусок команды, и база выполняет его заодно. Защита — заставить библиотекаря твёрдо знать: «вот это — графа с данными, что бы в ней ни стояло, это название, а не приказ».</p>
+
+<h2 id="s37">Сначала слова, без которых дальше не понять</h2>
+<p><strong>База данных</strong> (database, БД). Программа-хранилище, где данные лежат упорядоченно, в таблицах, и их можно быстро искать и менять. За каждым серьёзным сайтом стоит БД: там пользователи, товары, заказы.</p>
+<p><strong>Таблица, строка, столбец</strong> (table, row, column). Как лист Excel: столбцы — это поля (<code>id</code>, <code>имя</code>, <code>пароль</code>), строки — отдельные записи (один пользователь — одна строка). Таблиц много: <code>users</code>, <code>products</code>, <code>orders</code>.</p>
+<p><strong>SQL</strong> (Structured Query Language — язык структурированных запросов). Язык, которым у базы спрашивают и которым ей велят: «дай строки, где…», «добавь строку», «удали». Сайт на каждый твой клик шлёт базе такой запрос.</p>
+<p><strong>SQL-инъекция</strong> (SQL injection, SQLi). Атака, когда пользовательский ввод попадает в SQL-запрос как часть команды, и база выполняет чужое. <strong>Инъекция</strong> вообще — это когда данные превращаются в исполняемую команду; XSS из прошлой главы — тоже инъекция, но в браузер, а эта — в базу.</p>
+<p>Остальные слова — на месте.</p>
+
+<h2 id="s38">Что такое база и как устроен запрос к ней</h2>
+<p><strong>На смене.</strong> Прежде чем читать атаку на базу, надо представлять, что база хранит и как с ней вообще разговаривают. Иначе <code>UNION SELECT</code> в логе — просто непонятные слова.</p>
+<p><strong>Зачем это существует.</strong> Сайту негде держать десятки тысяч товаров и миллионы пользователей так, чтобы мгновенно находить нужное («покажи заказы Ивана за март»). Файлы для этого слишком медленны и неудобны. База данных — это и есть специальная программа, которая хранит данные таблицами и умеет по запросу молниеносно их искать, фильтровать, складывать.</p>
+<p><strong>Как устроено.</strong> Данные лежат в <strong>таблицах</strong>. Вот кусок таблицы <code>users</code>:</p>
+<div class="tablewrap"><table><thead><tr><th>id</th><th>username</th><th>email</th><th>role</th></tr></thead><tbody>
+<tr><td>1</td><td>anna</td><td>anna@kranich.de</td><td>user</td></tr>
+<tr><td>2</td><td>weber</td><td>weber@kranich.de</td><td>admin</td></tr>
+<tr><td>3</td><td>ivan</td><td>ivan@kranich.de</td><td>user</td></tr>
+</tbody></table></div>
+<ul>
+<li><strong>Столбцы</strong> (<code>id</code>, <code>username</code>, <code>email</code>, <code>role</code>) — какие поля есть у каждого пользователя.</li>
+<li><strong>Строки</strong> — сами пользователи, по одному на строку.</li>
+<li>У магазина рядом лежат другие таблицы: <code>products</code> (товары), <code>orders</code> (заказы). Это и есть «хранилище» из аналогии.</li>
+</ul>
+<p><strong>Как с базой говорят.</strong> Сайт не лезет в таблицу руками — он шлёт базе <strong>запрос на языке SQL</strong>. Когда ты открываешь товар 42, сайт за кулисами отправляет базе что-то вроде «дай мне из таблицы товаров строку, где id равен 42», база возвращает одну строку, сайт рисует страницу. Весь веб стоит на этом невидимом разговоре: клик → SQL-запрос → ответ базы → страница. Атакующий целит ровно в этот разговор — хочет продиктовать базе свой запрос.</p>
+<p><strong>Норма и подозрительное.</strong> Норма — в параметрах, которые идут в базу, то, что ждут: число в <code>id</code>, слово в <code>поиске</code>. Подозрительно — в этих же параметрах символы и слова SQL: кавычка <code>'</code>, <code>--</code>, <code>UNION</code>, <code>SELECT</code>, <code>OR 1=1</code>. Человек, листающий товары, такого не вводит.</p>
+<p><strong>Какие бывают базы (чтобы не путаться в названиях).</strong> В следах и отчётах мелькают имена <strong>MySQL</strong>, <strong>PostgreSQL</strong>, <strong>MS SQL</strong>, <strong>Oracle</strong>, <strong>SQLite</strong> — это всё разные программы-базы, но язык SQL у них почти общий, отличия в мелочах (как пишется комментарий, как называется служебный каталог таблиц). Тебе на уровне L1 не нужно помнить все различия; достаточно знать, что <code>--</code> и <code>#</code> — это комментарии в SQL (их используют в инъекции, чтобы обрубить хвост запроса), а имена вроде <code>information_schema</code> (у MySQL/PostgreSQL) — встроенный список всех таблиц базы. Увидел имя конкретной базы в ошибке на странице (<code>You have an error in your SQL syntax</code> — «у вас ошибка в синтаксисе SQL», так отвечает именно MySQL) — это само по себе <strong>утечка</strong>: сайт по неосторожности показал посетителю внутреннюю ошибку базы, чего быть не должно.</p>
+<p><strong>Если не получилось понять, где база.</strong> На странице нет ни слова про SQL, а параметр в URL есть — это норма: база спрятана за сайтом, снаружи её не видно, и это правильно. Ты узнаёшь о ней косвенно: по тому, что параметр <code>id</code> возвращает разные товары (значит, по нему что-то ищут в базе), и по реакции на подозрительный ввод (ошибка 500, странный текст). «Базу не видно» не значит «её нет».</p>
+<p><strong>Ошибка новичка.</strong> Путать базу данных с самим сайтом. Сайт (веб-сервер) и база — разные программы, часто на разных машинах; сайт лишь посредник, который переводит твои клики в SQL-запросы к базе. SQL-инъекция бьёт не по сайту, а <em>через</em> сайт по базе за ним. Путают, потому что для пользователя всё это — «один сайт», а на деле за фасадом два отдельных слоя.</p>
+<h2 id="s39">Чтение базы: SELECT … FROM … WHERE</h2>
+<p><strong>На смене.</strong> 90% запросов к базе — это «достань данные», то есть <code>SELECT</code>. Научишься читать его по словам — будешь понимать, что сайт просил у базы и что туда пытались дописать в инъекции.</p>
+<p><strong>Зачем это существует.</strong> Чаще всего от базы нужно одно: выбрать нужные строки по условию («пользователь с таким логином», «товары дешевле 50»). Для этого есть команда выборки <code>SELECT</code> — самая частая в SQL.</p>
+<p><strong>Как устроено — разбор по словам.</strong> Запрос, которым сайт достаёт одного пользователя при входе:</p>
+<pre><code>SELECT username, role FROM users WHERE id = 2;</code></pre>
+<ul>
+<li><code>SELECT username, role</code> — <em>какие столбцы</em> вернуть. Здесь — имя и роль. Звёздочка <code>SELECT *</code> значит «все столбцы».</li>
+<li><code>FROM users</code> — <em>из какой таблицы</em> брать. Здесь — из таблицы пользователей.</li>
+<li><code>WHERE id = 2</code> — <em>условие отбора</em>: только строки, где <code>id</code> равен 2. Без <code>WHERE</code> вернулись бы все строки подряд.</li>
+<li><code>;</code> — конец запроса.</li>
+</ul>
+<p><strong>Разбор вывода.</strong> База вернёт одну строку:</p>
+<pre><code>username | role
+---------+------
+weber    | admin</code></pre>
+<p>Читается прямо: пользователь с <code>id=2</code> — это <code>weber</code>, роль <code>admin</code>. Сайт возьмёт этот ответ и, например, пустит weber в админку.</p>
+<p><strong>Где тут будущая дыра.</strong> Запомни форму <code>WHERE id = 2</code>. Число 2 сюда подставил сайт из параметра URL (<code>?id=2</code>). Если сайт берёт значение из URL и <strong>вклеивает его в запрос как есть</strong>, то, подсунув в параметр не «2», а «2 ИЛИ всегда-истина», атакующий меняет смысл условия. Это и есть зерно SQL-инъекции — разберём в разделе ниже.</p>
+<p><strong>Норма и подозрительное.</strong> Норма в параметре, который идёт в <code>WHERE id =</code>, — число. Подозрительно — кавычка, пробел со словом <code>OR</code>, <code>AND</code>, <code>UNION</code>: признак, что условие пытаются переписать.</p>
+<p><strong>Если не получилось (читать запрос).</strong> Длинный запрос пугает, но костяк всегда один: <code>SELECT</code> (что) — <code>FROM</code> (откуда) — <code>WHERE</code> (при каком условии). Найди эти три слова — остальное детали.</p>
+<p><strong>Почему условие <code>WHERE</code> — самое уязвимое место.</strong> Обрати внимание: <code>SELECT</code> и <code>FROM</code> сайт обычно пишет сам и не меняет (столбцы и таблица заданы в коде). А вот значение в <code>WHERE</code> почти всегда берётся <em>снаружи</em> — из параметра URL, из формы, из куки. То есть именно в <code>WHERE</code> встречается недоверенный ввод и родной SQL-код сайта. Там, где они встречаются без защиты, и рождается инъекция. Запомни это как карту: ищешь дыру — смотришь, что подставляется в <code>WHERE</code> и откуда оно приходит.</p>
+<p><strong>Если не получилось (вывод пустой).</strong> Запрос <code>WHERE id = 999</code> к несуществующему товару вернёт <strong>пустой результат</strong> — ни одной строки. Это не ошибка: база честно ответила «таких нет». Отличай пустой ответ («условие верное, но под него ничего не подошло») от ошибки 500 («запрос сломан»). На смене это разные сигналы: пустой ответ — норма, 500 на подозрительном вводе — звоночек инъекции.</p>
+<p><strong>Ошибка новичка.</strong> Читать <code>SELECT *</code> как «ничего не выбрано». Наоборот: <code>*</code> — «выбрать <em>всё</em>, все столбцы». В инъекции <code>*</code> опасен тем, что тянет и скрытые поля (пароли, токены), которые сайт на странице обычно не показывает. Путают из-за школьной привычки, что звёздочка значит «умножить» или «любой» — в SQL это «все столбцы».</p>
+
+<h2 id="s40">Остальные базовые команды — коротко, но по делу</h2>
+<p><strong>На смене.</strong> Кроме чтения, в логах и в инъекциях мелькают ещё несколько слов. Знать их надо, чтобы понимать, данные читают или уже меняют/удаляют (это куда опаснее), и чтобы читать приёмы инъекции (<code>UNION</code>, <code>ORDER BY</code>).</p>
+<p><strong>Как устроено — мини-разбор каждой:</strong></p>
+<div class="tablewrap"><table><thead><tr><th>Команда</th><th>Что делает</th><th>Пример</th></tr></thead><tbody>
+<tr><td><code>INSERT</code></td><td>добавить новую строку</td><td><code>INSERT INTO users (username) VALUES ('anna');</code></td></tr>
+<tr><td><code>UPDATE</code></td><td>изменить существующие строки</td><td><code>UPDATE users SET role='admin' WHERE id=3;</code></td></tr>
+<tr><td><code>DELETE</code></td><td>удалить строки</td><td><code>DELETE FROM users WHERE id=3;</code></td></tr>
+<tr><td><code>ORDER BY</code></td><td>отсортировать результат</td><td><code>SELECT * FROM products ORDER BY price;</code></td></tr>
+<tr><td><code>LIMIT</code></td><td>вернуть не больше N строк</td><td><code>SELECT * FROM users LIMIT 5;</code></td></tr>
+<tr><td><code>LIKE</code></td><td>поиск по шаблону (<code>%</code> — любые символы)</td><td><code>WHERE username LIKE 'an%';</code> — все на «an»</td></tr>
+<tr><td><code>UNION</code></td><td>склеить результаты двух SELECT в один</td><td><code>SELECT a FROM t1 UNION SELECT b FROM t2;</code></td></tr>
+</tbody></table></div>
+<p><strong>Два слова под особым вниманием — почему именно они всплывают в атаке.</strong></p>
+<ul>
+<li><code>UNION</code> склеивает к результату запроса <em>ещё один твой</em> SELECT. В честном коде им объединяют однотипные данные. В инъекции им <strong>дописывают к безобидной выборке товаров запрос к таблице паролей</strong> — и база возвращает их в той же странице. Поэтому <code>UNION SELECT</code> в параметре — почти всегда атака.</li>
+<li><code>ORDER BY</code> с номером (<code>ORDER BY 3</code>) атакующий использует, чтобы нащупать, сколько столбцов возвращает запрос. Это нужно потому, что для <code>UNION</code> есть жёсткое правило: оба склеиваемых <code>SELECT</code> должны вернуть <strong>одинаковое число столбцов</strong>, иначе база откажет. Атакующий шлёт <code>ORDER BY 1</code>, <code>2</code>, <code>3</code>… пока не получит ошибку — на каком номере сломалось, столько и столбцов. Поток таких запросов с одного адреса — характерная разведка перед инъекцией.</li>
+</ul>
+<p><strong>Норма и подозрительное.</strong> Норма — эти команды шлёт сам сайт за кулисами, снаружи в параметрах их нет. Подозрительно — любое из этих слов <em>в значении параметра URL или в теле формы</em>: туда их мог вписать только тот, кто собирает запрос руками.</p>
+<p><strong>Два семейства команд — зачем тебе это различать.</strong> Команды SQL делятся на две группы, и граница важна для оценки тяжести. <strong>Чтение</strong> — это <code>SELECT</code>: данные только смотрят, база не меняется. <strong>Изменение</strong> — <code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>: база переписывается. Когда в следах инъекции ты видишь только <code>SELECT</code> и <code>UNION SELECT</code> — атакующий <em>читает</em> (крадёт данные). Когда мелькнул <code>UPDATE</code> или <code>DELETE</code> — он уже <em>пишет</em> (меняет роли, стирает записи, портит данные). Второе тяжелее: украденное можно сменить (пароли), а испорченную или стёртую базу восстанавливают из резервной копии, и это уже серьёзный инцидент с простоем.</p>
+<p><strong>Если не получилось (команда в логе непонятная).</strong> Встретил незнакомое слово SQL в параметре — не гадай, что оно делает в точности. Для вердикта хватает отнести его к группе: похоже на чтение (<code>SELECT</code>, <code>UNION</code>, <code>ORDER BY</code>) или на изменение (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, <code>DROP</code>). <code>DROP</code>, кстати, — «удалить таблицу целиком», самое разрушительное; его в параметре видеть не должен никогда.</p>
+<p><strong>Ошибка новичка.</strong> Пропустить <code>UPDATE</code>/<code>DELETE</code> как «ну, команды и команды». Между «атакующий <em>прочитал</em> базу» и «атакующий её <em>изменил или стёр</em>» — огромная разница в тяжести инцидента. <code>UPDATE role='admin'</code> или <code>DELETE</code> в следах — это уже не разведка, а порча данных; приоритет выше. Путают, потому что все слова «на вид одинаковые команды», а на деле одни только смотрят, другие ломают.</p>
+
+<h2 id="s41">SQL-инъекция: как ввод становится командой</h2>
+<p><strong>На смене.</strong> Это та атака, из-за которой пришёл алерт. Твоя задача — не провести её, а <strong>узнать по следу</strong>: что пробовали, прошло или нет, что могли достать.</p>
+<p><strong>Зачем атакующему (коротко).</strong> Через SQL-инъекцию из базы вытягивают то, что сайт показывать не должен: логины и хэши паролей, персональные данные, иногда — обойти вход («пусти меня как админ без пароля»). Это прямой путь к самому ценному, потому инъекцию и любят. Как её <em>проводят</em> пошагово — не наша тема; нам нужен след.</p>
+<p><strong>Как устроено — одно зерно.</strong> Вернись к запросу входа: <code>... WHERE id = 2</code>, где 2 сайт подставил из <code>?id=2</code>. Если сайт вклеивает значение без проверки, атакующий в параметр пишет не число, а продолжение команды.</p>
+<p><strong>Почему кавычка ломает запрос — медленно и по шагам.</strong> В SQL текстовые значения берут в одинарные кавычки: <code>WHERE username = 'anna'</code> — кавычки говорят базе «вот тут начинается и заканчивается текст». Представь запрос входа: сайт вклеивает в кавычки то, что ты ввёл в поле логина:</p>
+<pre><code>...WHERE username = 'сюда_вставят_ввод'</code></pre>
+<p>Если ввести обычное имя <code>anna</code>, выйдет <code>'anna'</code> — норма. А если в поле ввести <strong>одну кавычку</strong> <code>'</code>, то она закроет текст раньше времени, и всё, что идёт после, база попробует прочитать уже <em>как команду</em>, а не как текст. Запрос станет кривым — база спотыкается и выдаёт ошибку (тот самый код 500). Вот почему кавычка — первый пробник: если от неё сайт падает, значит ввод долетел до базы без защиты. А дальше, вместо того чтобы просто сломать, дописывают осмысленное продолжение. Разберём <code>' OR '1'='1</code> по косточкам:</p>
+<pre><code>было:  WHERE username = 'ввод'
+стало: WHERE username = '' OR '1'='1'
+            └ закрыли текст ┘  └ дописали «ИЛИ 1=1» ┘</code></pre>
+<p>Здесь <code>OR</code> — это «ИЛИ»: условие выполнится, если верна <em>хоть одна</em> часть. Первая часть (<code>username = ''</code>) ложна, зато вторая — <code>'1'='1'</code> — верна <strong>всегда</strong> (единица равна единице). «Ложь ИЛИ правда» = правда, поэтому условие <code>WHERE</code> становится истинным для <em>каждой</em> строки — фильтр перестаёт фильтровать, и база вернёт всех пользователей (или пустит первого как админа). Вот что значит «условие всегда истинно».</p>
+<p>Три классических приёма — и как каждый выглядит в логе:</p>
+<div class="tablewrap"><table><thead><tr><th>Что видно в параметре</th><th>Что это делает с запросом</th><th>Цель</th></tr></thead><tbody>
+<tr><td><code>' OR '1'='1</code></td><td>дописывает условие, которое <em>всегда истинно</em> → <code>WHERE</code> перестаёт фильтровать</td><td>вернуть все строки / войти без пароля</td></tr>
+<tr><td><code>UNION SELECT username,password FROM users</code></td><td>приклеивает к выдаче свой запрос к другой таблице</td><td>вытащить пароли через обычную страницу</td></tr>
+<tr><td><code>'--</code> (или <code>'#</code>)</td><td><code>--</code> в SQL — начало комментария: всё после него база игнорирует</td><td>обрубить «хвост» родного запроса, чтобы своё сработало</td></tr>
+</tbody></table></div>
+<p>Ещё одно слово-примета: <code>information_schema</code> — это встроенный «каталог» базы, где перечислены все её таблицы и столбцы. Запрос к нему в параметре значит, что атакующий осматривается: выясняет, какие вообще таблицы есть, прежде чем тянуть данные. В терминах веб-угроз всё это — <strong>OWASP</strong> A03 (Injection). OWASP (Open Web Application Security Project) — некоммерческий проект, который ведёт известный список десяти самых опасных веб-уязвимостей (OWASP Top 10); инъекции в нём стабильно в первой тройке. На смене этот список — общий словарь: сказал «A03» — коллеги поняли, что речь об инъекции.</p>
+<p><strong>Как узнать, что инъекция <em>сработала</em>, а не только пробовали:</strong></p>
+<ul>
+<li><strong>Код 500 на вводе с кавычкой</strong> — ввод долетел до базы и сломал запрос. Значит, ввод не фильтруется: сама дыра есть, даже если конкретная проба не вытащила данные.</li>
+<li><strong>Резкий рост размера ответа</strong> на том же пути (колонка «размер» в логе) — на страницу вылезло больше данных, чем обычно: возможно, выпал <strong>дамп</strong> (полная выгрузка содержимого) таблицы через <code>UNION</code>.</li>
+<li><strong>Задержка ответа ровно на N секунд</strong> при <code>SLEEP(5)</code>-подобном вводе — это «слепая» инъекция: данные не видны, но база послушно ждёт, выдавая атакующему ответы по времени.</li>
+</ul>
+<p><strong>Этапы и где ловятся:</strong></p>
+<figure class="thv" data-v="chain" id="sqli-chain"><figcaption><b>SQL-инъекция по этапам</b><span>Учебный пример: где L1 видит каждый шаг</span></figcaption>
+<script type="application/json">{"stages":[{"name":"probe","ru":"Проба","state":"done","note":"кавычка в параметре → ответ 500 в access log: ввод не фильтруется"},{"name":"map","ru":"Разведка","state":"done","note":"ORDER BY 1,2,3… и information_schema в параметрах: считают столбцы и таблицы"},{"name":"extract","ru":"Извлечение","state":"cur","note":"UNION SELECT → скачок размера ответа: данные вылезли на страницу"},{"name":"use","ru":"Использование","state":"","note":"вход под чужой учёткой / слив базы — виден вход admin с чужого IP, рассылка данных"}]}</script></figure>
+<p><strong>Норма и подозрительное.</strong> Норма — числа и слова в параметрах, стабильный размер ответа, коды 200. Подозрительно — кавычки, <code>OR 1=1</code>, <code>UNION SELECT</code>, <code>--</code>, <code>information_schema</code>, <code>SLEEP(</code> в параметрах; всплеск 500; скачок размера ответа; серия <code>ORDER BY N</code>.</p>
+<p><strong>Ошибка новичка.</strong> Увидеть «ответ 500, атака не удалась» и закрыть. 500 на вводе с кавычкой — это не «не удалась», а «дыра подтверждена»: ввод дошёл до базы. Следующий, более аккуратный запрос уже может вытащить данные молча, с кодом 200. 500 — повод эскалировать, а не успокоиться.</p>
+<h2 id="s42">Защита: почему инъекция вообще возможна и как её убить</h2>
+<p><strong>На смене.</strong> В тикете после SQLi ты пишешь причину и рекомендацию. Чтобы они были по делу, надо понимать <em>корень</em> проблемы — он один — и правильное лечение, а не «поставьте WAF».</p>
+<p><strong>Зачем это существует.</strong> Корень SQL-инъекции — в том, что база, как тот библиотекарь, не отличает <strong>данные от команды</strong>, когда сайт склеивает запрос из кусков текста. Напиши сайт запрос как <code>"...WHERE id = " + ввод</code>, и ввод становится частью команды. Значит, лечение — сделать так, чтобы ввод <em>навсегда</em> оставался данными, что бы в нём ни было.</p>
+<ol>
+<li><strong>Параметризованные запросы</strong> (prepared statements) — главное и почти полное лечение. Сайт отправляет базе <em>шаблон</em> запроса с «дыркой» и <em>отдельно</em> — значение для дырки: «выполни <code>SELECT ... WHERE id = ?</code>, где <code>?</code> равно вот этому». База заранее знает структуру команды, а присланное значение кладёт в дырку <strong>только как данные</strong> — даже если там <code>' OR '1'='1</code>, это будет воспринято как строка-искомое, а не как кусок SQL. Библиотекарь получил бланк, где графа «название» жёстко отделена от инструкции, и что в неё ни впиши — это название.</li>
+<li><strong>Проверка ввода</strong> — подпорка: если <code>id</code> обязан быть числом, отбросить всё, что не число. Полезно, но на свободных полях (поиск, имя) недостаточно — держится всё на параметризации.</li>
+<li><strong>Наименьшие права базы</strong> — учётка, под которой сайт ходит в базу, не должна уметь больше необходимого: если ей не дать право удалять таблицы, то даже успешная инъекция не сможет стереть базу. Не предотвращает инъекцию, но уменьшает ущерб.</li>
+</ol>
+<p><strong>Норма и подозрительное.</strong> У здорового приложения запросы параметризованы (это видно по коду: <code>?</code>-заглушки, а не склейка строк), числовые параметры проверяются, учётка базы ограничена. Тревожно: сайт падает в 500 именно от одной кавычки в данных (500 бывает и по другим причинам, но падение на кавычке — сильный признак склейки строк и отсутствия параметризации: ввод дошёл до базы и сломал запрос).</p>
+<p><strong>Если не получилось (инъекция прошла, хотя «всё закрыли»).</strong> Бывает, что запросы параметризованы, а дыра всё равно есть — частая причина в том, что в параметры подставляют <em>не всё</em>. Например, имя столбца для сортировки (<code>ORDER BY</code>) в параметры подставить нельзя технически, и его иногда вклеивают строкой — вот и лазейка. Вывод для тикета: «параметризация есть» не значит «параметризовано каждое место»; проверяют все точки, где снаружи приходит ввод, а не только форму входа.</p>
+<p><strong>Ошибка новичка.</strong> Как и с XSS — считать WAF лечением. WAF отобьёт типовые пробы (<code>UNION SELECT</code> по словарю), но его обходят кодировкой, комментариями внутри слов (<code>UN/**/ION</code>), регистром. Настоящее лечение — параметризованные запросы в коде; WAF лишь выигрывает время. Путают, потому что WAF — инструмент L1 и «на виду», а правка кода — у разработчиков.</p>
+<p><strong>В тикет.</strong></p>
+<pre><code>SQLi на shop.kranich.de/produkt?id= : кавычка даёт 500 — запрос склеен
+строкой, не параметризован. Пробы UNION SELECT к users. Рекомендация
+разработке: перевести запрос на параметры (?), урезать права учётки БД.</code></pre>
+
+<h2 id="s43">Вживую: запрос с SQL-инъекцией по полям</h2>
+<p>Строка журнала с пробой инъекции в параметре товара. Наведи или нажми на поле.</p>
+<figure class="fb"><div class="fb-cap">Access log: проба SQL-инъекции — учебный пример</div><div class="fb-line"><span class="fld" tabindex="0" role="button" data-k="IP клиента" data-d="с кого. Проверь, не с него ли шли ORDER BY 1,2,3 минутой раньше — это была разведка столбцов">198.51.100.23</span> <span class="fld" tabindex="0" role="button" data-k="Время" data-d="когда. Выстрой по времени: проба → разведка → извлечение, чтобы понять, докуда дошли">[22/Nov/2026:16:40:12 +0100]</span> <span class="fld" tabindex="0" role="button" data-k="Путь с инъекцией" data-d="GET /produkt, но id — не число: ' UNION SELECT username,password FROM users-- . Кавычка рвёт родной запрос, UNION приклеивает запрос к таблице паролей, -- отрезает хвост">&quot;GET /produkt?id=1' UNION SELECT username,password FROM users-- HTTP/1.1&quot;</span> <span class="fld" tabindex="0" role="button" data-k="Код ответа" data-d="200 — страница отдана. В связке с UNION это тревожнее 500: запрос мог отработать и вынести пароли на страницу">200</span> <span class="fld" tabindex="0" role="button" data-k="Размер ответа" data-d="9КБ против обычных ~2КБ на этой странице. Резкий рост размера = на страницу вылезли лишние данные (вероятно, дамп users)">9014</span> <span class="fld" tabindex="0" role="button" data-k="User-Agent" data-d="sqlmap — инструмент автоматической SQL-инъекции назвался прямо. Сильная гиря на весы атаки">&quot;sqlmap/1.8&quot;</span></div><div class="fb-out fb-hint">Наведи на поле или нажми на него.</div></figure>
+<p>Связка улик: SQL в параметре + ответ 200 + <strong>размер 9КБ вместо 2КБ</strong> + User-Agent sqlmap. Вердикт — не проба, а вероятно <em>удавшаяся</em> инъекция с выгрузкой учёток. Приоритет высокий: считать пароли из <code>users</code> скомпрометированными.</p>
+
+<h2 id="s44">Копнуть глубже</h2>
+<details><summary>«Слепая» инъекция: данные не видно, а они текут</summary>
+<p>Иногда сайт не показывает результат запроса на странице (ошибки спрятаны, вывода нет). Кажется — инъекция бессмысленна. Но есть <strong>слепая (blind) SQL-инъекция</strong>: атакующий задаёт базе вопросы с ответом «да/нет» и читает ответ по косвенным признакам. Два вида: <em>boolean-based</em> — при «да» страница чуть отличается от «нет»; <em>time-based</em> — атакующий вставляет «если условие верно, спи 5 секунд», и по задержке ответа читает по букве. В логах это видно как серия почти одинаковых запросов, у которых <strong>различается только время ответа</strong> (ровные паузы в 5 сек) или крошечно — размер. Для тебя примета: много похожих запросов к одному параметру с подозрительно ровными задержками.</p></details>
+<details><summary>Почему 200 бывает опаснее 500</summary>
+<p>Интуиция подсказывает: 500 (ошибка) — плохо, 200 (успех) — хорошо. При инъекции наоборот. 500 на кавычке значит «запрос сломался» — дыра есть, но эта конкретная проба данные не вынесла. А 200 на запросе с <code>UNION SELECT</code> значит «запрос <em>отработал</em>» — база могла вернуть чужие данные, и они ушли на страницу. Поэтому связку «SQL-ключевые слова в параметре + ответ 200 + рост размера ответа» ты читаешь как <em>вероятный успех</em>, а не как «всё обошлось».</p></details>
+
+<h2 id="s45">Мини-квиз</h2>
+<div class="qz" data-q="1"><div class="qz-q">В параметре <code>id</code> пришло <code>1' OR '1'='1</code>. Что это делает с запросом <code>WHERE id = ...</code>?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Дописывается условие, истинное всегда ('1'='1'), поэтому WHERE перестаёт фильтровать и может вернуть все строки или пустить без пароля."><span class="qz-mark" aria-hidden="true"></span><span>Делает условие всегда истинным — фильтр отключается</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет. Это не про ошибку синтаксиса — приём как раз рассчитан отработать, сделав условие истинным."><span class="qz-mark" aria-hidden="true"></span><span>Просто ломает запрос синтаксической ошибкой, и ничего больше</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет, UNION приклеивает чужой SELECT. А OR '1'='1 переписывает условие — это другой приём."><span class="qz-mark" aria-hidden="true"></span><span>Приклеивает к выдаче данные из совсем другой таблицы</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="2"><div class="qz-q">Сайт ответил <code>500</code> на ввод с одной кавычкой в числовом параметре. Вывод?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="Нет. 500 здесь значит, что ввод ДОШЁЛ до базы и сломал запрос — это подтверждение дыры, а не «отбито»."><span class="qz-mark" aria-hidden="true"></span><span>Атака отбита, можно закрывать алерт</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. Кавычка долетела до базы и сломала запрос — значит ввод не фильтруется и не параметризован. Дыра есть; следующий аккуратный запрос может вынести данные молча с кодом 200. Эскалируй."><span class="qz-mark" aria-hidden="true"></span><span>Дыра подтверждена: ввод доходит до базы — эскалировать</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет. 500 — ошибка сервера/базы, а не клиента. И «просто глюк» на подозрительном вводе списывать нельзя."><span class="qz-mark" aria-hidden="true"></span><span>Это случайный сбой сервера, к базе не относится</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="3"><div class="qz-q">Главное лечение SQL-инъекции в коде сайта — это…</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="WAF отбивает типовые пробы, но обходится кодировкой и комментариями — это подпорка, не корень."><span class="qz-mark" aria-hidden="true"></span><span>поставить перед сайтом WAF, чтобы он ловил пробы</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. Параметризованный запрос отправляет шаблон и значение отдельно: ввод кладётся в «дырку» только как данные и не может стать командой — что бы в нём ни было."><span class="qz-mark" aria-hidden="true"></span><span>параметризованные запросы (шаблон + значение отдельно)</span></button><button type="button" class="qz-o" data-ok="0" data-why="Вырезать кавычки — хрупкий чёрный список: обходится кодировкой и другими символами. Не корень проблемы."><span class="qz-mark" aria-hidden="true"></span><span>вырезать из пользовательского ввода все кавычки</span></button></div><div class="qz-why" role="status"></div></div>
+
+<h2 id="s46">Сделай сам</h2>
+<ol>
+<li>На бумаге «выполни» запрос <code>SELECT username, role FROM users WHERE role = 'admin';</code> по таблице users из раздела «Что такое база». Какую строку вернёт база? Сверься с таблицей users выше — должна выйти ровно одна строка.</li>
+<li>Возьми запрос <code>SELECT * FROM products WHERE id = 42</code> и подставь мысленно в параметр <code>id</code> значение <code>42 OR 1=1</code>. Прочитай получившийся <code>WHERE</code> вслух — почему он теперь вернёт все товары, а не один?</li>
+<li>Открой страницу любого магазина с параметром в адресе (<code>?id=</code>, <code>?product=</code>). Ничего не вводи в атаку — просто найди в URL параметр, который явно уходит в базу (его значение меняет, что показывает страница). Должен получиться вывод вроде: «значение <code>id</code> — это недоверенные данные; если его вклеят в запрос без параметризации — тут и будет дыра».</li>
+</ol>
+
+<h2 id="s47">Выжимка</h2>
+<ul>
+<li><strong>База — таблицы из строк и столбцов;</strong> сайт говорит с ней на SQL. Клик → SQL-запрос → ответ базы.</li>
+<li><strong>SELECT что FROM откуда WHERE условие</strong> — костяк любого чтения. Значение в <code>WHERE</code> часто берётся из параметра URL — тут и дыра.</li>
+<li><strong>SQL-инъекция:</strong> ввод вклеивается в запрос и становится командой. Приметы: <code>'</code>, <code>OR 1=1</code>, <code>UNION SELECT</code>, <code>--</code>, <code>information_schema</code>.</li>
+<li><strong>Успех читается по следу:</strong> 500 на кавычке = дыра есть; 200 + скачок размера ответа = данные, вероятно, вынесли; ровные задержки = слепая инъекция.</li>
+<li><strong>Лечение — параметризованные запросы;</strong> проверка ввода, урезанные права БД и WAF подпирают.</li>
+</ul>
+
+<h2 id="s48">Термины</h2>
+<details><summary>Термины EN / RU / DE</summary>
+<div class="tablewrap"><table><thead><tr><th>EN</th><th>RU</th><th>DE</th></tr></thead><tbody>
+<tr><td>database</td><td>база данных</td><td>Datenbank</td></tr>
+<tr><td>table / row / column</td><td>таблица / строка / столбец</td><td>Tabelle / Zeile / Spalte</td></tr>
+<tr><td>query</td><td>запрос</td><td>Abfrage</td></tr>
+<tr><td>SQL</td><td>язык запросов к базе</td><td>SQL</td></tr>
+<tr><td>SQL injection</td><td>SQL-инъекция</td><td>SQL-Injection</td></tr>
+<tr><td>prepared statement</td><td>параметризованный запрос</td><td>Prepared Statement</td></tr>
+<tr><td>UNION</td><td>склейка двух выборок</td><td>UNION</td></tr>
+<tr><td>blind SQLi</td><td>слепая инъекция</td><td>Blind SQL-Injection</td></tr>
+<tr><td>information_schema</td><td>каталог таблиц базы</td><td>information_schema</td></tr>
+<tr><td>least privilege</td><td>наименьшие права</td><td>geringste Rechte</td></tr>
+</tbody></table></div>
+</details>
+
+<h2 id="s49">Связи</h2>
+<ul>
+<li>До этого: глава 1 (параметры URL — откуда ввод попадает в запрос) и глава 2 (XSS — инъекция, но в браузер; здесь — в базу).</li>
+<li>Рядом: <strong>John the Ripper</strong> (Cyber Security 101) — что делают с хэшами паролей, если их вынесли инъекцией.</li>
+<li>Дальше: глава 4 (Burp) — инструмент, которым и щупают параметры на SQLi, и как это выглядит со стороны защитника.</li>
+</ul>
+<h1 id="s50" class="anchored">Глава 4. Burp Suite: The Basics — чем щупают сайты (Burp Suite: The Basics)</h1>
+<div class="ch-level" data-l="skim"><span class="ic">👀</span>Бегло <span class="why">— сам ты на смене Burp не запускаешь, но это главный инструмент тех, кто тестирует (и ломает) сайты, и его следы в логах надо узнавать</span></div>
+
+<h2 id="s51">Ты на смене</h2>
+<p>За три прошлые главы ты видел в логах пробы XSS и SQL-инъекции. Возникает вопрос: как атакующий вообще подставляет кавычки и <code>&lt;script&gt;</code> в запрос, если на сайте обычная форма с кнопками? Ответ — он не пользуется формой. Он пропускает свой трафик через <strong>перехватывающий прокси</strong>, останавливает каждый запрос на полпути и правит в нём что угодно перед отправкой на сервер. Самый популярный такой инструмент — <strong>Burp Suite</strong>.</p>
+<p>Тебе на смене Burp запускать не придётся — это инструмент «красной» команды (нападающие и тестировщики). Но ты должен понимать <em>две вещи</em>: что этот инструмент умеет (чтобы понимать, как собраны пробы из прошлых глав) и как его работа выглядит <strong>в твоих логах</strong> (чтобы отличить ручной тест-перебор от обычного пользователя). Эта глава — про узнавание, не про запуск.</p>
+
+<h2 id="s52">Аналогия: почта, которую вскрывают на полпути</h2>
+<p>Обычно ты пишешь письмо и бросаешь в ящик — оно уходит как есть. Перехватывающий прокси — это свой человек на почте, который <strong>перехватывает каждое твоё письмо до отправки</strong>, вскрывает конверт, даёт тебе дописать или переписать внутри что угодно, запечатывает обратно и только тогда отправляет. Получатель (сервер) не знает, что письмо правили: для него оно пришло обычным путём.</p>
+<p>Форма на сайте со всеми её проверками — это правила «как положено писать письмо». Прокси позволяет эти правила обойти: ты пишешь письмо руками, минуя форму, и вкладываешь внутрь что хочешь — кавычку, скрипт, чужой номер заказа. Вот почему фронтенд-проверки (из главы 1) ничего не защищают: атакующий отправляет письмо не через форму, а через «своего человека на почте».</p>
+
+<h2 id="s53">Сначала слова, без которых дальше не понять</h2>
+<p><strong>Прокси</strong> (proxy — посредник). Программа-посредник, через которую идёт трафик: вместо того чтобы браузер слал запрос прямо серверу, он шлёт его прокси, а тот — дальше. Прокси видит всё, что проходит, и может это менять.</p>
+<p><strong>Перехватывающий прокси</strong> (intercepting proxy). Прокси, который умеет <em>останавливать</em> каждый запрос на полпути и показывать его человеку, чтобы тот прочитал или переписал перед отправкой. Burp — именно такой.</p>
+<p><strong>Burp Suite</strong>. Набор инструментов для тестирования безопасности сайтов от фирмы PortSwigger. Есть бесплатная Community-версия (ей и учат) и платная Professional. «Suite» (набор) — потому что внутри несколько инструментов под одной крышей, их разберём.</p>
+<p><strong>Фаззинг</strong> (fuzzing). Автоматический перебор: инструмент подставляет в одно поле сотни разных значений подряд и смотрит, где сайт отреагирует необычно. Так ищут дыры массово.</p>
+<p>Остальные слова — на месте.</p>
+
+<h2 id="s54">Что такое перехватывающий прокси и зачем он нужен</h2>
+<p><strong>На смене.</strong> Поймёшь, как прокси встаёт между браузером и сервером, — поймёшь, почему в логах сервера запрос от Burp выглядит как обычный запрос, и по каким <em>другим</em> приметам ты его всё-таки вычислишь.</p>
+<p><strong>Зачем это существует.</strong> Тестировщику (и атакующему) нужно слать серверу не то, что разрешает форма, а что угодно — чтобы проверить, как сервер поведёт себя на «неправильном» вводе. Браузер сам по себе этого не даёт: он покорно отправляет то, что ты ввёл в поля. Нужен инструмент, который встанет <em>между</em> браузером и сервером и даст править запрос на лету. Это и есть перехватывающий прокси.</p>
+<p><strong>Как устроено.</strong> Обычно браузер говорит с сервером напрямую. С Burp цепочка удлиняется на одно звено: <strong>браузер → Burp → сервер → Burp → браузер</strong>. Браузер настроен слать весь трафик не в интернет, а на Burp (он слушает у себя на машине, по умолчанию на адресе <code>127.0.0.1</code> порт <code>8080</code>). <code>127.0.0.1</code> — это специальный адрес «я сам», своя же машина (его ещё зовут localhost); то есть Burp стоит прямо на компьютере тестировщика, не где-то в сети. Burp каждый запрос показывает человеку, даёт изменить и пересылает дальше. Ответ сервера возвращается тем же путём. Для сервера это выглядит как обычный запрос от обычного клиента — вот почему по одному access log прокси не всегда видно.</p>
+<figure class="thv" data-v="route" id="burp-route"><figcaption><b>Где стоит перехватывающий прокси</b><span>Учебный пример: запрос идёт через Burp, там его можно изменить</span></figcaption>
+<script type="application/json">{"nodes":[{"id":"br","label":"Браузер","icon":"browser"},{"id":"bp","label":"Burp (127.0.0.1:8080)","icon":"bug","kind":"warn"},{"id":"sv","label":"Сервер сайта","icon":"server"}],"steps":[{"from":"br","to":"bp","text":"запрос остановлен на полпути"},{"from":"bp","to":"sv","text":"человек изменил запрос и отпустил"},{"from":"sv","to":"bp","text":"ответ сервера"},{"from":"bp","to":"br","text":"ответ вернулся в браузер"}]}</script></figure>
+<p><strong>Важное про HTTPS.</strong> Трафик по HTTPS зашифрован — как прокси его читает? Тут нужен <strong>сертификат</strong> — электронное удостоверение, которым сайт доказывает браузеру «я правда тот, за кого себя выдаю», и на основе которого браузер с ним шифруется. Браузер верит только сертификатам из своего списка доверенных. Burp подставляет свой собственный сертификат и заранее добавляет его в этот список как доверенный. Тогда браузер шифрует трафик «на Burp», Burp его расшифровывает, показывает, заново шифрует и шлёт серверу. Это легальная подмена, которую пользователь сам разрешил у себя на машине. На смене мелькнёт термин <strong>MITM</strong> (man-in-the-middle, «человек посередине») — тот же принцип «встать между», но когда это делают <em>без</em> согласия жертвы, это уже атака.</p>
+<p><strong>Норма и подозрительное.</strong> Сам по себе Burp на машине тестировщика — норма (так и работают). Подозрительно для тебя — <em>следы его работы</em> против вашего боевого сайта с внешнего адреса: ровные серии почти одинаковых запросов, отличающихся одним параметром (это фаззинг, разберём ниже).</p>
+<p><strong>Ошибка новичка.</strong> Думать, что раз запрос от Burp в логе «как обычный», то поймать его нельзя. Отдельный запрос — да, не отличишь. Но инструмент выдаёт <em>поведение</em>: скорость, однообразие, перебор значений в одном поле. Ловят по шаблону трафика, а не по одной строке.</p>
+<h2 id="s55">Инструменты внутри Burp — понятийно</h2>
+<p><strong>На смене.</strong> Знать названия вкладок Burp надо не чтобы работать в нём, а чтобы понимать язык отчётов <strong>пентеста</strong> (penetration test — заказанная проверка, когда специалисты легально пытаются взломать сайт, чтобы найти дыры раньше настоящих атакующих) и красной команды: когда в отчёте пишут «нашли через Repeater» или «фаззили Intruder'ом», ты должен понимать, что происходило и какой след это оставило.</p>
+<p><strong>Зачем это существует.</strong> Тестирование сайта распадается на разные задачи: посмотреть весь трафик, переслать один запрос много раз с правками, перебрать значения автоматически, раскодировать строку. Под каждую — свой инструмент, все под одной крышей Burp.</p>
+<p><strong>Как устроено — основные вкладки:</strong></p>
+<div class="kc"><div class="kc-cap">Инструменты Burp Suite — нажми вкладку</div>
+<div class="kc-tabs">
+<button type="button" class="kc-t on" data-i="1"><span class="kc-n">1</span>Proxy</button>
+<button type="button" class="kc-t" data-i="2"><span class="kc-n">2</span>Target</button>
+<button type="button" class="kc-t" data-i="3"><span class="kc-n">3</span>Repeater</button>
+<button type="button" class="kc-t" data-i="4"><span class="kc-n">4</span>Intruder</button>
+<button type="button" class="kc-t" data-i="5"><span class="kc-n">5</span>Decoder</button>
+</div>
+<div class="kc-p on" data-i="1"><div class="kc-what"><strong>Proxy</strong> — сердце Burp. Та самая перехватывалка: показывает каждый запрос, даёт остановить и изменить его перед отправкой.</div><div class="kc-row"><b>Зачем</b><span>увидеть и править весь трафик между браузером и сервером</span></div><div class="kc-row"><b>След у тебя</b><span>отдельный запрос — как обычный; но именно отсюда выходят запросы с «невозможными» для формы значениями (кавычки, &lt;script&gt;)</span></div></div>
+<div class="kc-p" data-i="2"><div class="kc-what"><strong>Target</strong> — карта сайта. Пока тестировщик ходит по сайту, Burp сам строит дерево всех страниц и параметров — «что вообще есть у этого сайта».</div><div class="kc-row"><b>Зачем</b><span>увидеть всю структуру сайта и наметить, что щупать</span></div><div class="kc-row"><b>След у тебя</b><span>обход многих страниц подряд с одного адреса за короткое время (составление карты сайта)</span></div></div>
+<div class="kc-p" data-i="3"><div class="kc-what"><strong>Repeater</strong> — «переслать ещё раз с правкой». Берёт один запрос и позволяет слать его снова и снова, каждый раз меняя вручную — идеально, чтобы вручную подбирать инъекцию.</div><div class="kc-row"><b>Зачем</b><span>вручную довести один запрос до рабочей атаки, пробуя варианты</span></div><div class="kc-row"><b>След у тебя</b><span>один и тот же путь дёргается много раз с мелкими отличиями в одном параметре</span></div></div>
+<div class="kc-p" data-i="4"><div class="kc-what"><strong>Intruder</strong> — автоматический перебор (фаззинг). Подставляет в выбранное поле целый список значений подряд — сотни и тысячи запросов. Так перебирают пароли или ищут рабочую инъекцию массой.</div><div class="kc-row"><b>Зачем</b><span>автоматически перебрать много значений в одном месте</span></div><div class="kc-row"><b>След у тебя</b><span>всплеск — десятки/сотни запросов в минуту к одному пути, различается только одно значение. Самый заметный в логах</span></div></div>
+<div class="kc-p" data-i="5"><div class="kc-what"><strong>Decoder</strong> — раскодировщик. Переводит строки между видами: base64, URL-кодировка, hex. Тем же занимается CyberChef из главы 2.</div><div class="kc-row"><b>Зачем</b><span>раскодировать/закодировать значение, чтобы прочитать или обойти фильтр</span></div><div class="kc-row"><b>След у тебя</b><span>прямого следа нет (работа внутри инструмента); но объясняет, откуда в запросах берутся %3C и base64</span></div></div>
+</div>
+<p><strong>Как включается перехват (на случай вопроса комнаты).</strong> В Proxy есть кнопка <strong>Intercept</strong> (перехват): когда она в положении «on», Burp останавливает каждый запрос и ждёт — человек жмёт <strong>Forward</strong> (пропустить дальше) или <strong>Drop</strong> (выбросить). В положении «off» запросы идут сквозь Burp не останавливаясь, но всё равно записываются в историю. Чтобы браузер вообще пошёл через Burp, его один раз настраивают на прокси <code>127.0.0.1:8080</code> (часто через связанный браузер, который идёт в комплекте). Кроме пяти разобранных вкладок, в Burp есть и другие — <strong>Dashboard</strong> (общая сводка), <strong>Sequencer</strong> (проверяет, насколько случайны токены сессии), <strong>Comparer</strong> (сравнивает два ответа), <strong>Extensions</strong> (дополнения) — на уровне L1 их достаточно знать по названию.</p>
+<p><strong>Как это связано с прошлыми главами.</strong> Теперь видно всю цепочку. Кавычка для SQL-инъекции (глава 3) и <code>&lt;script&gt;</code> для XSS (глава 2) не набираются в форме — их вписывают в <strong>Repeater</strong> вручную или перебирают <strong>Intruder</strong>'ом, а закодированный вид (<code>%3C</code>, base64) готовят в <strong>Decoder</strong>. То, что ты в логах читал как «пробу», с той стороны было работой в этих вкладках.</p>
+<p><strong>Норма и подозрительное.</strong> Названия вкладок в твоих логах, разумеется, не появляются. Но их почерк — да: Target оставляет быстрый обход всего сайта, Repeater — повторы одного пути с правками, Intruder — лавину запросов в одно поле. Это и есть то, что ты называешь «похоже на инструмент, а не на человека».</p>
+<p><strong>Ошибка новичка.</strong> Учить вкладки Burp как кнопки, которые надо нажимать. Тебе как L1 важны не кнопки, а <em>соответствие</em>: какой инструмент какой след в логах даёт. Запуск Burp — работа не твоей роли; чтение его следов — твоя.</p>
+
+<h2 id="s56">Как ручной перебор виден защитнику</h2>
+<p><strong>На смене.</strong> Это главный практический вывод главы: отличить работу прокси-инструмента (тест или атака) от живого пользователя по строкам журнала. Именно за этим тебе вообще знать про Burp.</p>
+<p><strong>Зачем это существует (как сигнал).</strong> Человек в браузере кликает медленно, по-разному, ходит по страницам осмысленно. Инструмент вроде Intruder бьёт в одну точку, быстро и однообразно. Эта разница в <em>поведении</em> и есть твоя зацепка — отдельные-то запросы выглядят законно.</p>
+<p><strong>Как устроено — приметы автоматического перебора в access log:</strong></p>
+<div class="tablewrap"><table><thead><tr><th>Примета</th><th>Человек</th><th>Инструмент (Intruder/Repeater)</th></tr></thead><tbody>
+<tr><td>Темп</td><td>несколько запросов в минуту, с паузами</td><td>десятки–сотни в минуту, ровным потоком</td></tr>
+<tr><td>Путь</td><td>разные страницы по смыслу</td><td>один и тот же путь снова и снова</td></tr>
+<tr><td>Что меняется</td><td>всё понемногу (ходит по сайту)</td><td>различается ровно один параметр, остальное слово в слово</td></tr>
+<tr><td>Значения</td><td>осмысленные (слова, числа)</td><td>перебор по словарю: <code>admin</code>, <code>test</code>, <code>1</code>, <code>2</code>… или пробы с кавычками</td></tr>
+<tr><td>User-Agent</td><td>реальный браузер</td><td>часто дефолтный: пусто, <code>python-requests</code>, иногда <code>sqlmap</code></td></tr>
+</tbody></table></div>
+<p><strong>Разбор: перебор пароля.</strong> Важная оговорка: сами пароли (<code>pass=…</code>) в <em>access log</em> не попадают — там только <code>POST /login</code> и код (помнишь из главы 1: тело POST не пишется). Подставленные значения видны уже в <strong>журнале аутентификации</strong> (его ведёт сама программа входа) или на прокси. Вот такой учебный фрагмент журнала входа:</p>
+<pre><code>45.138.10.5 [21:18:01] "POST /login" 401   (user=admin pass=123456)
+45.138.10.5 [21:18:01] "POST /login" 401   (user=admin pass=password)
+45.138.10.5 [21:18:02] "POST /login" 401   (user=admin pass=qwerty)
+45.138.10.5 [21:18:02] "POST /login" 401   ... ещё 300 строк ...
+45.138.10.5 [21:19:40] "POST /login" 302   ← вот эта</code></pre>
+<p>Читается мгновенно: один путь <code>/login</code>, один метод, стена <code>401</code> (не вошёл), темп — несколько в секунду. Это Intruder перебирает пароли к учётке admin (brute force, в MITRE T1110). И снова — <strong>важна не стена 401, а исключение</strong>: строка с <code>302</code> в конце значит «пароль наконец подошёл, вход удался». Тот же навык из главы 1: ищи в потоке отказов тот самый успех. (По одному access log ты увидел бы ту же стену <code>POST /login</code> с кодами 401 — без паролей, но перебор виден и так.)</p>
+<p><strong>Норма и подозрительное.</strong> Норма — редкие <code>POST /login</code> от пользователя, иногда с опечаткой пароля (один-два 401, потом 200/302). Подозрительно — поток <code>POST /login</code> с одного адреса, стена 401, перебор значений; и особенно одиночный 302/200 после этой стены.</p>
+<p><strong>Если не получилось.</strong> Поток идёт не с одного IP, а с сотни разных, по одному запросу с каждого — это распределённый перебор, нарочно размазанный, чтобы не ловиться «по адресу». Тогда группируй не по IP, а по цели: один путь <code>/login</code>, одинаковый User-Agent, общий темп. «С каждого адреса мало» ≠ «атаки нет».</p>
+<p><strong>Ошибка новичка.</strong> Ждать, что инструмент представится (sqlmap в User-Agent). Ленивые — да, представляются. Аккуратные ставят User-Agent настоящего браузера, и тогда единственная зацепка — поведение: темп, однообразие, перебор. Не найдя имени инструмента, не закрывай алерт — смотри на шаблон.</p>
+<p><strong>В тикет.</strong></p>
+<pre><code>С 45.138.10.5: 300+ POST /login за 100 сек, стена 401, затем один 302.
+Похоже на удавшийся перебор пароля к учётке admin (brute force).
+Учётку admin заблокировать, вход с этого IP проверить, пароль сменить.</code></pre>
+<h2 id="s57">Копнуть глубже</h2>
+<details><summary>Почему прокси нужен свой сертификат для HTTPS</summary>
+<p>HTTPS защищает именно от «человека посередине»: трафик шифруется так, что посредник не прочитает. Чтобы Burp мог читать и править HTTPS-трафик <em>с разрешения пользователя</em>, в браузер заранее ставят сертификат Burp как доверенный. После этого браузер добровольно шифрует данные «на Burp», тот их видит в открытом виде и перешифровывает дальше серверу. Отсюда вывод для смены: если на машине сотрудника вдруг обнаружился чужой доверенный сертификат, которого там быть не должно, — это повод насторожиться: возможно, кто-то поставил перехват трафика без ведома пользователя (уже не тест, а атака MITM).</p></details>
+<details><summary>Чем Burp отличается от sqlmap, Nikto, gobuster</summary>
+<p>Burp — универсальная «ручная» мастерская: человек сам ведёт тест. Рядом есть узкие автоматы, чьи имена мелькают в логах и отчётах: <strong>sqlmap</strong> — только SQL-инъекции, полностью автоматически; <strong>Nikto</strong> — сканер известных уязвимостей веб-сервера; <strong>gobuster/dirb</strong> — перебор каталогов и файлов (та самая стена 404 из главы 1). Для тебя разница практическая: Burp-трафик тоньше (его ведёт человек, он осмысленнее), а узкие автоматы шумят предсказуемо и часто палятся дефолтным User-Agent. Увидел в User-Agent имя одного из них — считай, инструмент назвался сам.</p></details>
+
+<h2 id="s58">Мини-квиз</h2>
+<div class="qz" data-q="1"><div class="qz-q">Зачем атакующему перехватывающий прокси, если на сайте есть обычная форма?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Прокси даёт слать серверу что угодно в обход формы и её проверок — вписать кавычку, скрипт, чужое значение, которых форма бы не пропустила."><span class="qz-mark" aria-hidden="true"></span><span>Чтобы слать серверу что угодно в обход формы и её проверок</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет. Прокси не ускоряет сайт — он добавляет звено в цепочку. Его смысл в контроле над запросом, а не в скорости."><span class="qz-mark" aria-hidden="true"></span><span>Чтобы страницы сайта открывались заметно быстрее</span></button><button type="button" class="qz-o" data-ok="0" data-why="Наоборот: прокси позволяет обойти фронтенд-проверки, а не усилить их. Защищает сервер, а не прокси."><span class="qz-mark" aria-hidden="true"></span><span>Чтобы включить на форме дополнительные проверки</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="2"><div class="qz-q">В логе: 300 запросов <code>POST /login</code> с одного IP за полторы минуты, почти все 401. Какой инструмент Burp это напоминает и как называется приём?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="Decoder только кодирует/раскодирует строки, он не шлёт массу запросов — следа-лавины не даёт."><span class="qz-mark" aria-hidden="true"></span><span>Decoder; это инструмент для раскодирования строк</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. Лавина однотипных запросов в одно поле — почерк Intruder (автоперебор/фаззинг). Перебор паролей — это brute force."><span class="qz-mark" aria-hidden="true"></span><span>Intruder; это перебор паролей (brute force)</span></button><button type="button" class="qz-o" data-ok="0" data-why="Target строит карту сайта (обход разных страниц), а не бьёт 300 раз в один /login."><span class="qz-mark" aria-hidden="true"></span><span>Target; это построение карты сайта</span></button></div><div class="qz-why" role="status"></div></div>
+<div class="qz" data-q="3"><div class="qz-q">Отдельный запрос из Burp в access log выглядит как обычный. Значит ли это, что прокси-перебор поймать нельзя?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="Нет. То, что одна строка выглядит законно, не значит, что весь поток не ловится."><span class="qz-mark" aria-hidden="true"></span><span>Да, по журналам сервера такое поведение не поймать</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. Отдельный запрос — законный, но инструмент выдаёт поведение: темп, однообразие, перебор одного параметра. Ловят по шаблону трафика."><span class="qz-mark" aria-hidden="true"></span><span>Нет: ловят по поведению — темпу, однообразию, перебору</span></button><button type="button" class="qz-o" data-ok="0" data-why="User-Agent — слабая зацепка: аккуратный атакующий ставит браузерный. Главное — поведение, а не самопредставление."><span class="qz-mark" aria-hidden="true"></span><span>Поймать можно разве что по строке User-Agent</span></button></div><div class="qz-why" role="status"></div></div>
+
+<h2 id="s59">Сделай сам</h2>
+<ol>
+<li>Открой F12 → Network, обнови страницу. Представь, что это упрощённый Proxy: ты видишь каждый запрос. Найди один POST-запрос и посмотри, какие поля ушли в теле — именно их Burp дал бы переписать.</li>
+<li>По таблице «человек против инструмента» разбери фрагмент лога перебора пароля из раздела «Как ручной перебор виден защитнику» выше (там есть время, IP и коды). Назови три приметы автоматики: темп (сколько в секунду), один ли путь, что в строках меняется. Должно выйти: несколько запросов в секунду, один <code>/login</code>, меняется только пароль — значит, инструмент.</li>
+<li>Мысленно сопоставь: кавычка в SQL-инъекции (глава 3) — через какую вкладку Burp её удобнее подбирать вручную, а через какую перебирать массой?</li>
+</ol>
+
+<h2 id="s60">Выжимка</h2>
+<ul>
+<li><strong>Перехватывающий прокси</strong> встаёт между браузером и сервером (браузер → Burp → сервер) и даёт править любой запрос — так обходят форму и её проверки.</li>
+<li><strong>HTTPS</strong> Burp читает через свой доверенный сертификат; тот же принцип без согласия жертвы — атака MITM.</li>
+<li><strong>Вкладки:</strong> Proxy (перехват), Target (карта сайта), Repeater (повтор с правкой — вручную), Intruder (перебор — массой), Decoder (кодировки).</li>
+<li><strong>Отдельный запрос от Burp не отличишь;</strong> ловят по <em>поведению</em>: темп, один путь, различается один параметр, дефолтный User-Agent.</li>
+<li><strong>Перебор пароля</strong> = стена 401 на <code>/login</code>; ищи в ней исключение — 200/302 (вход удался).</li>
+</ul>
+
+<h2 id="s61">Термины</h2>
+<details><summary>Термины EN / RU / DE</summary>
+<div class="tablewrap"><table><thead><tr><th>EN</th><th>RU</th><th>DE</th></tr></thead><tbody>
+<tr><td>proxy</td><td>прокси, посредник</td><td>Proxy</td></tr>
+<tr><td>intercepting proxy</td><td>перехватывающий прокси</td><td>abfangender Proxy</td></tr>
+<tr><td>Burp Suite</td><td>Burp Suite (набор инструментов)</td><td>Burp Suite</td></tr>
+<tr><td>Proxy / Repeater / Intruder</td><td>перехват / повтор / перебор</td><td>Proxy / Repeater / Intruder</td></tr>
+<tr><td>fuzzing</td><td>фаззинг, автоперебор</td><td>Fuzzing</td></tr>
+<tr><td>brute force</td><td>перебор (паролей)</td><td>Brute-Force</td></tr>
+<tr><td>man-in-the-middle (MITM)</td><td>человек посередине</td><td>Man-in-the-Middle</td></tr>
+<tr><td>certificate</td><td>сертификат</td><td>Zertifikat</td></tr>
+</tbody></table></div>
+</details>
+
+<h2 id="s62">Связи</h2>
+<ul>
+<li>До этого: главы 2 и 3 — пробы XSS и SQLi, которые как раз собирают в Burp.</li>
+<li>Рядом: <strong>Nmap</strong> и <strong>Wireshark</strong> (Cyber Security 101) — другие инструменты, чьи следы ты тоже учишься узнавать; Wireshark так же смотрит трафик, но не правит его.</li>
+<li>Дальше по пути SOC L1: разбор веб-атак в SIEM, правила детекта на эти самые приметы (стена 404, всплеск 401, SQL-слова в параметрах).</li>
+</ul>
+<h1 id="s63" class="anchored">Самопроверка</h1>
+<p>Десять вопросов: восемь по этому учебнику и два — про прошлые модули. Ответ с объяснением — под каждым.</p>
+
+<div class="qz" data-q="1"><div class="qz-q">В access log строка: <code>GET /produkt?id=1' OR '1'='1 ... 200 9014</code>, раньше этот путь отдавал ~2000 байт. Твой вердикт?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. SQL в параметре + код 200 (запрос отработал) + скачок размера с 2КБ до 9КБ = данные, вероятно, вынесены. Высокий приоритет."><span class="qz-mark" aria-hidden="true"></span><span>Вероятно удавшаяся SQL-инъекция — на страницу вылезли лишние данные</span></button><button type="button" class="qz-o" data-ok="0" data-why="Нет. 200 здесь не «всё хорошо»: с UNION-подобным вводом это значит, что запрос отработал. А рост размера — прямой признак утечки."><span class="qz-mark" aria-hidden="true"></span><span>Всё нормально: код 200 значит успех, данные в порядке</span></button><button type="button" class="qz-o" data-ok="0" data-why="XSS целит в браузер жертвы, а здесь ввод — SQL (OR 1=1), он целит в базу. Это инъекция в БД, не в браузер."><span class="qz-mark" aria-hidden="true"></span><span>Это XSS — внедрение чужого скрипта прямо в страницу</span></button></div><div class="qz-why" role="status"></div></div>
+
+<div class="qz" data-q="2"><div class="qz-q">Браузер сотрудника, открыв страницу отзывов, сам ушёл на <code>evil.example</code> с длинной строкой. Что это и кого скорее всего задело?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="SQL-инъекция бьёт в базу на сервере и не заставляет браузер жертвы ходить на чужой домен. Здесь действует клиент — это про XSS."><span class="qz-mark" aria-hidden="true"></span><span>SQL-инъекция; пострадала база данных на сервере</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. Чужой JS на странице отзывов (stored XSS) исполнился в браузере и отправил куку на чужой домен. Раз отзыв видят все — задеты все читатели страницы."><span class="qz-mark" aria-hidden="true"></span><span>Хранимый XSS; задело всех, кто открывал страницу отзывов</span></button><button type="button" class="qz-o" data-ok="0" data-why="Reflected бьёт по одной жертве, которой подсунули ссылку. Здесь код сидел на общей странице отзывов — это хранимый вид."><span class="qz-mark" aria-hidden="true"></span><span>Отражённый XSS; задело одного сотрудника</span></button></div><div class="qz-why" role="status"></div></div>
+
+<div class="qz" data-q="3"><div class="qz-q">Почему фронтенд-проверка формы (на твоём React) не защищает сервер?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Фронтенд исполняется в браузере — у пользователя, который хозяин клиента. Он выкинет проверку (F12) или соберёт запрос в обход формы. Защита бывает только на сервере."><span class="qz-mark" aria-hidden="true"></span><span>Фронтенд у пользователя; он его обходит и шлёт серверу что угодно</span></button><button type="button" class="qz-o" data-ok="0" data-why="Скорость ни при чём. Дело в том, ГДЕ исполняется проверка — в недоверенном клиенте."><span class="qz-mark" aria-hidden="true"></span><span>Потому что JavaScript на фронтенде работает слишком медленно</span></button><button type="button" class="qz-o" data-ok="0" data-why="Наоборот — фронтенд-проверки полезны для удобства пользователя, но как защита бесполезны, потому что их обходят."><span class="qz-mark" aria-hidden="true"></span><span>Проверки на фронтенде вообще бессмысленны и вредны</span></button></div><div class="qz-why" role="status"></div></div>
+
+<div class="qz" data-q="4"><div class="qz-q">Стена ответов 401 на <code>POST /login</code> с одного IP, а в конце один 302. На что смотришь?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="Сами 401 — это промахи перебора. Важнее то единственное, что в этом потоке сработало."><span class="qz-mark" aria-hidden="true"></span><span>На количество 401 — чем больше, тем опаснее</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. 302 после стены 401 = пароль подошёл, вход удался. Это исключение в потоке — именно его ищут. Учётку блокировать, вход проверять."><span class="qz-mark" aria-hidden="true"></span><span>На финальный 302 — перебор пароля, похоже, удался</span></button><button type="button" class="qz-o" data-ok="0" data-why="302 — не ошибка клиента, это перенаправление (успешный вход). И списывать его нельзя — это главная улика."><span class="qz-mark" aria-hidden="true"></span><span>302 — это ошибка, её можно игнорировать</span></button></div><div class="qz-why" role="status"></div></div>
+
+<div class="qz" data-q="5"><div class="qz-q">В JS-коде на странице: <code>eval(String.fromCharCode(118,97,114,...))</code>. Что это и как поступить?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. fromCharCode собирает строку-код из номеров символов, eval её исполнит — это обфускация. Собрать строку из кодов (CyberChef), прочитать, но НЕ запускать."><span class="qz-mark" aria-hidden="true"></span><span>Обфусцированный код; раскодировать номера в текст и прочитать, не запуская</span></button><button type="button" class="qz-o" data-ok="0" data-why="Числа тут — не «данные пользователя», а коды символов, из которых собран спрятанный код. Это обфускация, а не безобидный массив."><span class="qz-mark" aria-hidden="true"></span><span>Это просто массив обычных чисел, ничего подозрительного</span></button><button type="button" class="qz-o" data-ok="0" data-why="Запускать неизвестный обфусцированный код нельзя — он на то и спрятан, чтобы сработать при исполнении."><span class="qz-mark" aria-hidden="true"></span><span>Запустить прямо в консоли браузера и посмотреть результат</span></button></div><div class="qz-why" role="status"></div></div>
+
+<div class="qz" data-q="6"><div class="qz-q">Что из этого — <strong>главное</strong> лечение и SQL-инъекции, и XSS (каждого своим способом)?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="WAF подпирает оба, но обходится кодировкой. Это не корневое лечение ни для одного."><span class="qz-mark" aria-hidden="true"></span><span>Поставить WAF — пусть сам закрывает и SQL-инъекцию, и XSS</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. Правильно обращаться с недоверенным вводом в коде: для SQL — параметризованные запросы (ввод только как данные), для XSS — экранирование вывода (текст остаётся текстом). Корень у обеих один: не дать вводу стать командой/кодом."><span class="qz-mark" aria-hidden="true"></span><span>Правильно обрабатывать ввод в коде: параметры для SQL, экранирование для XSS</span></button><button type="button" class="qz-o" data-ok="0" data-why="Прятать версию сервера — мелкая мера, к инъекциям отношения почти не имеет."><span class="qz-mark" aria-hidden="true"></span><span>Скрыть версию сервера в заголовке Server, чтобы не подбирали</span></button></div><div class="qz-why" role="status"></div></div>
+
+<div class="qz" data-q="7"><div class="qz-q">Из URL <code>https://shop.de/suche?q=lampe#top</code> — что НЕ попадёт в журнал веб-сервера?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="Путь /suche серверу нужен и в лог попадёт."><span class="qz-mark" aria-hidden="true"></span><span>Путь /suche</span></button><button type="button" class="qz-o" data-ok="0" data-why="Параметр q=lampe уходит на сервер (это данные для страницы) и в лог попадает — там и прячут атаки."><span class="qz-mark" aria-hidden="true"></span><span>Параметр q=lampe</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. Фрагмент #top браузер отрезает и на сервер не шлёт — в access log его нет. Поэтому DOM-based XSS, живущий во фрагменте, в логах сервера не виден."><span class="qz-mark" aria-hidden="true"></span><span>Фрагмент #top</span></button></div><div class="qz-why" role="status"></div></div>
+
+<div class="qz" data-q="8"><div class="qz-q">Из прошлого модуля: процесс <code>w3wp.exe</code> (веб-сервер IIS) породил <code>powershell.exe</code>, который полез в интернет. Связь с этим учебником?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Веб-серверу незачем запускать оболочку — это признак веб-шелла: через веб-дыру (например, загрузку файла или инъекцию) атакующий выполняет команды на сервере. Веб-атака из этого модуля — вход, а это её продолжение на хосте."><span class="qz-mark" aria-hidden="true"></span><span>Признак веб-шелла — веб-дыра дала выполнение команд на сервере</span></button><button type="button" class="qz-o" data-ok="0" data-why="Норма для оболочки — родитель explorer.exe (человек открыл сам). Веб-сервер в роли родителя оболочки — это не норма."><span class="qz-mark" aria-hidden="true"></span><span>Норма: веб-сервер и должен иногда сам запускать PowerShell</span></button><button type="button" class="qz-o" data-ok="0" data-why="Связь прямая: веб-атаки этого модуля — частый путь к такому веб-шеллу. Это не «разные миры»."><span class="qz-mark" aria-hidden="true"></span><span>Никак не связано: там события хоста, а тут веб-атаки</span></button></div><div class="qz-why" role="status"></div></div>
+
+<div class="qz" data-q="9"><div class="qz-q">Burp стоит между браузером и сервером. Почему отдельный его запрос в логе не отличить от обычного?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="1" data-why="Да. Для сервера запрос приходит обычным путём от обычного клиента — Burp лишь посредник. Отличие не в одной строке, а в поведении: темп, однообразие, перебор."><span class="qz-mark" aria-hidden="true"></span><span>Для сервера это обычный запрос от клиента; ловят по поведению, не по строке</span></button><button type="button" class="qz-o" data-ok="0" data-why="Burp не добавляет особой метки в запрос; он может как раз подделать всё под обычный браузер."><span class="qz-mark" aria-hidden="true"></span><span>Burp всегда ставит свою метку, просто её трудно найти</span></button><button type="button" class="qz-o" data-ok="0" data-why="HTTPS Burp читает через свой сертификат; шифрование не мешает ему и не делает запрос «особым» для сервера."><span class="qz-mark" aria-hidden="true"></span><span>Потому что HTTPS прячет запрос целиком даже от сервера</span></button></div><div class="qz-why" role="status"></div></div>
+
+<div class="qz" data-q="10"><div class="qz-q">Из прошлого модуля: в параметре <code>data=YWRtaW4=</code>. Прежде чем звать это «зашифрованным», что сделаешь?</div><div class="qz-opts"><button type="button" class="qz-o" data-ok="0" data-why="Шифр не разобрать без ключа — но здесь хвост = и буквенный алфавит выдают base64, а не шифр. Сначала проверь гипотезу раскодированием."><span class="qz-mark" aria-hidden="true"></span><span>Сразу запишу как шифр — без ключа не прочитать</span></button><button type="button" class="qz-o" data-ok="1" data-why="Да. = на конце и алфавит букв/цифр — примета base64. Раскодируешь (CyberChef/Decoder) → admin. Это кодирование, обратимое, не защита."><span class="qz-mark" aria-hidden="true"></span><span>Раскодирую как base64 — скорее всего получу читаемый текст</span></button><button type="button" class="qz-o" data-ok="0" data-why="Хэш — это шестнадцатеричные цифры фиксированной длины. Здесь буквы разного регистра и =, это не хэш."><span class="qz-mark" aria-hidden="true"></span><span>Это хэш — отправлю его на перебор по словарю</span></button></div><div class="qz-why" role="status"></div></div>
+
+<h1 id="s64" class="anchored">Практика</h1>
+<p>Три задания на реальном для смены материале. Это не повтор «Сделай сам»: здесь ты связываешь главы вместе, как в SIEM.</p>
+
+<h2 id="s65">Задание 1. Очередь в SIEM: отсей и найди атаку</h2>
+<p>Перед тобой лента запросов к <code>shop.kranich.de</code> за минуту, как в окне <strong>SIEM</strong> (система, куда стекаются логи со всей сети, чтобы искать по ним в одном месте). Пощёлкай фильтры и найди строки, которые пойдут в тикет. Это навык «исключение в потоке» из всех четырёх глав сразу.</p>
+<figure class="thv" data-v="siem" id="web-siem"><figcaption><b>Очередь веб-запросов</b><span>Учебный пример — найди атаку среди шума</span></figcaption>
+<script type="application/json">{"cols":["Время","IP","Метод + путь","Код","Размер","User-Agent"],"rows":[["21:18:01","203.0.113.7","GET /produkt?id=42","200","2048","Chrome/131"],["21:18:02","198.51.100.23","GET /produkt?id=1' OR '1'='1","500","512","python-requests"],["21:18:03","203.0.113.9","GET /warenkorb","200","1800","Chrome/131"],["21:18:04","198.51.100.23","GET /produkt?id=1 UNION SELECT username,password FROM users--","200","9014","python-requests"],["21:18:05","203.0.113.7","GET /produkt?id=43","200","2100","Safari/17"],["21:18:06","198.51.100.23","GET /reviews?q=%3Cscript%3Ealert(1)%3C/script%3E","200","3300","python-requests"],["21:18:07","203.0.113.11","POST /login","302","700","Chrome/131"],["21:18:09","45.138.10.5","POST /login","401","480","-"],["21:18:09","45.138.10.5","POST /login","401","480","-"],["21:18:10","45.138.10.5","POST /login","401","480","-"]],"filter":[1,3,5],"tasks":["Отфильтруй по IP 198.51.100.23 — что он делает по шагам?","Найди строку, где инъекция, похоже, сработала (подсказка: код и размер).","Отфильтруй код 401 — кто и что перебирает?","Какие строки — обычные покупатели, а какие в тикет?"]}</script></figure>
+<p><strong>Разбор (открой после попытки).</strong></p>
+<details><summary>Что тут происходит и что в тикет</summary>
+<p><strong>198.51.100.23</strong> ведёт цепочку по порядку глав: проба SQLi с кавычкой → <code>500</code> (дыра подтверждена, глава 3); <code>UNION SELECT ... users</code> → <code>200</code> и размер <strong>9014</strong> вместо ~2000 (данные, вероятно, вынесены); затем проба XSS <code>%3Cscript%3E</code> на <code>/reviews</code> (глава 2). User-Agent <code>python-requests</code> — инструмент (глава 1). <strong>45.138.10.5</strong> — стена <code>POST /login</code> с кодами <code>401</code> и пустым User-Agent: перебор пароля (глава 4). Строки с <code>203.0.113.x</code> и браузерными User-Agent, кодами 200/302 — обычные покупатели, их не трогаем. <strong>В тикет:</strong> две нити — SQLi+XSS с .23 (приоритет высокий, вероятна утечка users) и brute force с .5.</p>
+</details>
+
+<h2 id="s66">Задание 2. Выставь приоритет</h2>
+<p>У тебя три алерта разом. Правило приоритета простое: <strong>выше тот, где атака уже сработала</strong> (успех важнее пробы) <strong>и где данные ценнее</strong> (учётки и пароли важнее мелочи). Нажми, какой берёшь первым, — объяснение покажет, верно ли.</p>
+<div class="tr"><div class="tr-cap">Что берёшь первым?</div><div class="tr-alert">A) Проба XSS <code>alert(1)</code> на /reviews, ответ 200, но исходящих утечек пока не видно.<br>B) <code>UNION SELECT ... FROM users</code>, ответ 200, размер ответа вырос в 4 раза.<br>C) Одиночный 404 на <code>/admin</code> с адреса из вашей же сети.</div><div class="tr-btns"><button type="button" class="tr-b" data-k="a">Сначала A</button><button type="button" class="tr-b" data-k="b">Сначала B</button><button type="button" class="tr-b" data-k="c">Сначала C</button></div>
+<div class="tr-out" data-k="a"><b>Не первым</b>Проба XSS — это попытка, и пока без следов утечки. Серьёзно, но B уже похож на <em>состоявшуюся</em> кражу данных. Сначала то, что уже горит.</div>
+<div class="tr-out" data-k="b"><b>Верно</b>B — вероятная удавшаяся SQL-инъекция с выгрузкой учёток (код 200 + скачок размера). Это активная утечка самых ценных данных — высший приоритет. Эскалируй, пароли users считай скомпрометированными.</div>
+<div class="tr-out" data-k="c"><b>Не первым</b>Одиночный 404 на /admin — почти наверняка шум (кто-то ошибся адресом). Без потока и без успеха это низкий приоритет. Не раньше B.</div>
+</div>
+
+<h2 id="s67">Задание 3. Доложи по-немецки</h2>
+<p>Короткий доклад по нити с <code>198.51.100.23</code> по схеме <strong>Was → Wann → Woher → Auswirkung → Empfehlung</strong> (что → когда → откуда → последствие → рекомендация). Сначала составь сам, потом сверься.</p>
+<details><summary>Пример доклада (Mustermeldung)</summary>
+<blockquote>
+<p><strong>Was:</strong> SQL-Injection gegen <code>shop.kranich.de/produkt</code>, danach XSS-Versuch auf <code>/reviews</code>.</p>
+<p><strong>Wann:</strong> 22.11.2026, 21:18:02–21:18:06 Uhr (MEZ / UTC+1).</p>
+<p><strong>Woher:</strong> IP 198.51.100.23, User-Agent <code>python-requests</code> — automatisiertes Werkzeug.</p>
+<p><strong>Auswirkung:</strong> <code>UNION SELECT</code> mit Antwort 200 und stark vergrößerter Antwort (9 KB statt 2 KB) — wahrscheinlich wurden Benutzerdaten (Tabelle <code>users</code>) ausgelesen. Passwörter als kompromittiert behandeln.</p>
+<p><strong>Empfehlung:</strong> IP sperren, Abfrage auf Prepared Statements umstellen, Ausgabe der Reviews escapen, betroffene Passwörter zurücksetzen.</p>
+</blockquote>
+<p>Разбор по словам: <em>ausgelesen</em> — «вычитаны/выгружены», <em>kompromittiert</em> — «скомпрометированы», <em>sperren</em> — «заблокировать», <em>zurücksetzen</em> — «сбросить». Часовой пояс <strong>MEZ</strong> (Mitteleuropäische Zeit) = UTC+1, зимнее время в Германии — указывай всегда, иначе время в докладе двусмысленно.</p>
+</details>
+
+<h1 id="s68" class="anchored">Шпаргалка на один экран</h1>
+<p><strong>Строка веб-лога:</strong> IP · время · «метод путь» · код · размер · Referer · User-Agent. Главные четыре: IP, метод+путь, код, User-Agent.</p>
+<p><strong>Коды:</strong> 2xx успех · 3xx редирект · 4xx вина клиента · 5xx вина сервера. Лови исключение: 200 среди 404; 500 на кавычке; 302 после стены 401.</p>
+<p><strong>URL:</strong> схема://хост:порт/путь?параметры#фрагмент. Атака — в параметрах и пути; фрагмент <code>#</code> на сервер не уходит.</p>
+<p><strong>XSS</strong> (в браузер жертвы): приметы <code>&lt;script&gt;</code>, <code>onerror=</code>, <code>%3Cscript%3E</code>. Виды: reflected (в логе видно) · stored (бьёт по всем) · DOM (в логе сервера не видно). Лечение — экранирование вывода + CSP + HttpOnly.</p>
+<p><strong>SQLi</strong> (в базу): приметы <code>'</code>, <code>OR 1=1</code>, <code>UNION SELECT</code>, <code>--</code>, <code>information_schema</code>. Успех: 500 на кавычке (дыра есть) → 200 + рост размера (данные вынесены). Лечение — параметризованные запросы.</p>
+<p><strong>Перебор/фаззинг</strong> (Burp Intruder, sqlmap): один путь, стена одинаковых кодов, различается один параметр, дефолтный User-Agent. Brute force логина = стена 401 на <code>/login</code>, ищи финальный 302/200.</p>
+<p><strong>Правило смены:</strong> всё от клиента — недоверенные данные; «фронтенд бы не пропустил» — ложь; смотри исключение в потоке и исходящий трафик; код 200 при инъекции тревожнее 500.</p>
+
+<h1 id="s69" class="anchored">Отзыв</h1>
+<p>Три вопроса — ответь парой слов, это правит следующие учебники:</p>
+<ul>
+<li>Где пришлось перечитать дважды — тема была сложная или я плохо объяснил (SQL? виды XSS? прокси)?</li>
+<li>Твой фронтенд-опыт — помог мост «клиент/сервер, DOM, JS», или местами я объяснял то, что ты и так знаешь, и это тормозило?</li>
+<li>Разбор атак через следы в логах (без готовых пейлоадов) — хватило, чтобы понять, что ловить, или по какой-то атаке хотелось бы больше примеров строк?</li>
+</ul>
+  </main>
+</div>
+
+<button id="totop" aria-label="Наверх">↑</button>
+
+<script>
+(function(){
+  "use strict";
+  var LS={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},
+          set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+
+  /* theme */
+  var root=document.documentElement;
+  var saved=LS.get("thm-theme");
+  if(saved==="dark"||saved==="light")root.setAttribute("data-theme",saved);
+  document.getElementById("themebtn").addEventListener("click",function(){
+    var isDark=root.getAttribute("data-theme")==="dark"||
+      (!root.hasAttribute("data-theme")&&window.matchMedia("(prefers-color-scheme: dark)").matches);
+    var next=isDark?"light":"dark";
+    root.setAttribute("data-theme",next);LS.set("thm-theme",next);
+  });
+
+  /* font size */
+  var fs=parseInt(LS.get("thm-fs")||"17",10);
+  if(isNaN(fs))fs=17;
+  function applyFs(){root.style.setProperty("--fs",fs+"px");LS.set("thm-fs",String(fs));}
+  applyFs();
+  document.getElementById("fsup").addEventListener("click",function(){fs=Math.min(fs+1,23);applyFs();});
+  document.getElementById("fsdown").addEventListener("click",function(){fs=Math.max(fs-1,14);applyFs();});
+
+  /* copy buttons */
+  Array.prototype.forEach.call(document.querySelectorAll("pre"),function(pre){
+    var b=document.createElement("button");
+    b.className="copy";b.type="button";b.textContent="копировать";
+    b.addEventListener("click",function(){
+      var t=pre.querySelector("code")?pre.querySelector("code").innerText:pre.innerText;
+      if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){
+        b.textContent="скопировано";setTimeout(function(){b.textContent="копировать";},1400);
+      });}
+    });
+    pre.appendChild(b);
+  });
+
+  /* field breakdown */
+  Array.prototype.forEach.call(document.querySelectorAll(".fb"),function(fb){
+    var out=fb.querySelector(".fb-out");
+    var def=out.innerHTML;
+    function show(el){
+      Array.prototype.forEach.call(fb.querySelectorAll(".fld"),function(f){f.classList.remove("on");});
+      el.classList.add("on");
+      out.innerHTML="<b>"+el.getAttribute("data-k")+"</b>"+el.getAttribute("data-d");
+    }
+    fb.addEventListener("mouseover",function(e){var t=e.target.closest(".fld");if(t)show(t);});
+    fb.addEventListener("focusin",function(e){var t=e.target.closest(".fld");if(t)show(t);});
+    fb.addEventListener("click",function(e){var t=e.target.closest(".fld");if(t)show(t);});
+    fb.addEventListener("mouseleave",function(){
+      if(!fb.contains(document.activeElement)){
+        Array.prototype.forEach.call(fb.querySelectorAll(".fld"),function(f){f.classList.remove("on");});
+        out.innerHTML=def;
+      }
+    });
+  });
+
+  /* read marks */
+  var heads=Array.prototype.slice.call(document.querySelectorAll("main h2, main h1.anchored"));
+  var doneSet={};
+  try{doneSet=JSON.parse(LS.get("thm-done-01")||"{}")||{};}catch(e){doneSet={};}
+  function pct(){
+    var n=0;for(var i=0;i<heads.length;i++){if(doneSet[heads[i].id])n++;}
+    var p=heads.length?Math.round(n*100/heads.length):0;
+    document.getElementById("readpct").textContent=p+"% прочитано";
+  }
+  heads.forEach(function(h){
+    var txt=h.innerHTML;
+    h.innerHTML="";
+    var b=document.createElement("button");
+    b.className="mark";b.type="button";
+    b.setAttribute("aria-label","Отметить раздел прочитанным");
+    b.setAttribute("aria-pressed",doneSet[h.id]?"true":"false");
+    if(doneSet[h.id])h.classList.add("done");
+    var s=document.createElement("span");s.className="h2t";s.innerHTML=txt;
+    h.appendChild(b);h.appendChild(s);
+    b.addEventListener("click",function(){
+      if(doneSet[h.id]){delete doneSet[h.id];b.setAttribute("aria-pressed","false");h.classList.remove("done");}
+      else{doneSet[h.id]=1;b.setAttribute("aria-pressed","true");h.classList.add("done");}
+      LS.set("thm-done-01",JSON.stringify(doneSet));pct();
+    });
+  });
+  pct();
+
+  /* toc drawer */
+  var toc=document.getElementById("toc"),mb=document.getElementById("menubtn"),scrim=null;
+  function closeDrawer(){toc.classList.remove("open");mb.setAttribute("aria-expanded","false");
+    if(scrim){scrim.remove();scrim=null;}}
+  mb.addEventListener("click",function(){
+    if(toc.classList.contains("open")){closeDrawer();return;}
+    toc.classList.add("open");mb.setAttribute("aria-expanded","true");
+    scrim=document.createElement("div");scrim.id="scrim";
+    scrim.addEventListener("click",closeDrawer);document.body.appendChild(scrim);
+  });
+  toc.addEventListener("click",function(e){if(e.target.tagName==="A")closeDrawer();});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")closeDrawer();});
+
+  /* progress + active toc + to top */
+  var links=Array.prototype.slice.call(toc.querySelectorAll("a"));
+  var bar=document.querySelector("#pbar i"),top=document.getElementById("totop");
+  top.addEventListener("click",function(){window.scrollTo({top:0,behavior:"smooth"});});
+  var ticking=false;
+  function onScroll(){
+    if(ticking)return;ticking=true;
+    window.requestAnimationFrame(function(){
+      var h=document.documentElement.scrollHeight-window.innerHeight;
+      var p=h>0?Math.min(100,Math.max(0,window.scrollY*100/h)):0;
+      bar.style.width=p+"%";
+      top.classList.toggle("show",window.scrollY>600);
+      var cur=null;
+      for(var i=0;i<heads.length;i++){if(heads[i].getBoundingClientRect().top<120)cur=heads[i].id;}
+      links.forEach(function(a){a.classList.toggle("on",a.getAttribute("href")==="#"+cur);});
+      ticking=false;
+    });
+  }
+  window.addEventListener("scroll",onScroll,{passive:true});
+  window.addEventListener("resize",onScroll);
+  onScroll();
+})();
+</script>
+
+<style>
+.qz{margin:1.3em 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 15px}
+.qz-q{font-weight:600;margin-bottom:11px;line-height:1.5}
+.qz-opts{display:flex;flex-direction:column;gap:7px}
+.qz-o{display:flex;gap:9px;align-items:flex-start;text-align:left;font:inherit;font-size:.93rem;
+  color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:9px 11px;cursor:pointer}
+.qz-o:hover{border-color:var(--accent)}
+.qz-mark{flex:none;width:17px;height:17px;border:1.5px solid var(--line);border-radius:50%;margin-top:2px}
+.qz-o.ok .qz-mark{border-color:#1c8a4a;background:#1c8a4a}
+.qz-o.no .qz-mark{border-color:#c2432f;background:#c2432f}
+.qz-o.ok{border-color:#1c8a4a}.qz-o.no{border-color:#c2432f}
+.qz-o[disabled]{cursor:default;opacity:.95}
+.qz-why{display:none;margin-top:11px;padding-top:11px;border-top:1px solid var(--line);font-size:.9rem;line-height:1.55}
+.qz-why.show{display:block}
+.qz-why b{display:block;font-size:.76rem;letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px}
+.qz-why.good b{color:#1c8a4a}.qz-why.bad b{color:#c2432f}
+.tr{margin:1.4em 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.tr-cap{font-family:var(--sans);font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+  padding:9px 14px;border-bottom:1px solid var(--line)}
+.tr-alert{padding:12px 14px;font-family:var(--mono);font-size:.82rem;line-height:1.7}
+.tr-btns{display:flex;flex-wrap:wrap;gap:8px;padding:0 14px 13px}
+.tr-b{font:inherit;font-size:.87rem;color:inherit;background:var(--bg);border:1px solid var(--line);
+  border-radius:8px;padding:8px 13px;cursor:pointer}
+.tr-b:hover{border-color:var(--accent);color:var(--accent)}
+.tr-b.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
+.tr-out{display:none;border-top:1px solid var(--line);padding:12px 14px;font-size:.9rem;line-height:1.6}
+.tr-out.on{display:block}
+.tr-out b{display:block;font-size:.76rem;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.ck{margin:1.5em 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:13px 15px 15px}
+.ck-cap{font-family:var(--sans);font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.ck-list{display:flex;flex-direction:column;gap:3px}
+.ck-i{display:flex;gap:9px;align-items:center;text-align:left;font:inherit;font-size:.9rem;color:inherit;
+  background:none;border:0;padding:5px 2px;cursor:pointer;border-radius:6px}
+.ck-i:hover{color:var(--accent)}
+.ck-box{flex:none;width:15px;height:15px;border:1.5px solid var(--line);border-radius:4px;position:relative}
+.ck-i.on .ck-box{border-color:var(--accent);background:var(--accent)}
+.ck-i.on .ck-box::after{content:"";position:absolute;left:4px;top:1px;width:4px;height:8px;
+  border:solid #fff;border-width:0 1.8px 1.8px 0;transform:rotate(42deg)}
+.ck-i.on span:last-child{opacity:.55;text-decoration:line-through}
+.ck-bar{height:4px;background:var(--line);border-radius:3px;margin:11px 0 6px;overflow:hidden}
+.ck-bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .18s}
+.ck-n{font-family:var(--sans);font-size:.75rem;color:var(--muted)}
+.kc{margin:1.5em 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.kc-cap{font-family:var(--sans);font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+  padding:9px 14px;border-bottom:1px solid var(--line)}
+.kc-tabs{display:flex;overflow-x:auto;gap:6px;padding:11px 14px;border-bottom:1px solid var(--line)}
+.kc-t{flex:none;display:flex;align-items:center;gap:6px;font:inherit;font-size:.82rem;color:inherit;
+  background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:6px 12px;cursor:pointer;white-space:nowrap}
+.kc-t:hover{border-color:var(--accent);color:var(--accent)}
+.kc-t.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
+.kc-t .kc-n{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;
+  background:var(--line);color:var(--fg);font-size:.68rem;font-weight:600}
+.kc-t.on .kc-n{background:var(--accent);color:#fff}
+.kc-p{display:none;padding:13px 15px}
+.kc-p.on{display:block}
+.kc-what{font-size:.94rem;line-height:1.55;margin-bottom:10px}
+.kc-row{display:flex;gap:10px;font-size:.87rem;line-height:1.5;padding:5px 0;border-top:1px solid var(--line)}
+.kc-row b{flex:none;width:96px;font-size:.73rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);
+  font-weight:600;padding-top:2px}
+.kc figcaption{text-align:left;padding:0 15px 13px;margin-top:2px}
+@media (max-width:560px){.kc-row{flex-direction:column;gap:2px}.kc-row b{width:auto}}
+</style>
+
+<script>
+(function(){
+  // квизы
+  Array.prototype.forEach.call(document.querySelectorAll(".qz"), function(qz){
+    var why = qz.querySelector(".qz-why"), done = false;
+    Array.prototype.forEach.call(qz.querySelectorAll(".qz-o"), function(b){
+      b.addEventListener("click", function(){
+        if (done) return; done = true;
+        var ok = b.getAttribute("data-ok") === "1";
+        b.classList.add(ok ? "ok" : "no");
+        if (!ok) {
+          var right = qz.querySelector('.qz-o[data-ok="1"]');
+          if (right) right.classList.add("ok");
+        }
+        Array.prototype.forEach.call(qz.querySelectorAll(".qz-o"), function(x){ x.disabled = true; });
+        why.className = "qz-why show " + (ok ? "good" : "bad");
+        why.innerHTML = "<b>" + (ok ? "Верно" : "Не то") + "</b>" + b.getAttribute("data-why");
+      });
+    });
+  });
+  // триаж
+  Array.prototype.forEach.call(document.querySelectorAll(".tr"), function(tr){
+    Array.prototype.forEach.call(tr.querySelectorAll(".tr-b"), function(b){
+      b.addEventListener("click", function(){
+        var k = b.getAttribute("data-k");
+        Array.prototype.forEach.call(tr.querySelectorAll(".tr-b"), function(x){ x.classList.toggle("on", x === b); });
+        Array.prototype.forEach.call(tr.querySelectorAll(".tr-out"), function(o){
+          o.classList.toggle("on", o.getAttribute("data-k") === k);
+        });
+      });
+    });
+  });
+  // чеклист глав — состояние в переменной, без localStorage
+  Array.prototype.forEach.call(document.querySelectorAll(".ck"), function(ck){
+    var items = ck.querySelectorAll(".ck-i"), bar = ck.querySelector(".ck-bar i"),
+        num = ck.querySelector(".ck-n span"), state = {};
+    function paint(){
+      var n = 0; for (var k in state) if (state[k]) n++;
+      bar.style.width = (items.length ? (n / items.length * 100) : 0) + "%";
+      num.textContent = n;
+    }
+    Array.prototype.forEach.call(items, function(it){
+      it.addEventListener("click", function(ev){
+        var id = it.getAttribute("data-id");
+        if (ev.target.classList.contains("ck-box")) {
+          state[id] = !state[id]; it.classList.toggle("on", !!state[id]); paint(); return;
+        }
+        state[id] = !state[id]; it.classList.toggle("on", !!state[id]); paint();
+        var t = document.getElementById(id);
+        if (t && state[id]) t.scrollIntoView({behavior:"smooth", block:"start"});
+      });
+    });
+    paint();
+  });
+  // лента этапов
+  Array.prototype.forEach.call(document.querySelectorAll(".kc"), function(kc){
+    Array.prototype.forEach.call(kc.querySelectorAll(".kc-t"), function(t){
+      t.addEventListener("click", function(){
+        var i = t.getAttribute("data-i");
+        Array.prototype.forEach.call(kc.querySelectorAll(".kc-t"), function(x){ x.classList.toggle("on", x === t); });
+        Array.prototype.forEach.call(kc.querySelectorAll(".kc-p"), function(p){
+          p.classList.toggle("on", p.getAttribute("data-i") === i);
+        });
+      });
+    });
+  });
+})();
+</script>
+<!--thm-reader:start--><link rel="manifest" href="../manifest.webmanifest"><meta name="theme-color" content="#16212e"><script src="../assets/reader.js" defer></script><script>if('serviceWorker' in navigator)navigator.serviceWorker.register('../sw.js').catch(function(){});</script><!--thm-reader:end-->
