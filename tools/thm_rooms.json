@@ -267,5 +267,21 @@
  "logsfundamentals": {
   "t": "Logs Fundamentals",
   "min": 45
+ },
+ "introtosiem": {
+  "t": "Introduction to SIEM",
+  "min": 120
+ },
+ "firewallfundamentals": {
+  "t": "Firewall Fundamentals",
+  "min": 60
+ },
+ "idsfundamentals": {
+  "t": "IDS Fundamentals",
+  "min": 60
+ },
+ "vulnerabilityscanneroverview": {
+  "t": "Vulnerability Scanner Overview",
+  "min": 60
  }
 }

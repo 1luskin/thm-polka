@@ -236,5 +236,21 @@
   ],
   "thm_skip": [],
   "added": "2026-11-25"
+ },
+ {
+  "id": "cs101-security-solutions",
+  "title": "Security Solutions",
+  "url": "books/cs101-security-solutions.html",
+  "path": "02 Cyber Security 101",
+  "order": 8,
+  "rooms": "Introduction to SIEM, Firewall Fundamentals, IDS Fundamentals, Vulnerability Scanner Overview",
+  "thm": [
+   "introtosiem",
+   "firewallfundamentals",
+   "idsfundamentals",
+   "vulnerabilityscanneroverview"
+  ],
+  "thm_skip": [],
+  "added": "2026-11-25"
  }
 ]
