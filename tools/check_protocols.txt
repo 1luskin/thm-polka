@@ -40,3 +40,14 @@ ssh-keygen
 Wireshark
 tcpdump
 Nmap
+SIEM
+EDR
+SOAR
+XDR
+IDS
+Event Viewer
+exiftool
+pdfinfo
+Volatility
+Autopsy
+FTK Imager

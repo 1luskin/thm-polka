@@ -219,5 +219,22 @@
    "sqlmapthebasics"
   ],
   "thm_skip": []
+ },
+ {
+  "id": "cs101-defensive",
+  "title": "Оборонительная безопасность",
+  "url": "books/cs101-defensive.html",
+  "path": "02 Cyber Security 101",
+  "order": 7,
+  "rooms": "Defensive Security Intro, SOC Fundamentals, Digital Forensics Fundamentals, Incident Response Fundamentals, Logs Fundamentals",
+  "thm": [
+   "defensivesecurityintro",
+   "socfundamentals",
+   "digitalforensicsfundamentals",
+   "incidentresponsefundamentals",
+   "logsfundamentals"
+  ],
+  "thm_skip": [],
+  "added": "2026-11-25"
  }
 ]

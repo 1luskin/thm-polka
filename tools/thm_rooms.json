@@ -6,7 +6,7 @@
  },
  "defensivesecurityintro": {
   "t": "Defensive Security Intro",
-  "min": 15
+  "min": 20
  },
  "careersincyber": {
   "t": "Careers in Cyber",
@@ -251,5 +251,21 @@
  "sqlmapthebasics": {
   "t": "SQLMap: The Basics",
   "min": null
+ },
+ "socfundamentals": {
+  "t": "SOC Fundamentals",
+  "min": 45
+ },
+ "digitalforensicsfundamentals": {
+  "t": "Digital Forensics Fundamentals",
+  "min": 60
+ },
+ "incidentresponsefundamentals": {
+  "t": "Incident Response Fundamentals",
+  "min": 60
+ },
+ "logsfundamentals": {
+  "t": "Logs Fundamentals",
+  "min": 45
  }
 }
